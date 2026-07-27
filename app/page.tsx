@@ -99,7 +99,7 @@ export default async function LeaderboardPage() {
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[
-          { label: "Sites tested", value: entries.length },
+          { label: "Sites in cohort", value: entries.length },
           {
             label: "Avg success rate",
             value:
@@ -158,7 +158,13 @@ export default async function LeaderboardPage() {
                   <div className="text-xs text-slate-400 mt-0.5">{entry.trial_count} trials</div>
                 </td>
                 <td className="px-4 py-3">
-                  <FailureBadge mode={entry.top_failure_mode} />
+                  {/* No trials yet is not a failure mode — computeEntry reports "error" for
+                      "no data", which would read as 28 crashed sites before a batch runs. */}
+                  {entry.trial_count === 0 ? (
+                    <span className="text-slate-400 text-sm">—</span>
+                  ) : (
+                    <FailureBadge mode={entry.top_failure_mode} />
+                  )}
                 </td>
                 <td className="px-4 py-3 text-slate-600 tabular-nums">{entry.mean_steps}</td>
                 <td className="px-4 py-3">

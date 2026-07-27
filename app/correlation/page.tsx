@@ -26,6 +26,11 @@ export default async function CorrelationPage() {
     return { label, r: pearsonR(pairs) };
   }).sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
 
+  // Below two points pearsonR returns a hardcoded 0, so every r on this page is meaningless.
+  // Say so instead of rendering "r = 0.00" as if it were a result. (Phase 4 replaces the bare
+  // Pearson with Spearman + bootstrap CI + n throughout.)
+  const hasCorrelation = points.length >= 2;
+
   // Find the "surprising" entry: biggest gap between LH rank and success rank
   const byLh = [...points].sort((a, b) => b.lh_total - a.lh_total);
   const bySuccess = [...points].sort((a, b) => b.success_rate - a.success_rate);
@@ -64,8 +69,14 @@ export default async function CorrelationPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <h2 className="font-semibold text-slate-900 mb-4">Which sub-audit predicts success?</h2>
           <p className="text-xs text-slate-400 mb-4">Pearson r between each single audit and behavioral success rate.</p>
+          {!hasCorrelation && (
+            <p className="text-sm text-slate-400">
+              Not enough data yet ({points.length} {points.length === 1 ? "site has" : "sites have"} both
+              a Lighthouse score and agent runs). Run both lanes to populate this.
+            </p>
+          )}
           <div className="space-y-3">
-            {subAuditCorrelations.map(({ label, r: subR }, i) => (
+            {hasCorrelation && subAuditCorrelations.map(({ label, r: subR }, i) => (
               <div key={label}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-slate-700 font-medium">
@@ -119,7 +130,9 @@ export default async function CorrelationPage() {
       <div className="bg-slate-900 text-white rounded-xl p-6">
         <h2 className="font-semibold text-slate-200 mb-2 text-sm uppercase tracking-wide">The finding</h2>
         <p className="text-lg font-medium leading-relaxed">
-          {Math.abs(r) >= 0.7
+          {!hasCorrelation
+            ? <>No finding yet. {points.length === 0 ? "No site" : `Only ${points.length} site`} has both a Lighthouse score and agent runs, so there is nothing to correlate — this states the result once the lanes have run, and claims nothing before then.</>
+            : Math.abs(r) >= 0.7
             ? <>Google&apos;s Agentic Browsing rubric (r&nbsp;=&nbsp;{r.toFixed(2)}) is a strong predictor of real agent success. The best single indicator: <span className="text-sky-400">{subAuditCorrelations[0].label}</span> (r&nbsp;=&nbsp;{subAuditCorrelations[0].r.toFixed(2)}).</>
             : Math.abs(r) >= 0.4
             ? <>Google&apos;s Agentic Browsing rubric (r&nbsp;=&nbsp;{r.toFixed(2)}) has moderate predictive power. The most predictive sub-audit: <span className="text-sky-400">{subAuditCorrelations[0].label}</span> (r&nbsp;=&nbsp;{subAuditCorrelations[0].r.toFixed(2)}). <span className="text-slate-300">{subAuditCorrelations[subAuditCorrelations.length - 1].label} predicted nothing</span> (r&nbsp;=&nbsp;{subAuditCorrelations[subAuditCorrelations.length - 1].r.toFixed(2)}).</>
