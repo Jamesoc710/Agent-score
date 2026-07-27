@@ -19,17 +19,25 @@ scanning is the product direction. Solo project (James), built with Claude in th
 
 - Next.js 14 App Router, TypeScript strict, Tailwind. All pages are server components; the one
   client component is the Recharts correlation chart.
-- Data layer: migrating Firebase/Firestore -> Supabase (Postgres, schema via CLI migrations,
-  git-tracked) + Vercel hosting. Until Phase 1 lands, the app reads fixture data by default
-  (`USE_FAKE_DATA`, toggle logic in `lib/queries.ts`).
+- Data layer: Supabase Postgres, schema via git-tracked CLI migrations in
+  `supabase/migrations/`. Firebase is gone. Real data is the default read path; fixtures only
+  with `USE_FAKE_DATA=true` (`lib/queries.ts`). Vercel not yet connected.
+- The app reads with the anon key under RLS select-only policies (`lib/supabase.ts`); only
+  `scripts/` holds the service key (`scripts/supabase-admin.ts`). Do not import the service
+  client from `app/` or `lib/`.
 - Pipeline lanes: `scripts/lane1-lighthouse.ts` (Lighthouse CLI, static x-axis) and
-  `scripts/lane2-agent.py` (Gemini + Playwright, behavioral y-axis, Python).
+  `scripts/lane2-agent.py` (Gemini + Playwright, behavioral y-axis, Python). Both write local
+  per-batch artifacts under `data/`; `scripts/import-results.ts` is the only DB writer.
+- Result tables are append-only, keyed by `batch_label`; `lib/dataset.ts` names the batch and
+  agent the app publishes.
 
 ## Commands
 
 - `npm run dev` / `npm run build` / `npm run lint`; typecheck with `npx tsc --noEmit`
+- `npm run seed:sites` — `data/cohort.csv` -> `sites` (supports `--dry-run`)
 - `npm run lane1` — Lighthouse across the cohort; `lane1:single` for one site
 - `python scripts/lane2-agent.py --sites <ids> --trials <n>` — behavioral runs
+- `npm run import` — load a batch's local artifacts into Supabase (`--batch <label>`)
 - Python deps: `pip install -r scripts/requirements.txt && playwright install chromium`
 
 ## Ground rules

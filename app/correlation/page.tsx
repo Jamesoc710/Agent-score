@@ -2,6 +2,10 @@ import Link from "next/link";
 import { getCorrelationPoints, pearsonR, linearRegression } from "@/lib/queries";
 import CorrelationChart from "@/components/CorrelationChart";
 
+// Rendered per request: results change when a batch is imported, not when the app is built,
+// and a build should not need database credentials.
+export const dynamic = "force-dynamic";
+
 export default async function CorrelationPage() {
   const points = await getCorrelationPoints();
 
@@ -42,10 +46,10 @@ export default async function CorrelationPage() {
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Does Google's rubric predict agent success?
+          Does Google&apos;s rubric predict agent success?
         </h1>
         <p className="text-slate-500 max-w-2xl">
-          Each point is one site. The x-axis is Google's Lighthouse Agentic Browsing score; the y-axis is the measured
+          Each point is one site. The x-axis is Google&apos;s Lighthouse Agentic Browsing score; the y-axis is the measured
           success rate of a fixed Gemini agent completing a real task. The dashed line is a least-squares fit.
         </p>
       </div>
@@ -116,10 +120,10 @@ export default async function CorrelationPage() {
         <h2 className="font-semibold text-slate-200 mb-2 text-sm uppercase tracking-wide">The finding</h2>
         <p className="text-lg font-medium leading-relaxed">
           {Math.abs(r) >= 0.7
-            ? <>Google's Agentic Browsing rubric (r&nbsp;=&nbsp;{r.toFixed(2)}) is a strong predictor of real agent success. The best single indicator: <span className="text-sky-400">{subAuditCorrelations[0].label}</span> (r&nbsp;=&nbsp;{subAuditCorrelations[0].r.toFixed(2)}).</>
+            ? <>Google&apos;s Agentic Browsing rubric (r&nbsp;=&nbsp;{r.toFixed(2)}) is a strong predictor of real agent success. The best single indicator: <span className="text-sky-400">{subAuditCorrelations[0].label}</span> (r&nbsp;=&nbsp;{subAuditCorrelations[0].r.toFixed(2)}).</>
             : Math.abs(r) >= 0.4
-            ? <>Google's Agentic Browsing rubric (r&nbsp;=&nbsp;{r.toFixed(2)}) has moderate predictive power. The most predictive sub-audit: <span className="text-sky-400">{subAuditCorrelations[0].label}</span> (r&nbsp;=&nbsp;{subAuditCorrelations[0].r.toFixed(2)}). <span className="text-slate-300">{subAuditCorrelations[subAuditCorrelations.length - 1].label} predicted nothing</span> (r&nbsp;=&nbsp;{subAuditCorrelations[subAuditCorrelations.length - 1].r.toFixed(2)}).</>
-            : <>Google's Agentic Browsing rubric barely predicts real agent success (r&nbsp;=&nbsp;{r.toFixed(2)}). The most predictive sub-audit: <span className="text-sky-400">{subAuditCorrelations[0].label}</span> — but the rubric as a whole is not a reliable proxy for whether an agent can actually complete a task.</>
+            ? <>Google&apos;s Agentic Browsing rubric (r&nbsp;=&nbsp;{r.toFixed(2)}) has moderate predictive power. The most predictive sub-audit: <span className="text-sky-400">{subAuditCorrelations[0].label}</span> (r&nbsp;=&nbsp;{subAuditCorrelations[0].r.toFixed(2)}). <span className="text-slate-300">{subAuditCorrelations[subAuditCorrelations.length - 1].label} predicted nothing</span> (r&nbsp;=&nbsp;{subAuditCorrelations[subAuditCorrelations.length - 1].r.toFixed(2)}).</>
+            : <>Google&apos;s Agentic Browsing rubric barely predicts real agent success (r&nbsp;=&nbsp;{r.toFixed(2)}). The most predictive sub-audit: <span className="text-sky-400">{subAuditCorrelations[0].label}</span> — but the rubric as a whole is not a reliable proxy for whether an agent can actually complete a task.</>
           }
         </p>
       </div>

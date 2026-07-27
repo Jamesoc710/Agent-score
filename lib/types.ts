@@ -1,15 +1,32 @@
-// Frozen data contract — agree this in hour 1, do not change without team sign-off.
+// Frozen data contract between the lanes and the frontend. Changes are a James decision,
+// not a refactor. Mirrors supabase/migrations/20260727190050_init_schema.sql; the columns
+// on Site mirror data/cohort.csv, which is the canonical cohort.
+
+export type SiteTier =
+  | "anchor"
+  | "middle"
+  | "government"
+  | "small_business"
+  | "off_diagonal"
+  | "blocker";
 
 export interface Site {
   site_id: string;   // slug, e.g. "stripe"
   name: string;      // display name
-  url: string;       // start URL for agent
-  answer_substring: string;  // pre-registered expected answer (scoring key)
-  answer_note: string;       // human-readable description of expected answer
+  tier: SiteTier;    // cohort design bucket
+  start_url: string; // where the agent starts; navigation is part of the test
+  question: string;  // the per-site question; the task shape never varies
+  // Pre-registered answer key. " | " separates any-of alternates (METHODOLOGY rule 6).
+  // Never goes into an agent prompt or task hint.
+  answer_substring: string;
+  match_rule: string;   // which normalization rules apply to this row
+  flag: string;         // cohort design note, e.g. "consent-wall obstacle"
+  answer_note: string;  // human-readable description of the expected answer
 }
 
 export interface LighthouseResult {
   site_id: string;
+  batch_label: string;            // which Lane 1 batch this row belongs to
   lh_total: number;               // 0–100 Agentic Browsing category score
   lh_accessibility_tree: number;  // 0 or 1 (pass/fail)
   lh_layout_stability: number;    // 0 or 1
@@ -27,14 +44,34 @@ export type FailureMode =
   | "navigation_stuck"  // couldn't find the path
   | "error";            // harness/technical failure
 
+// One decision the agent made, as emitted by the harness loop.
+export interface AgentAction {
+  action: "click" | "type" | "scroll" | "navigate" | "done";
+  selector?: string;
+  text?: string;
+  direction?: string;
+  url?: string;
+  answer?: string;
+  reasoning?: string;
+}
+
+export interface TranscriptStep {
+  step: number;
+  url?: string;
+  action?: AgentAction;
+  error?: string;
+}
+
 export interface Run {
   site_id: string;
+  agent_id: string;     // which agent produced this run; enables a multi-agent panel
+  batch_label: string;  // which Lane 2 batch this trial belongs to
   trial_number: number; // 1..N
-  success: boolean;     // output contained answer_substring
+  success: boolean;     // output matched answer_substring under the METHODOLOGY rules
   step_count: number;
   duration_seconds: number;
   failure_mode: FailureMode;
-  transcript?: string;  // stored always, rendered only if time permits
+  transcript?: TranscriptStep[] | null; // always stored; makes the failure label auditable
   run_at: string;       // ISO timestamp
 }
 
@@ -42,7 +79,7 @@ export interface Run {
 export interface SiteLeaderboardEntry {
   site_id: string;
   name: string;
-  url: string;
+  start_url: string;
   lh_total: number | null;
   lh_accessibility_tree: number | null;
   lh_layout_stability: number | null;

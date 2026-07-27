@@ -13,8 +13,23 @@ import {
   FAKE_LIGHTHOUSE,
   FAKE_RUNS,
 } from "./fake-data";
+import { ACTIVE_BATCH, ACTIVE_AGENT_ID } from "./dataset";
 
-const USE_FAKE = process.env.USE_FAKE_DATA === "true" || !process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+// The single data layer. Aggregation (success rate, ranking, correlation) happens here at
+// read time, not in the pipeline or in SQL views — see docs/ARCHITECTURE.md.
+//
+// Fixtures are opt-in and nothing else. Before the Supabase migration this fell back to fake
+// data whenever DB credentials were absent, which meant a misconfigured deploy served
+// invented numbers as if they were results.
+const USE_FAKE = process.env.USE_FAKE_DATA === "true";
+
+// Every read is scoped to one published dataset: mixing batches or agents would silently
+// blend two experiments into one success rate.
+const RUN_SCOPE = { batch_label: ACTIVE_BATCH, agent_id: ACTIVE_AGENT_ID };
+
+// The leaderboard never needs transcripts, which are the only large column.
+const RUN_SUMMARY_COLUMNS =
+  "site_id,agent_id,batch_label,trial_number,success,step_count,duration_seconds,failure_mode,run_at";
 
 // ---------------------------------------------------------------------------
 // Leaderboard
@@ -23,37 +38,32 @@ const USE_FAKE = process.env.USE_FAKE_DATA === "true" || !process.env.FIREBASE_S
 export async function getLeaderboard(): Promise<SiteLeaderboardEntry[]> {
   if (USE_FAKE) return FAKE_LEADERBOARD;
 
-  const { getAdminDb } = await import("./firebase-admin");
-  const db = getAdminDb();
+  const { getSupabase } = await import("./supabase");
+  const db = getSupabase();
 
-  const [sitesSnap, lhSnap, runsSnap] = await Promise.all([
-    db.collection("sites").get(),
-    db.collection("lighthouse").get(),
-    db.collection("runs").get(),
+  const [sitesRes, lhRes, runsRes] = await Promise.all([
+    db.from("sites").select("*"),
+    db.from("lighthouse_results").select("*").eq("batch_label", ACTIVE_BATCH),
+    db.from("agent_runs").select(RUN_SUMMARY_COLUMNS).match(RUN_SCOPE),
   ]);
 
-  const sites = sitesSnap.docs.map((d) => d.data() as Site);
-  const lhMap = new Map<string, LighthouseResult>(
-    lhSnap.docs.map((d) => [d.id, d.data() as LighthouseResult])
+  const sites = rows<Site>("sites", sitesRes);
+  const lhBySite = new Map(
+    rows<LighthouseResult>("lighthouse_results", lhRes).map((lh) => [lh.site_id, lh])
   );
+
   const runsBySite = new Map<string, Run[]>();
-  runsSnap.docs.forEach((d) => {
-    const run = d.data() as Run;
+  for (const run of rows<Run>("agent_runs", runsRes)) {
     const arr = runsBySite.get(run.site_id) ?? [];
     arr.push(run);
     runsBySite.set(run.site_id, arr);
-  });
+  }
 
-  const entries: SiteLeaderboardEntry[] = sites.map((site) => {
-    const lh = lhMap.get(site.site_id);
-    const runs = runsBySite.get(site.site_id) ?? [];
-    return computeEntry(site, lh, runs);
-  });
+  const entries = sites.map((site) =>
+    computeEntry(site, lhBySite.get(site.site_id), runsBySite.get(site.site_id) ?? [])
+  );
 
-  entries.sort((a, b) => b.success_rate - a.success_rate);
-  entries.forEach((e, i) => (e.rank = i + 1));
-
-  return entries;
+  return rankEntries(entries);
 }
 
 // ---------------------------------------------------------------------------
@@ -68,26 +78,39 @@ export async function getSiteDetail(slug: string): Promise<{
   if (USE_FAKE) {
     const site = FAKE_SITES.find((s) => s.site_id === slug);
     if (!site) return null;
-    const lh = FAKE_LIGHTHOUSE.find((l) => l.site_id === slug) ?? null;
-    const runs = FAKE_RUNS.filter((r) => r.site_id === slug);
-    return { site, lighthouse: lh, runs };
+    return {
+      site,
+      lighthouse: FAKE_LIGHTHOUSE.find((l) => l.site_id === slug) ?? null,
+      runs: FAKE_RUNS.filter((r) => r.site_id === slug),
+    };
   }
 
-  const { getAdminDb } = await import("./firebase-admin");
-  const db = getAdminDb();
+  const { getSupabase } = await import("./supabase");
+  const db = getSupabase();
 
-  const [siteDoc, lhDoc, runsSnap] = await Promise.all([
-    db.collection("sites").doc(slug).get(),
-    db.collection("lighthouse").doc(slug).get(),
-    db.collection("runs").where("site_id", "==", slug).get(),
+  const [siteRes, lhRes, runsRes] = await Promise.all([
+    db.from("sites").select("*").eq("site_id", slug).maybeSingle(),
+    db
+      .from("lighthouse_results")
+      .select("*")
+      .eq("site_id", slug)
+      .eq("batch_label", ACTIVE_BATCH)
+      .maybeSingle(),
+    db
+      .from("agent_runs")
+      .select("*")
+      .eq("site_id", slug)
+      .match(RUN_SCOPE)
+      .order("trial_number"),
   ]);
 
-  if (!siteDoc.exists) return null;
+  const site = maybeRow<Site>("sites", siteRes);
+  if (!site) return null;
 
   return {
-    site: siteDoc.data() as Site,
-    lighthouse: lhDoc.exists ? (lhDoc.data() as LighthouseResult) : null,
-    runs: runsSnap.docs.map((d) => d.data() as Run),
+    site,
+    lighthouse: maybeRow<LighthouseResult>("lighthouse_results", lhRes),
+    runs: rows<Run>("agent_runs", runsRes),
   };
 }
 
@@ -100,7 +123,9 @@ export async function getCorrelationPoints(): Promise<CorrelationPoint[]> {
 
   const entries = await getLeaderboard();
   return entries
-    .filter((e) => e.lh_total !== null)
+    // A site with a Lighthouse score but no trials has no behavioral measurement — plotting
+    // it would put a fabricated 0% on the scatter.
+    .filter((e) => e.lh_total !== null && e.trial_count > 0)
     .map((e) => ({
       site_id: e.site_id,
       name: e.name,
@@ -114,8 +139,38 @@ export async function getCorrelationPoints(): Promise<CorrelationPoint[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Supabase result unwrapping — a failed read must never look like an empty result
 // ---------------------------------------------------------------------------
+
+type PostgrestResult = { data: unknown; error: { message: string } | null };
+
+function rows<T>(label: string, res: PostgrestResult): T[] {
+  if (res.error) throw new Error(`Supabase read failed (${label}): ${res.error.message}`);
+  return (res.data as T[] | null) ?? [];
+}
+
+function maybeRow<T>(label: string, res: PostgrestResult): T | null {
+  if (res.error) throw new Error(`Supabase read failed (${label}): ${res.error.message}`);
+  return (res.data as T | null) ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Aggregation helpers
+// ---------------------------------------------------------------------------
+
+function rankEntries(entries: SiteLeaderboardEntry[]): SiteLeaderboardEntry[] {
+  // Deterministic order for a published table: success rate, then static score, then name.
+  // Without the tie-breaks, sites with equal success rates (common while a batch is still
+  // filling in) would shuffle between renders.
+  entries.sort(
+    (a, b) =>
+      b.success_rate - a.success_rate ||
+      (b.lh_total ?? -1) - (a.lh_total ?? -1) ||
+      a.name.localeCompare(b.name)
+  );
+  entries.forEach((e, i) => (e.rank = i + 1));
+  return entries;
+}
 
 function computeEntry(
   site: Site,
@@ -144,7 +199,7 @@ function computeEntry(
   return {
     site_id: site.site_id,
     name: site.name,
-    url: site.url,
+    start_url: site.start_url,
     lh_total: lh?.lh_total ?? null,
     lh_accessibility_tree: lh?.lh_accessibility_tree ?? null,
     lh_layout_stability: lh?.lh_layout_stability ?? null,

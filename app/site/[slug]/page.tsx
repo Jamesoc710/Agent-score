@@ -39,6 +39,10 @@ function TrialRow({ run }: { run: Run }) {
   );
 }
 
+// Rendered per request: results change when a batch is imported, not when the app is built,
+// and a build should not need database credentials.
+export const dynamic = "force-dynamic";
+
 export default async function SiteDetailPage({ params }: { params: { slug: string } }) {
   const data = await getSiteDetail(params.slug);
   if (!data) notFound();
@@ -70,12 +74,12 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
         <div>
           <h1 className="text-3xl font-bold text-slate-900">{site.name}</h1>
           <a
-            href={site.url}
+            href={site.start_url}
             target="_blank"
             rel="noreferrer"
             className="text-sky-600 text-sm hover:underline mt-1 inline-block"
           >
-            {site.url} ↗
+            {site.start_url} ↗
           </a>
         </div>
         <div className="text-right">
@@ -152,9 +156,16 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
           <span className="font-medium">Expected answer substring:</span>{" "}
           <code className="bg-amber-100 px-1.5 py-0.5 rounded font-mono text-amber-800">{site.answer_substring}</code>
         </p>
+        {site.match_rule && (
+          <p className="text-sm text-amber-700 mt-1">
+            <span className="font-medium">Match rule:</span>{" "}
+            <code className="bg-amber-100 px-1.5 py-0.5 rounded font-mono text-amber-800">{site.match_rule}</code>
+          </p>
+        )}
         <p className="text-xs text-amber-600 mt-1">{site.answer_note}</p>
         <p className="text-xs text-amber-500 mt-2">
-          Registered before any agent runs. Success = agent's final output contains this substring (case-insensitive).
+          Registered before any agent runs. Success = the agent&apos;s final output contains this
+          substring after the normalization rules in docs/METHODOLOGY.md.
         </p>
       </div>
 

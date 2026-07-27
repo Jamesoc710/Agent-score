@@ -1,36 +1,64 @@
-// Three hand-written fake rows — the deliverable of hour 1.
-// Lane 3 builds the entire frontend against these.
-// Lanes 1 & 2 replace them with real data.
+// Dev fixtures. Rendered only when USE_FAKE_DATA=true — never a fallback for a
+// misconfigured backend.
+//
+// The three rows are a faithful sample of data/cohort.csv (same site_ids, questions, answer
+// keys and match rules), so clicking through in fixture mode exercises the same shapes the
+// real cohort produces. The behavioral numbers are invented.
 
-import { Site, LighthouseResult, Run, SiteLeaderboardEntry, CorrelationPoint } from "./types";
+import {
+  Site,
+  LighthouseResult,
+  Run,
+  SiteLeaderboardEntry,
+  CorrelationPoint,
+} from "./types";
+
+const FIXTURE_AGENT = "gemini-2.0-flash";
+const FIXTURE_BATCH = "fixtures";
 
 export const FAKE_SITES: Site[] = [
   {
     site_id: "stripe",
     name: "Stripe",
-    url: "https://stripe.com/pricing",
+    tier: "anchor",
+    start_url: "https://stripe.com",
+    question: "What is Stripe's standard rate for online domestic card payments?",
     answer_substring: "2.9%",
-    answer_note: "Stripe online card transaction fee: 2.9% + 30¢",
+    match_rule: "exact; case/space-normalize",
+    flag: "",
+    answer_note:
+      "Standard online card processing rate, 2.9% + 30 cents per transaction, from the pricing page.",
   },
   {
-    site_id: "irs_gov",
-    name: "IRS.gov",
-    url: "https://www.irs.gov/filing/individuals/standard-deduction",
-    answer_substring: "14,600",
-    answer_note: "2024 standard deduction for single filers: $14,600",
+    site_id: "irs",
+    name: "IRS",
+    tier: "government",
+    start_url: "https://www.irs.gov",
+    question: "What is the 2025 standard deduction for a single filer?",
+    answer_substring: "15750",
+    match_rule: "strip $, commas",
+    flag: "",
+    answer_note:
+      "2025 standard deduction for a single filer, $15,750. Discriminates from MFJ ($31,500) and head of household ($23,625).",
   },
   {
-    site_id: "dmv_ca",
+    site_id: "ca_dmv",
     name: "California DMV",
-    url: "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/renewing-your-dl-id/",
-    answer_substring: "41",
-    answer_note: "CA driver license renewal fee: $41",
+    tier: "government",
+    start_url: "https://www.dmv.ca.gov",
+    question: "By what time must written tests be completed at California DMV offices?",
+    answer_substring: "4:30",
+    match_rule: "exact",
+    flag: "",
+    answer_note:
+      "REAL ID page. Written tests are unavailable at DMV offices after 4:30 p.m. (buried in step 3).",
   },
 ];
 
 export const FAKE_LIGHTHOUSE: LighthouseResult[] = [
   {
     site_id: "stripe",
+    batch_label: FIXTURE_BATCH,
     lh_total: 82,
     lh_accessibility_tree: 1,
     lh_layout_stability: 1,
@@ -39,7 +67,8 @@ export const FAKE_LIGHTHOUSE: LighthouseResult[] = [
     run_at: "2026-05-30T10:00:00Z",
   },
   {
-    site_id: "irs_gov",
+    site_id: "irs",
+    batch_label: FIXTURE_BATCH,
     lh_total: 44,
     lh_accessibility_tree: 0,
     lh_layout_stability: 0,
@@ -48,7 +77,8 @@ export const FAKE_LIGHTHOUSE: LighthouseResult[] = [
     run_at: "2026-05-30T10:05:00Z",
   },
   {
-    site_id: "dmv_ca",
+    site_id: "ca_dmv",
+    batch_label: FIXTURE_BATCH,
     lh_total: 31,
     lh_accessibility_tree: 0,
     lh_layout_stability: 1,
@@ -58,35 +88,62 @@ export const FAKE_LIGHTHOUSE: LighthouseResult[] = [
   },
 ];
 
+function fakeRun(
+  site_id: string,
+  trial_number: number,
+  success: boolean,
+  step_count: number,
+  duration_seconds: number,
+  failure_mode: Run["failure_mode"],
+  run_at: string,
+  transcript?: Run["transcript"]
+): Run {
+  return {
+    site_id,
+    agent_id: FIXTURE_AGENT,
+    batch_label: FIXTURE_BATCH,
+    trial_number,
+    success,
+    step_count,
+    duration_seconds,
+    failure_mode,
+    transcript: transcript ?? null,
+    run_at,
+  };
+}
+
 export const FAKE_RUNS: Run[] = [
   // Stripe — 4/5 success
-  { site_id: "stripe", trial_number: 1, success: true,  step_count: 3, duration_seconds: 14, failure_mode: "success",           run_at: "2026-05-30T11:00:00Z" },
-  { site_id: "stripe", trial_number: 2, success: true,  step_count: 4, duration_seconds: 18, failure_mode: "success",           run_at: "2026-05-30T11:03:00Z" },
-  { site_id: "stripe", trial_number: 3, success: true,  step_count: 3, duration_seconds: 12, failure_mode: "success",           run_at: "2026-05-30T11:06:00Z" },
-  { site_id: "stripe", trial_number: 4, success: false, step_count: 7, duration_seconds: 35, failure_mode: "wrong_extraction",  run_at: "2026-05-30T11:09:00Z" },
-  { site_id: "stripe", trial_number: 5, success: true,  step_count: 3, duration_seconds: 13, failure_mode: "success",           run_at: "2026-05-30T11:12:00Z" },
+  fakeRun("stripe", 1, true, 3, 14, "success", "2026-05-30T11:00:00Z", [
+    { step: 0, url: "https://stripe.com", action: { action: "click", selector: "Pricing", reasoning: "Pricing page should carry the rate." } },
+    { step: 1, url: "https://stripe.com/pricing", action: { action: "done", answer: "2.9% + 30c per successful card charge", reasoning: "Found the standard rate." } },
+  ]),
+  fakeRun("stripe", 2, true, 4, 18, "success", "2026-05-30T11:03:00Z"),
+  fakeRun("stripe", 3, true, 3, 12, "success", "2026-05-30T11:06:00Z"),
+  fakeRun("stripe", 4, false, 7, 35, "wrong_extraction", "2026-05-30T11:09:00Z"),
+  fakeRun("stripe", 5, true, 3, 13, "success", "2026-05-30T11:12:00Z"),
 
   // IRS — 2/5 success
-  { site_id: "irs_gov", trial_number: 1, success: true,  step_count: 6,  duration_seconds: 42, failure_mode: "success",            run_at: "2026-05-30T11:20:00Z" },
-  { site_id: "irs_gov", trial_number: 2, success: false, step_count: 15, duration_seconds: 90, failure_mode: "timeout",            run_at: "2026-05-30T11:23:00Z" },
-  { site_id: "irs_gov", trial_number: 3, success: false, step_count: 9,  duration_seconds: 60, failure_mode: "navigation_stuck",   run_at: "2026-05-30T11:26:00Z" },
-  { site_id: "irs_gov", trial_number: 4, success: true,  step_count: 8,  duration_seconds: 55, failure_mode: "success",            run_at: "2026-05-30T11:29:00Z" },
-  { site_id: "irs_gov", trial_number: 5, success: false, step_count: 15, duration_seconds: 90, failure_mode: "timeout",            run_at: "2026-05-30T11:32:00Z" },
+  fakeRun("irs", 1, true, 6, 42, "success", "2026-05-30T11:20:00Z"),
+  fakeRun("irs", 2, false, 15, 90, "timeout", "2026-05-30T11:23:00Z"),
+  fakeRun("irs", 3, false, 9, 60, "navigation_stuck", "2026-05-30T11:26:00Z"),
+  fakeRun("irs", 4, true, 8, 55, "success", "2026-05-30T11:29:00Z"),
+  fakeRun("irs", 5, false, 15, 90, "timeout", "2026-05-30T11:32:00Z"),
 
   // CA DMV — 1/5 success
-  { site_id: "dmv_ca", trial_number: 1, success: false, step_count: 15, duration_seconds: 90, failure_mode: "timeout",           run_at: "2026-05-30T11:40:00Z" },
-  { site_id: "dmv_ca", trial_number: 2, success: false, step_count: 12, duration_seconds: 78, failure_mode: "navigation_stuck",  run_at: "2026-05-30T11:43:00Z" },
-  { site_id: "dmv_ca", trial_number: 3, success: true,  step_count: 7,  duration_seconds: 48, failure_mode: "success",           run_at: "2026-05-30T11:46:00Z" },
-  { site_id: "dmv_ca", trial_number: 4, success: false, step_count: 15, duration_seconds: 90, failure_mode: "blocked",           run_at: "2026-05-30T11:49:00Z" },
-  { site_id: "dmv_ca", trial_number: 5, success: false, step_count: 15, duration_seconds: 90, failure_mode: "timeout",           run_at: "2026-05-30T11:52:00Z" },
+  fakeRun("ca_dmv", 1, false, 15, 90, "timeout", "2026-05-30T11:40:00Z"),
+  fakeRun("ca_dmv", 2, false, 12, 78, "navigation_stuck", "2026-05-30T11:43:00Z"),
+  fakeRun("ca_dmv", 3, true, 7, 48, "success", "2026-05-30T11:46:00Z"),
+  fakeRun("ca_dmv", 4, false, 15, 90, "blocked", "2026-05-30T11:49:00Z"),
+  fakeRun("ca_dmv", 5, false, 15, 90, "timeout", "2026-05-30T11:52:00Z"),
 ];
 
-// Pre-computed leaderboard view over the fake rows
+// Pre-computed leaderboard view over the fixture rows
 export const FAKE_LEADERBOARD: SiteLeaderboardEntry[] = [
   {
     site_id: "stripe",
     name: "Stripe",
-    url: "https://stripe.com/pricing",
+    start_url: "https://stripe.com",
     lh_total: 82,
     lh_accessibility_tree: 1,
     lh_layout_stability: 1,
@@ -99,9 +156,9 @@ export const FAKE_LEADERBOARD: SiteLeaderboardEntry[] = [
     rank: 1,
   },
   {
-    site_id: "irs_gov",
-    name: "IRS.gov",
-    url: "https://www.irs.gov/filing/individuals/standard-deduction",
+    site_id: "irs",
+    name: "IRS",
+    start_url: "https://www.irs.gov",
     lh_total: 44,
     lh_accessibility_tree: 0,
     lh_layout_stability: 0,
@@ -114,9 +171,9 @@ export const FAKE_LEADERBOARD: SiteLeaderboardEntry[] = [
     rank: 2,
   },
   {
-    site_id: "dmv_ca",
+    site_id: "ca_dmv",
     name: "California DMV",
-    url: "https://www.dmv.ca.gov",
+    start_url: "https://www.dmv.ca.gov",
     lh_total: 31,
     lh_accessibility_tree: 0,
     lh_layout_stability: 1,

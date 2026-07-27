@@ -73,6 +73,10 @@ function SubAudits({ entry }: { entry: SiteLeaderboardEntry }) {
   );
 }
 
+// Rendered per request: results change when a batch is imported, not when the app is built,
+// and a build should not need database credentials.
+export const dynamic = "force-dynamic";
+
 export default async function LeaderboardPage() {
   const entries = await getLeaderboard();
 
@@ -99,9 +103,11 @@ export default async function LeaderboardPage() {
           {
             label: "Avg success rate",
             value:
-              Math.round(
-                (entries.reduce((s, e) => s + e.success_rate, 0) / entries.length) * 100
-              ) + "%",
+              entries.length > 0
+                ? Math.round(
+                    (entries.reduce((s, e) => s + e.success_rate, 0) / entries.length) * 100
+                  ) + "%"
+                : "—",
           },
           {
             label: "Total agent runs",
@@ -130,6 +136,14 @@ export default async function LeaderboardPage() {
             </tr>
           </thead>
           <tbody>
+            {entries.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-400">
+                  No cohort data yet. Seed the sites and run the lanes, or set{" "}
+                  <code className="font-mono text-slate-500">USE_FAKE_DATA=true</code> for fixtures.
+                </td>
+              </tr>
+            )}
             {entries.map((entry, i) => (
               <tr key={entry.site_id} className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${i === entries.length - 1 ? "border-b-0" : ""}`}>
                 <td className="px-4 py-3 text-slate-400 font-mono">{entry.rank}</td>
@@ -137,7 +151,7 @@ export default async function LeaderboardPage() {
                   <Link href={`/site/${entry.site_id}`} className="font-medium text-slate-900 hover:text-sky-600 transition-colors">
                     {entry.name}
                   </Link>
-                  <div className="text-xs text-slate-400 truncate max-w-xs">{entry.url}</div>
+                  <div className="text-xs text-slate-400 truncate max-w-xs">{entry.start_url}</div>
                 </td>
                 <td className="px-4 py-3">
                   <SuccessBar rate={entry.success_rate} />

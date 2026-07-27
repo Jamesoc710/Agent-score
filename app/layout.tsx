@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
         <footer className="border-t border-slate-200 bg-white mt-16">
           <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between text-xs text-slate-400">
-            <span>AgentRank · QuackHacks 3 · University of Oregon · May 2026</span>
+            <span>AgentRank · behavioral agent-readiness scoring</span>
             <span>
               Static scores via{" "}
               <a href="https://developer.chrome.com/docs/lighthouse" target="_blank" rel="noreferrer" className="underline hover:text-slate-600">

@@ -25,7 +25,7 @@ The cohort is 28 real sites chosen for score spread, from Stripe to legacy gover
 
 ## Status
 
-Active buildout toward the first public leaderboard on real data. Current state, honestly: the frontend is complete but renders fixture data by default; Lighthouse scores exist for the earlier draft cohort; the behavioral lane has not yet produced real runs. The data layer is migrating from Firebase to Supabase + Vercel. Phases and sequencing live in [docs/ROADMAP.md](./docs/ROADMAP.md).
+Active buildout toward the first public leaderboard on real data. Current state, honestly: the frontend is complete, the data layer now runs on Supabase (Firebase is gone) and reads real data by default, with fixtures behind `USE_FAKE_DATA=true`. Lighthouse scores exist only for the earlier draft cohort; the behavioral lane has not yet produced real runs, so there is no correlation result yet. Vercel is not connected. Phases and sequencing live in [docs/ROADMAP.md](./docs/ROADMAP.md).
 
 ## Quick start (local dev, fixture data)
 
@@ -39,21 +39,30 @@ npm run dev
 ### Pipeline commands
 
 ```bash
-npm run lane1                      # Lighthouse over the cohort -> data/lighthouse-results.json (+ DB when configured)
+npm run seed:sites                 # data/cohort.csv -> sites table (needs service key)
+
+npm run lane1                      # Lighthouse over the cohort -> data/lighthouse-<batch>.json
 npx tsx scripts/lane1-lighthouse.ts stripe vercel   # specific sites
 
 pip install -r scripts/requirements.txt && playwright install chromium
-GEMINI_API_KEY=... python scripts/lane2-agent.py --sites stripe --trials 3   # behavioral runs (needs DB configured)
+GEMINI_API_KEY=... python scripts/lane2-agent.py --sites stripe --trials 3
+# -> data/agent-runs-<batch>.jsonl
+
+npm run import                     # load a batch's artifacts into Supabase
 ```
+
+Neither lane writes to the database. They produce local artifacts and `import-results.ts` loads
+them, so an interrupted run keeps everything already measured and a batch can be re-imported.
 
 ## Repo map
 
 | Path | What it is |
 |---|---|
 | `app/`, `components/`, `lib/` | Next.js frontend; `lib/types.ts` is the frozen data contract, `lib/queries.ts` the single data layer |
-| `scripts/` | The two pipeline lanes + seed scripts |
+| `scripts/` | The two pipeline lanes, the cohort seeder, and the one script that writes to the DB |
+| `supabase/migrations/` | Schema, git-tracked, applied with the Supabase CLI |
 | `data/cohort.csv` | Canonical cohort: per-site question, pre-registered answer, match rule |
-| `data/lighthouse-results.json` | Latest local Lighthouse output |
+| `data/lighthouse-*.json`, `data/agent-runs-*.jsonl` | Per-batch lane artifacts (the record of a run) |
 | `docs/` | Product, architecture, methodology, cohort, roadmap |
 
 ## Docs

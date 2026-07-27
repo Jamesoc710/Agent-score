@@ -11,18 +11,21 @@
  *   sub-audits: 1 if score === 1 (strict pass), 0 otherwise — matches lib/types.ts
  *
  * Usage:
- *   npx tsx scripts/lane1-lighthouse.ts                # run all cohort sites
- *   npx tsx scripts/lane1-lighthouse.ts stripe vercel  # run named site IDs only
+ *   npx tsx scripts/lane1-lighthouse.ts                       # all cohort sites
+ *   npx tsx scripts/lane1-lighthouse.ts stripe vercel         # named site IDs only
+ *   npx tsx scripts/lane1-lighthouse.ts --batch v1            # label the batch
  *
- * Output (in order of preference):
- *   1. Firestore  lighthouse/{site_id}  (when FIREBASE_SERVICE_ACCOUNT_JSON is set)
- *   2. data/lighthouse-results.json     (local fallback, always written)
+ * Output: data/lighthouse-<batch>.json only. This lane does not talk to the database —
+ * load a batch with `npx tsx scripts/import-results.ts --batch <batch>`.
  */
 
 import { execSync } from "child_process";
 import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from "fs";
 import path from "path";
 import cohortRaw from "./cohort.json";
+import { lighthouseArtifactPath } from "./artifacts";
+import { flagValue, positionals } from "./args";
+import { ACTIVE_BATCH } from "../lib/dataset";
 import type { LighthouseResult } from "../lib/types";
 
 // ---------------------------------------------------------------------------
@@ -96,7 +99,8 @@ async function runLighthouse(url: string): Promise<LighthouseResult | null> {
     }
 
     return {
-      site_id: "", // filled in by caller
+      site_id: "",     // filled in by caller
+      batch_label: "", // filled in by caller
       lh_total,
       lh_accessibility_tree: auditPass("agent-accessibility-tree"),
       lh_layout_stability:   auditPass("cumulative-layout-shift"),
@@ -119,41 +123,27 @@ async function runLighthouse(url: string): Promise<LighthouseResult | null> {
 }
 
 // ---------------------------------------------------------------------------
-// Persistence — Firestore (primary) + local JSON (fallback, always written)
+// Persistence — local artifact only; scripts/import-results.ts loads it into Supabase
 // ---------------------------------------------------------------------------
 
-const LOCAL_PATH = path.join(process.cwd(), "data", "lighthouse-results.json");
-
-function loadLocalResults(): Record<string, LighthouseResult> {
-  if (!existsSync(LOCAL_PATH)) return {};
+function loadLocalResults(artifactPath: string): Record<string, LighthouseResult> {
+  if (!existsSync(artifactPath)) return {};
   try {
-    return JSON.parse(readFileSync(LOCAL_PATH, "utf-8"));
+    return JSON.parse(readFileSync(artifactPath, "utf-8"));
   } catch {
     return {};
   }
 }
 
-function saveLocalResults(results: Record<string, LighthouseResult>): void {
-  mkdirSync(path.dirname(LOCAL_PATH), { recursive: true });
-  writeFileSync(LOCAL_PATH, JSON.stringify(results, null, 2));
-}
-
-async function persist(result: LighthouseResult, local: Record<string, LighthouseResult>): Promise<"firestore" | "local"> {
-  // Always write local first — zero dependencies.
+// Written after every site, so an interrupted batch keeps everything already measured.
+function saveResult(
+  artifactPath: string,
+  result: LighthouseResult,
+  local: Record<string, LighthouseResult>
+): void {
   local[result.site_id] = result;
-  saveLocalResults(local);
-
-  const hasCreds =
-    process.env.FIREBASE_SERVICE_ACCOUNT_JSON ||
-    process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-  if (hasCreds) {
-    const { getAdminDb } = await import("../lib/firebase-admin");
-    const db = getAdminDb();
-    await db.collection("lighthouse").doc(result.site_id).set(result);
-    return "firestore";
-  }
-  return "local";
+  mkdirSync(path.dirname(artifactPath), { recursive: true });
+  writeFileSync(artifactPath, JSON.stringify(local, null, 2));
 }
 
 // ---------------------------------------------------------------------------
@@ -161,8 +151,9 @@ async function persist(result: LighthouseResult, local: Record<string, Lighthous
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const args = process.argv.slice(2);
-  const targetIds = args.length > 0 ? new Set(args) : null;
+  const batch = flagValue("--batch", ACTIVE_BATCH);
+  const requested = positionals();
+  const targetIds = requested.length > 0 ? new Set(requested) : null;
   const sites = targetIds
     ? cohort.filter((s) => targetIds.has(s.site_id))
     : cohort;
@@ -172,17 +163,15 @@ async function main() {
     process.exit(1);
   }
 
-  const hasCreds = !!(
-    process.env.FIREBASE_SERVICE_ACCOUNT_JSON ||
-    process.env.GOOGLE_APPLICATION_CREDENTIALS
-  );
+  const artifactPath = lighthouseArtifactPath(batch);
 
   console.log(`\nLane 1 — Lighthouse static scorer`);
   console.log(`  Sites  : ${sites.length}`);
-  console.log(`  Output : ${hasCreds ? "Firestore + data/lighthouse-results.json" : "data/lighthouse-results.json (no Firebase creds)"}`);
+  console.log(`  Batch  : ${batch}`);
+  console.log(`  Output : ${path.relative(process.cwd(), artifactPath)}`);
   console.log(`${"─".repeat(52)}`);
 
-  const local = loadLocalResults();
+  const local = loadLocalResults(artifactPath);
   const summary: { site_id: string; lh_total: number | null; status: string }[] = [];
 
   for (let i = 0; i < sites.length; i++) {
@@ -197,16 +186,17 @@ async function main() {
     }
 
     lh.site_id = site.site_id;
+    lh.batch_label = batch;
 
     try {
-      const dest = await persist(lh, local);
-      summary.push({ site_id: site.site_id, lh_total: lh.lh_total, status: dest });
+      saveResult(artifactPath, lh, local);
+      summary.push({ site_id: site.site_id, lh_total: lh.lh_total, status: "saved" });
       console.log(
         `lh_total=${String(lh.lh_total).padStart(3)}%  ` +
-        `a11y=${lh.lh_accessibility_tree}  cls=${lh.lh_layout_stability}  llms=${lh.lh_llms_txt}  webmcp=${lh.lh_webmcp}  [${dest}]`
+        `a11y=${lh.lh_accessibility_tree}  cls=${lh.lh_layout_stability}  llms=${lh.lh_llms_txt}  webmcp=${lh.lh_webmcp}`
       );
     } catch (err) {
-      console.error(`  Persist failed: ${(err as Error).message}`);
+      console.error(`  Write failed: ${(err as Error).message}`);
       summary.push({ site_id: site.site_id, lh_total: lh.lh_total, status: "WRITE_FAILED" });
     }
   }
@@ -237,7 +227,8 @@ async function main() {
   if (failed.length) {
     console.log(`\n  Failed (${failed.length}): ${failed.map((r) => r.site_id).join(", ")}`);
   }
-  console.log(`\n  Results → data/lighthouse-results.json`);
+  console.log(`\n  Results → ${path.relative(process.cwd(), artifactPath)}`);
+  console.log(`  Load into Supabase: npx tsx scripts/import-results.ts --batch ${batch}`);
 }
 
 main().catch((err) => {
