@@ -1,0 +1,49 @@
+# AgentRank — project context for Claude Code
+
+Behavioral agent-readiness scoring for websites. A fixed browser agent runs a fixed-shape task
+on real sites; success is scored against pre-registered answers and correlated with static
+agent-readiness scores (Lighthouse Agentic Browsing). Public leaderboard first; on-demand site
+scanning is the product direction. Solo project (James), built with Claude in the loop.
+
+## Read before large changes
+
+- `docs/ARCHITECTURE.md` — system design, data contract, env vars
+- `docs/METHODOLOGY.md` — scoring contract and trial protocol. Pre-registered: changing match
+  rules or answer keys after runs exist invalidates results. Treat as append-only; flag any
+  change to James.
+- `docs/COHORT.md` + `data/cohort.csv` — the 28-site cohort. The CSV is canonical.
+- `docs/ROADMAP.md` — current phase and sequencing
+- `.claude/plans/buildout.md` — active working plan and state log; update it at session end
+
+## Stack
+
+- Next.js 14 App Router, TypeScript strict, Tailwind. All pages are server components; the one
+  client component is the Recharts correlation chart.
+- Data layer: migrating Firebase/Firestore -> Supabase (Postgres, schema via CLI migrations,
+  git-tracked) + Vercel hosting. Until Phase 1 lands, the app reads fixture data by default
+  (`USE_FAKE_DATA`, toggle logic in `lib/queries.ts`).
+- Pipeline lanes: `scripts/lane1-lighthouse.ts` (Lighthouse CLI, static x-axis) and
+  `scripts/lane2-agent.py` (Gemini + Playwright, behavioral y-axis, Python).
+
+## Commands
+
+- `npm run dev` / `npm run build` / `npm run lint`; typecheck with `npx tsc --noEmit`
+- `npm run lane1` — Lighthouse across the cohort; `lane1:single` for one site
+- `python scripts/lane2-agent.py --sites <ids> --trials <n>` — behavioral runs
+- Python deps: `pip install -r scripts/requirements.txt && playwright install chromium`
+
+## Ground rules
+
+- `lib/types.ts` is the frozen data contract between lanes and frontend. Schema changes are a
+  James decision, not a refactor.
+- The `runs`/`agent_runs` schema keeps `agent_id` so a multi-agent panel can be added without
+  migration pain.
+- Never put a site's `answer_substring` (or any hint of it) into `task_hint` or an agent
+  prompt. The agent must earn the answer by browsing; leakage invalidates the run.
+- Scoring changes require tests. The match rules in `docs/METHODOLOGY.md` are the spec.
+- Real agent runs and Lighthouse batches cost time/money and produce data others may cite:
+  confirm with James before full-cohort runs.
+- Known debt (as of 2026-07): `lane2-agent.py` still uses naive substring matching instead of
+  the documented match rules; `scripts/cohort.json` is the stale draft cohort, superseded by
+  `data/cohort.csv` but still what the scripts read. Both are scheduled in the roadmap; don't
+  build on them without checking `docs/ROADMAP.md`.
