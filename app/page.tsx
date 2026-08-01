@@ -90,8 +90,9 @@ export default async function LeaderboardPage() {
           Is the web ready for agents?
         </h1>
         <p className="text-slate-500 max-w-2xl">
-          Google shipped the Agentic Browsing checklist — we ran the experiment. Each site below was tested 5× with a
-          fixed Gemini agent completing a real task. Static Lighthouse scores are on the right.{" "}
+          Google shipped the Agentic Browsing checklist — this is the experiment that tests it. Every site gets the
+          same task shape: find one pre-registered fact, 5 trials, one fixed Gemini agent, scored on exact match.
+          Static Lighthouse scores are on the right.{" "}
           <Link href="/correlation" className="text-sky-600 hover:underline font-medium">
             See the correlation →
           </Link>
