@@ -74,8 +74,12 @@ over the newest batch per site, for ad-hoc inspection rather than for the app.
   reach of anything the app bundles.
 - All three data pages are `dynamic = "force-dynamic"`: results change when a batch is
   imported, not when the app is built, and a build must not need database credentials.
-- **Vercel** for hosting the Next.js app (not yet connected). Note: once the repo is
-  connected, pushes to `main` deploy production.
+- **Vercel** hosts the Next.js app: project `agent-score`, production at
+  <https://agent-score-weld.vercel.app>, git-connected to `Jamesoc710/Agent-score`.
+  **Any push to `main` deploys production.** Preview deployments build on every other branch.
+  The app's Vercel env holds only `NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ACTIVE_BATCH` and `USE_FAKE_DATA` — deliberately no
+  service key, since nothing the site renders is allowed to write.
 
 ## Current state vs target
 

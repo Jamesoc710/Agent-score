@@ -79,6 +79,8 @@ export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage() {
   const entries = await getLeaderboard();
+  const measured = entries.filter((e) => e.trial_count > 0);
+  const totalTrials = entries.reduce((s, e) => s + e.trial_count, 0);
 
   return (
     <div>
@@ -101,18 +103,18 @@ export default async function LeaderboardPage() {
         {[
           { label: "Sites in cohort", value: entries.length },
           {
+            // Averaged over sites that actually have trials, not the whole cohort: while a
+            // batch is still filling in, dividing by 28 reports a success rate for sites
+            // nobody has measured. With nothing measured there is no average to report.
             label: "Avg success rate",
             value:
-              entries.length > 0
+              measured.length > 0
                 ? Math.round(
-                    (entries.reduce((s, e) => s + e.success_rate, 0) / entries.length) * 100
+                    (measured.reduce((s, e) => s + e.success_rate, 0) / measured.length) * 100
                   ) + "%"
                 : "—",
           },
-          {
-            label: "Total agent runs",
-            value: entries.reduce((s, e) => s + e.trial_count, 0),
-          },
+          { label: "Total agent runs", value: totalTrials },
         ].map(({ label, value }) => (
           <div key={label} className="bg-white rounded-xl border border-slate-200 px-5 py-4">
             <p className="text-2xl font-bold text-slate-900">{value}</p>

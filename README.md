@@ -25,7 +25,7 @@ The cohort is 28 real sites chosen for score spread, from Stripe to legacy gover
 
 ## Status
 
-Active buildout toward the first public leaderboard on real data. Current state, honestly: the frontend is complete, the data layer now runs on Supabase (Firebase is gone) and reads real data by default, with fixtures behind `USE_FAKE_DATA=true`. Lighthouse scores exist only for the earlier draft cohort; the behavioral lane has not yet produced real runs, so there is no correlation result yet. Vercel is not connected. Phases and sequencing live in [docs/ROADMAP.md](./docs/ROADMAP.md).
+Active buildout toward the first public leaderboard on real data. Current state, honestly: the frontend is complete, the data layer now runs on Supabase (Firebase is gone) and reads real data by default, with fixtures behind `USE_FAKE_DATA=true`. Lighthouse scores exist only for the earlier draft cohort; the behavioral lane has not yet produced real runs, so there is no correlation result yet — the deployed leaderboard lists the 28-site cohort with empty measurements and says so rather than implying a finding. Live at [agent-score-weld.vercel.app](https://agent-score-weld.vercel.app); pushes to `main` deploy production. Phases and sequencing live in [docs/ROADMAP.md](./docs/ROADMAP.md).
 
 ## Quick start (local dev, fixture data)
 

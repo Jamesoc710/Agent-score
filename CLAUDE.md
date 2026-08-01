@@ -21,7 +21,8 @@ scanning is the product direction. Solo project (James), built with Claude in th
   client component is the Recharts correlation chart.
 - Data layer: Supabase Postgres, schema via git-tracked CLI migrations in
   `supabase/migrations/`. Firebase is gone. Real data is the default read path; fixtures only
-  with `USE_FAKE_DATA=true` (`lib/queries.ts`). Vercel not yet connected.
+  with `USE_FAKE_DATA=true` (`lib/queries.ts`). Deployed on Vercel (project `agent-score`,
+  <https://agent-score-weld.vercel.app>) — **any push to `main` deploys production**.
 - The app reads with the anon key under RLS select-only policies (`lib/supabase.ts`); only
   `scripts/` holds the service key (`scripts/supabase-admin.ts`). Do not import the service
   client from `app/` or `lib/`.
