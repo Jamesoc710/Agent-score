@@ -22,29 +22,14 @@
 import { execSync } from "child_process";
 import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from "fs";
 import path from "path";
-import cohortRaw from "./cohort.json";
+import { readCohort } from "./cohort-csv";
 import { lighthouseArtifactPath } from "./artifacts";
 import { flagValue, positionals } from "./args";
 import { ACTIVE_BATCH } from "../lib/dataset";
 import type { LighthouseResult } from "../lib/types";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface CohortEntry {
-  site_id: string;
-  name: string;
-  url: string;
-  answer_substring: string;
-  answer_note: string;
-  expected_lh: string;
-  category: string;
-  manual_pass: string;
-  task_hint?: string;
-}
-
-const cohort = cohortRaw as CohortEntry[];
+// data/cohort.csv is the canonical 28-site cohort; readCohort() validates on read.
+const cohort = readCohort();
 
 // ---------------------------------------------------------------------------
 // Lighthouse runner
@@ -176,9 +161,9 @@ async function main() {
 
   for (let i = 0; i < sites.length; i++) {
     const site = sites[i];
-    process.stdout.write(`[${i + 1}/${sites.length}] ${site.site_id.padEnd(14)} ${site.url} … `);
+    process.stdout.write(`[${i + 1}/${sites.length}] ${site.site_id.padEnd(14)} ${site.start_url} … `);
 
-    const lh = await runLighthouse(site.url);
+    const lh = await runLighthouse(site.start_url);
     if (!lh) {
       summary.push({ site_id: site.site_id, lh_total: null, status: "FAILED" });
       console.log("FAILED");
