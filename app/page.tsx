@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getLeaderboard } from "@/lib/queries";
 import { SiteLeaderboardEntry } from "@/lib/types";
+import { TierBadge, FlagBadge } from "@/components/SiteBadges";
 
 function SuccessBar({ rate }: { rate: number }) {
   const pct = Math.round(rate * 100);
@@ -131,6 +132,7 @@ export default async function LeaderboardPage() {
             <tr className="border-b border-slate-200 bg-slate-50">
               <th className="text-left px-4 py-3 font-semibold text-slate-500 w-10">#</th>
               <th className="text-left px-4 py-3 font-semibold text-slate-500">Site</th>
+              <th className="text-left px-4 py-3 font-semibold text-slate-500">Tier</th>
               <th className="text-left px-4 py-3 font-semibold text-slate-500">Agent Success</th>
               <th className="text-left px-4 py-3 font-semibold text-slate-500">Top Failure</th>
               <th className="text-left px-4 py-3 font-semibold text-slate-500">Avg Steps</th>
@@ -141,7 +143,7 @@ export default async function LeaderboardPage() {
           <tbody>
             {entries.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-400">
+                <td colSpan={8} className="px-4 py-10 text-center text-sm text-slate-400">
                   No cohort data yet. Seed the sites and run the lanes, or set{" "}
                   <code className="font-mono text-slate-500">USE_FAKE_DATA=true</code> for fixtures.
                 </td>
@@ -155,10 +157,28 @@ export default async function LeaderboardPage() {
                     {entry.name}
                   </Link>
                   <div className="text-xs text-slate-400 truncate max-w-xs">{entry.start_url}</div>
+                  {/* The design flag explains expected outliers in place: without it,
+                      "Amazon 0%" reads as a broken benchmark, not a designed blocker. */}
+                  {entry.flag && (
+                    <div className="mt-1 truncate max-w-xs" title={entry.flag}>
+                      <FlagBadge flag={entry.flag} />
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3">
-                  <SuccessBar rate={entry.success_rate} />
-                  <div className="text-xs text-slate-400 mt-0.5">{entry.trial_count} trials</div>
+                  <TierBadge tier={entry.tier} />
+                </td>
+                <td className="px-4 py-3">
+                  {/* 0 trials is "not measured", not "0% success" — a red bar on an
+                      unrun site asserts a result that does not exist. */}
+                  {entry.trial_count === 0 ? (
+                    <span className="text-slate-400 text-sm">—</span>
+                  ) : (
+                    <>
+                      <SuccessBar rate={entry.success_rate} />
+                      <div className="text-xs text-slate-400 mt-0.5">{entry.trial_count} trials</div>
+                    </>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {/* No trials yet is not a failure mode — computeEntry reports "error" for
@@ -169,7 +189,9 @@ export default async function LeaderboardPage() {
                     <FailureBadge mode={entry.top_failure_mode} />
                   )}
                 </td>
-                <td className="px-4 py-3 text-slate-600 tabular-nums">{entry.mean_steps}</td>
+                <td className="px-4 py-3 text-slate-600 tabular-nums">
+                  {entry.trial_count === 0 ? <span className="text-slate-400 text-sm">—</span> : entry.mean_steps}
+                </td>
                 <td className="px-4 py-3">
                   <LhScore score={entry.lh_total} />
                 </td>

@@ -3,6 +3,9 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  // Absolute base for OG/twitter image URLs (app/opengraph-image.tsx); crawlers
+  // require absolute URLs and Next warns without this.
+  metadataBase: new URL("https://agent-score-weld.vercel.app"),
   title: "AgentRank — Is the web ready for agents?",
   description:
     "A behavioral leaderboard ranking websites by how often a Gemini agent can complete a real task on them, correlated against Google's Lighthouse Agentic Browsing score.",
