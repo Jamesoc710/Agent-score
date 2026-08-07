@@ -34,7 +34,6 @@ Requirements:
 
 import argparse
 import asyncio
-import base64
 import json
 import os
 import random
@@ -55,7 +54,8 @@ def load_env(path=".env.local"):
 
 load_env()
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from playwright.async_api import async_playwright, Page
 
 from agent_task import build_task
@@ -66,7 +66,10 @@ from scoring import score_answer
 # Config
 # ---------------------------------------------------------------------------
 
-GEMINI_MODEL = "gemini-2.0-flash"      # fast, cheap, multimodal
+# gemini-2.0-flash was retired by Google (404 as of 2026-08); this is the current stable
+# Flash tier, verified live with JSON mode on 2026-08-07. The exact id is stamped into
+# every row via agent_id, so the dataset records precisely which model produced it.
+GEMINI_MODEL = "gemini-3.6-flash"      # fast, cheap, multimodal
 MAX_STEPS = 15
 TIMEOUT_SECONDS = 90
 DEFAULT_TRIALS = 5
@@ -120,29 +123,28 @@ def completed_trials(path: Path) -> set:
 # Gemini client
 # ---------------------------------------------------------------------------
 
-_model = None
+_client = None
 
 
-def get_model():
-    """Lazily configure Gemini so --help doesn't crash at import when GEMINI_API_KEY is
-    unset; fail with a clear message only when a model is actually needed."""
-    global _model
-    if _model is None:
+def get_client():
+    """Lazily create the Gemini client so --help doesn't crash at import when
+    GEMINI_API_KEY is unset; fail with a clear message only when a call is made."""
+    global _client
+    if _client is None:
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise SystemExit(
                 "GEMINI_API_KEY is not set. Add it to .env.local or export it before running Lane 2."
             )
-        genai.configure(api_key=api_key)
-        _model = genai.GenerativeModel(GEMINI_MODEL)
-    return _model
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 class GeminiError(Exception):
     """Model call failed after all retries — a harness failure, never the site's."""
 
 
-async def gemini_with_retry(parts, generation_config, parse):
+async def gemini_with_retry(contents, config, parse):
     """Call Gemini with retry + exponential backoff on any failure (transport, rate
     limit, unparseable response). Returns (parsed_result, wasted_seconds), where
     wasted_seconds is time spent on failed attempts and backoff sleeps — callers
@@ -157,7 +159,8 @@ async def gemini_with_retry(parts, generation_config, parse):
             wasted += delay
         attempt_start = time.time()
         try:
-            response = get_model().generate_content(parts, generation_config=generation_config)
+            response = get_client().models.generate_content(
+                model=GEMINI_MODEL, contents=contents, config=config)
             return parse(response.text), wasted
         except Exception as e:
             wasted += time.time() - attempt_start
@@ -187,21 +190,22 @@ Rules:
 """
 
 
-async def ask_gemini(task: str, screenshot_b64: str, accessible_text: str,
+async def ask_gemini(task: str, screenshot_bytes: bytes, accessible_text: str,
                      current_url: str, title: str):
     """One agent step. Returns (action_dict, wasted_seconds); raises GeminiError."""
-    user_content = [
+    contents = [
+        SYSTEM_PROMPT,
         f"TASK: {task}\n\nCurrent URL: {current_url}\nPage title: {title}\n\n"
         f"Page text excerpt:\n{accessible_text[:PAGE_TEXT_LIMIT]}",
-        {"mime_type": "image/png", "data": screenshot_b64},
+        types.Part.from_bytes(data=screenshot_bytes, mime_type="image/png"),
     ]
     return await gemini_with_retry(
-        [SYSTEM_PROMPT, *user_content],
-        {
-            "temperature": 0,
-            "max_output_tokens": 512,
-            "response_mime_type": "application/json",
-        },
+        contents,
+        types.GenerateContentConfig(
+            temperature=0,
+            max_output_tokens=512,
+            response_mime_type="application/json",
+        ),
         json.loads,
     )
 
@@ -275,7 +279,6 @@ async def run_agent_on_site(page: Page, site: dict, task: str, trial_number: int
         # Capture state
         try:
             screenshot_bytes = await page.screenshot(type="png")
-            screenshot_b64 = base64.b64encode(screenshot_bytes).decode()
             current_url = page.url
             title = await page.title()
             accessible_text = await page.evaluate(
@@ -290,7 +293,7 @@ async def run_agent_on_site(page: Page, site: dict, task: str, trial_number: int
         # never as the site's failure (wrong_extraction), which would corrupt the y-axis.
         try:
             action, wasted_here = await ask_gemini(
-                task, screenshot_b64, accessible_text, current_url, title)
+                task, screenshot_bytes, accessible_text, current_url, title)
             wasted += wasted_here
         except GeminiError as e:
             transcript.append({"step": step, "url": current_url, "error": str(e)})
@@ -377,7 +380,6 @@ async def run_scripted_extraction(page: Page, site: dict, task: str, trial_numbe
             "() => document.body ? document.body.innerText : ''"
         )
         screenshot_bytes = await page.screenshot(type="png")
-        screenshot_b64 = base64.b64encode(screenshot_bytes).decode()
     except Exception as e:
         return _build_run(site_id, trial_number, False, 1,
                           time.time() - start, "error", [{"step": 0, "error": str(e)}])
@@ -389,9 +391,10 @@ async def run_scripted_extraction(page: Page, site: dict, task: str, trial_numbe
     )
     try:
         answer, wasted = await gemini_with_retry(
-            [extraction_prompt, {"mime_type": "image/png", "data": screenshot_b64},
+            [extraction_prompt,
+             types.Part.from_bytes(data=screenshot_bytes, mime_type="image/png"),
              accessible_text[:PAGE_TEXT_LIMIT]],
-            {"temperature": 0, "max_output_tokens": 128},
+            types.GenerateContentConfig(temperature=0, max_output_tokens=256),
             lambda text: text.strip(),
         )
     except GeminiError as e:
