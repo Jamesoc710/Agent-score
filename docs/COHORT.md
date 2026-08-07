@@ -108,8 +108,8 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 14. USPS (`usps`)
 - **URL:** https://www.usps.com/ship/first-class-mail.htm
 - **Question:** What is the current price of a First-Class Forever stamp (1 oz)?
-- **answer_substring:** `0.78`
-- **match rule:** strip $; keep decimal; optional any-of '78 cents'
+- **answer_substring:** `0.78 | 78 cents`
+- **match rule:** any-of; strip $; keep decimal
 - **answer_note:** Current First-Class Forever stamp price (1 oz), $0.78. Other prices on the page ($0.61, $1.27, $1.63) differ, so $0.78 discriminates.
 
 ### 15. IRS (`irs`)
@@ -161,8 +161,8 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 21. Voodoo Doughnut (`voodoo`)
 - **URL:** https://www.voodoodoughnut.com/locations/
 - **Question:** What is the ZIP code of the Old Town Portland Voodoo Doughnut location?
-- **answer_substring:** `97204`
-- **match rule:** exact
+- **answer_substring:** `97204 | 5032414704`
+- **match rule:** any-of; exact; phone alt digits-only
 - **answer_note:** Old Town Portland location (22 SW 3rd Ave) ZIP code, 97204. Prices are gated behind the order flow, so a location fact is used. Alternative: phone, digit-normalized to 5032414704.
 
 ### 22. In-N-Out (`innout`)
@@ -193,8 +193,8 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 25. Craigslist (`craigslist`)
 - **URL:** https://www.craigslist.org/about/help/posting_fees
 - **Question:** What does it cost to post a job in the job categories on Craigslist (US)?
-- **answer_substring:** `75`
-- **match rule:** strip $; alt any-of [Visa, MasterCard, American Express]
+- **answer_substring:** `75 | Visa | MasterCard | American Express`
+- **match rule:** any-of; strip $
 - **flag:** off-diagonal: low static / high behavioral
 - **answer_note:** Job-posting fee (US) is $10-75; '75' is the unique distinctive token on the page. Most other fees are $5 (shared), avoided. Plain old HTML, expected low Lighthouse but high behavioral success - mirror of Apple.
 
@@ -220,7 +220,7 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 28. Ticketmaster (`ticketmaster`)
 - **URL:** [confirm exact Zach Bryan Oct 10 2026 event page URL]
 - **Question:** Who is the opening act for Zach Bryan on October 10, 2026?
-- **answer_substring:** `Gregory Alan Isakov`
-- **match rule:** case-normalize (proper noun); alt 'Hare Stadium'
+- **answer_substring:** `Gregory Alan Isakov | Hare Stadium`
+- **match rule:** any-of; case-normalize (proper noun)
 - **flag:** intentional blocker (expect blocked)
 - **answer_note:** Zach Bryan event (Oct 10, 2026, Jordan-Hare Stadium, Auburn, AL). Stable fact used: opener Gregory Alan Isakov. Do NOT use the $89.44 resale price (transient single listing). INTENTIONAL BLOCKER: expect failure_mode 'blocked'.
