@@ -60,6 +60,8 @@ export interface TranscriptStep {
   url?: string;
   action?: AgentAction;
   error?: string;
+  note?: string;           // harness annotation, e.g. "followed newly opened tab"
+  matched?: string | null; // on "done" steps: which registered candidate matched, if any
 }
 
 export interface Run {
@@ -80,6 +82,8 @@ export interface SiteLeaderboardEntry {
   site_id: string;
   name: string;
   start_url: string;
+  tier: SiteTier; // cohort design bucket, shown so expected outliers read as designed
+  flag: string;   // cohort design note, e.g. "intentional blocker (expect blocked)"
   lh_total: number | null;
   lh_accessibility_tree: number | null;
   lh_layout_stability: number | null;

@@ -6,8 +6,8 @@ import type { Site, SiteTier } from "../lib/types";
 // Reader for data/cohort.csv, the canonical 28-site cohort. Validates on the way in so CSV
 // drift surfaces here with a row number instead of as a Postgres CHECK violation.
 //
-// Phase 2 wires this into both lanes as well; today only the seed script uses it, and the
-// lanes still read the stale scripts/cohort.json (see docs/ROADMAP.md).
+// Used by the seed script and Lane 1. Lane 2 reads the same file through the Python
+// mirror, scripts/cohort_csv.py — keep the two readers in sync.
 
 const TIERS: readonly SiteTier[] = [
   "anchor",

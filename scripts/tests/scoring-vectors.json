@@ -1,0 +1,115 @@
+{
+  "comment": "Language-neutral test vectors for the METHODOLOGY.md scoring contract. Any implementation (scripts/scoring.py today, a future TypeScript port) must pass every case. answer_substring and match_rule values mirror real data/cohort.csv rows wherever possible.",
+  "cases": [
+    { "name": "stripe-exact-match", "output": "Stripe charges 2.9% + 30 cents per successful card charge.", "answer_substring": "2.9%", "match_rule": "exact; case/space-normalize", "expected": true },
+    { "name": "stripe-not-inside-12.9", "output": "The international fee is 12.9% per transaction.", "answer_substring": "2.9%", "match_rule": "exact; case/space-normalize", "expected": false },
+    { "name": "stripe-whitespace-collapse", "output": "The rate is  2.9%  for domestic cards.", "answer_substring": "2.9%", "match_rule": "exact; case/space-normalize", "expected": true },
+
+    { "name": "shopify-currency-strip", "output": "Basic plan: $29/month billed monthly.", "answer_substring": "$29", "match_rule": "strip $; numeric word-boundary", "expected": true },
+    { "name": "shopify-trailing-00-allowed", "output": "Basic costs $29.00 per month.", "answer_substring": "$29", "match_rule": "strip $; numeric word-boundary", "expected": true },
+    { "name": "shopify-not-inside-290", "output": "The Advanced plan is $290 per month.", "answer_substring": "$29", "match_rule": "strip $; numeric word-boundary", "expected": false },
+    { "name": "shopify-not-inside-29000", "output": "Enterprise revenue over $29,000 monthly.", "answer_substring": "$29", "match_rule": "strip $; numeric word-boundary", "expected": false },
+    { "name": "shopify-not-29.50", "output": "It costs $29.50 with add-ons.", "answer_substring": "$29", "match_rule": "strip $; numeric word-boundary", "expected": false },
+
+    { "name": "shopify-anyof-monthly-billing", "output": "Basic is $39 per month when billed monthly.", "answer_substring": "$29 | $39", "match_rule": "any-of; strip $; numeric word-boundary", "expected": true },
+    { "name": "notion-anyof-annual-billing", "output": "Plus costs $10 per member per month, billed annually.", "answer_substring": "$12 | $10", "match_rule": "any-of; strip $; numeric word-boundary", "expected": true },
+    { "name": "notion-10-not-inside-100", "output": "Teams of up to $100 in credits.", "answer_substring": "$12 | $10", "match_rule": "any-of; strip $; numeric word-boundary", "expected": false },
+
+    { "name": "github-per-user", "output": "GitHub Enterprise is $21 per user/month.", "answer_substring": "$21", "match_rule": "strip $; numeric word-boundary", "expected": true },
+    { "name": "github-not-210", "output": "That would be $210 for ten users.", "answer_substring": "$21", "match_rule": "strip $; numeric word-boundary", "expected": false },
+
+    { "name": "twilio-small-decimal", "output": "Sending an SMS to a US number costs $0.0083 per message.", "answer_substring": "0.0083", "match_rule": "strip $; match decimal", "expected": true },
+    { "name": "twilio-not-inside-longer-decimal", "output": "The rate is 0.00834 per segment.", "answer_substring": "0.0083", "match_rule": "strip $; match decimal", "expected": false },
+
+    { "name": "cloudflare-anyof-first", "output": "Pro is $20 per month when billed annually.", "answer_substring": "$20 | $25", "match_rule": "any-of; strip $; numeric word-boundary ($20 != $200)", "expected": true },
+    { "name": "cloudflare-anyof-second", "output": "Pro costs $25 month-to-month.", "answer_substring": "$20 | $25", "match_rule": "any-of; strip $; numeric word-boundary ($20 != $200)", "expected": true },
+    { "name": "cloudflare-business-200-rejected", "output": "The Business plan is $200 per month.", "answer_substring": "$20 | $25", "match_rule": "any-of; strip $; numeric word-boundary ($20 != $200)", "expected": false },
+
+    { "name": "costco-65", "output": "A Gold Star membership is $65 per year.", "answer_substring": "$65", "match_rule": "strip $; numeric word-boundary ($65 != $650)", "expected": true },
+    { "name": "costco-not-650", "output": "Executive members spending $650 get rewards.", "answer_substring": "$65", "match_rule": "strip $; numeric word-boundary ($65 != $650)", "expected": false },
+
+    { "name": "bestbuy-full-price-format", "output": "Lenovo Legion Tower 5i — $1,848.00", "answer_substring": "1848", "match_rule": "strip $, commas, trailing .00", "expected": true },
+    { "name": "bestbuy-comma-no-cents", "output": "Your price: $1,848", "answer_substring": "1848", "match_rule": "strip $, commas, trailing .00", "expected": true },
+    { "name": "bestbuy-bare-digits", "output": "price 1848 dollars", "answer_substring": "1848", "match_rule": "strip $, commas, trailing .00", "expected": true },
+    { "name": "bestbuy-not-inside-18480", "output": "SKU 18480 is a different item.", "answer_substring": "1848", "match_rule": "strip $, commas, trailing .00", "expected": false },
+    { "name": "ikea-comma-and-cents", "output": "KIVIK sectional, $2,099.00", "answer_substring": "2099", "match_rule": "strip $, commas, trailing .00", "expected": true },
+    { "name": "ikea-not-20990", "output": "Delivered for $20,990 total.", "answer_substring": "2099", "match_rule": "strip $, commas, trailing .00", "expected": false },
+
+    { "name": "target-cents-exact", "output": "Clorox ToiletWand System, $12.89.", "answer_substring": "12.89", "match_rule": "strip $; keep decimal", "expected": true },
+    { "name": "target-not-inside-112.89", "output": "The bundle is $112.89.", "answer_substring": "12.89", "match_rule": "strip $; keep decimal", "expected": false },
+    { "name": "target-not-longer-decimal", "output": "Unit price $12.899 per item.", "answer_substring": "12.89", "match_rule": "strip $; keep decimal", "expected": false },
+
+    { "name": "spotify-standing-price", "output": "Get 3 months for $0, then $12.99 per month after.", "answer_substring": "12.99", "match_rule": "strip $; keep decimal", "expected": true },
+    { "name": "spotify-promo-only-fails", "output": "Premium Individual: $0 for 3 months.", "answer_substring": "12.99", "match_rule": "strip $; keep decimal", "expected": false },
+
+    { "name": "cadmv-time-token", "output": "Written tests are not given after 4:30 p.m.", "answer_substring": "4:30", "match_rule": "exact", "expected": true },
+    { "name": "cadmv-not-inside-14:30", "output": "The office closes at 14:30 on Fridays.", "answer_substring": "4:30", "match_rule": "exact", "expected": false },
+
+    { "name": "txdmv-phrase", "output": "You may renew up to 90 days before your registration expires.", "answer_substring": "90 days", "match_rule": "exact phrase; case/space-normalize", "expected": true },
+    { "name": "txdmv-not-390-days", "output": "Renewals are accepted 390 days after issuance.", "answer_substring": "90 days", "match_rule": "exact phrase; case/space-normalize", "expected": false },
+
+    { "name": "usps-decimal-form", "output": "A First-Class Forever stamp costs $0.78.", "answer_substring": "0.78 | 78 cents", "match_rule": "any-of; strip $; keep decimal", "expected": true },
+    { "name": "usps-cents-words", "output": "Stamps are 78 cents each.", "answer_substring": "0.78 | 78 cents", "match_rule": "any-of; strip $; keep decimal", "expected": true },
+    { "name": "usps-not-178-cents", "output": "A large flat is 178 cents.", "answer_substring": "0.78 | 78 cents", "match_rule": "any-of; strip $; keep decimal", "expected": false },
+    { "name": "usps-other-price-rejected", "output": "Postcard stamps are $0.61.", "answer_substring": "0.78 | 78 cents", "match_rule": "any-of; strip $; keep decimal", "expected": false },
+
+    { "name": "irs-comma-strip", "output": "For single filers the standard deduction is $15,750.", "answer_substring": "15750", "match_rule": "strip $, commas", "expected": true },
+    { "name": "irs-bare", "output": "single: 15750", "answer_substring": "15750", "match_rule": "strip $, commas", "expected": true },
+    { "name": "irs-mfj-rejected", "output": "Married filing jointly: $31,500.", "answer_substring": "15750", "match_rule": "strip $, commas", "expected": false },
+
+    { "name": "ssa-plain-67", "output": "Your full retirement age is 67.", "answer_substring": "67", "match_rule": "exact; avoid table-dump", "expected": true },
+    { "name": "ssa-not-inside-26.67", "output": "The reduction is 26.67% for 1955.", "answer_substring": "67", "match_rule": "exact; avoid table-dump", "expected": false },
+    { "name": "ssa-not-inside-1967", "output": "People born in 1967 qualify later.", "answer_substring": "67", "match_rule": "exact; avoid table-dump", "expected": false },
+
+    { "name": "trimet-day-pass", "output": "An Adult Day Pass costs $5.60.", "answer_substring": "5.60", "match_rule": "strip $; keep decimal", "expected": true },
+    { "name": "trimet-half-fare-rejected", "output": "A 2.5-hour ticket is $2.80.", "answer_substring": "5.60", "match_rule": "strip $; keep decimal", "expected": false },
+
+    { "name": "portland-proper-noun", "output": "Submit your application and pay fees on DevHub.", "answer_substring": "DevHub", "match_rule": "case-normalize (proper noun)", "expected": true },
+    { "name": "portland-case-insensitive", "output": "apply at devhub online", "answer_substring": "DevHub", "match_rule": "case-normalize (proper noun)", "expected": true },
+
+    { "name": "oregonstate-tuition", "output": "Resident undergraduates pay $15,246 for the year.", "answer_substring": "15246", "match_rule": "strip $, commas", "expected": true },
+    { "name": "oregonstate-nonresident-rejected", "output": "Non-resident tuition is $40,392.", "answer_substring": "15246", "match_rule": "strip $, commas", "expected": false },
+
+    { "name": "powells-price", "output": "Trade Paperback, $22.95, in stock at Powell's.", "answer_substring": "22.95", "match_rule": "strip $; keep decimal", "expected": true },
+
+    { "name": "voodoo-zip", "output": "22 SW 3rd Ave, Portland, OR 97204", "answer_substring": "97204 | 5032414704", "match_rule": "any-of; exact; phone alt digits-only", "expected": true },
+    { "name": "voodoo-phone-formatted", "output": "Call us at (503) 241-4704 for large orders.", "answer_substring": "97204 | 5032414704", "match_rule": "any-of; exact; phone alt digits-only", "expected": true },
+    { "name": "voodoo-phone-dotted", "output": "Phone: 503.241.4704", "answer_substring": "97204 | 5032414704", "match_rule": "any-of; exact; phone alt digits-only", "expected": true },
+    { "name": "voodoo-wrong-zip", "output": "The Eastside shop is in 97214.", "answer_substring": "97204 | 5032414704", "match_rule": "any-of; exact; phone alt digits-only", "expected": false },
+
+    { "name": "innout-founding-year", "output": "In-N-Out was founded in 1948 in Baldwin Park.", "answer_substring": "1948", "match_rule": "exact", "expected": true },
+    { "name": "innout-not-inside-19480", "output": "Store #19480 opened recently.", "answer_substring": "1948", "match_rule": "exact", "expected": false },
+
+    { "name": "bear-monthly", "output": "Bear Pro costs $2.99 per month.", "answer_substring": "2.99 | 29.99", "match_rule": "any-of; strip $; keep decimals", "expected": true },
+    { "name": "bear-yearly", "output": "Bear Pro is $29.99 annually.", "answer_substring": "2.99 | 29.99", "match_rule": "any-of; strip $; keep decimals", "expected": true },
+    { "name": "bear-2.99-not-inside-29.99", "output": "The yearly plan at $29.99 saves money.", "answer_substring": "2.99", "match_rule": "strip $; keep decimal", "expected": false },
+
+    { "name": "apple-full-price", "output": "iPhone 17 Pro, from $1,099 or $45.79/mo.", "answer_substring": "1099 | 45.79", "match_rule": "any-of; strip $, commas; keep decimals", "expected": true },
+    { "name": "apple-financing-only", "output": "From $45.79 per month with trade-in.", "answer_substring": "1099 | 45.79", "match_rule": "any-of; strip $, commas; keep decimals", "expected": true },
+    { "name": "apple-not-10990", "output": "AppleCare brings it to $10,990 over ten years.", "answer_substring": "1099 | 45.79", "match_rule": "any-of; strip $, commas; keep decimals", "expected": false },
+
+    { "name": "craigslist-fee", "output": "Job postings in US cities cost $10-75.", "answer_substring": "75 | Visa | MasterCard | American Express", "match_rule": "any-of; strip $", "expected": true },
+    { "name": "craigslist-not-750", "output": "Featured listings run $750 monthly.", "answer_substring": "75 | Visa | MasterCard | American Express", "match_rule": "any-of; strip $", "expected": false },
+    { "name": "craigslist-card-alt", "output": "We accept Visa and MasterCard.", "answer_substring": "75 | Visa | MasterCard | American Express", "match_rule": "any-of; strip $", "expected": true },
+    { "name": "craigslist-visa-not-in-advisable", "output": "It is advisable to post early.", "answer_substring": "75 | Visa | MasterCard | American Express", "match_rule": "any-of; strip $", "expected": false },
+
+    { "name": "zalando-sale-price", "output": "62,95 € IVA incluído. Originalmente: 69,95 €", "answer_substring": "62,95 | 62.95 | 69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": true },
+    { "name": "zalando-comma-decimal", "output": "adidas Originals satin pants — 69,95 € VAT included", "answer_substring": "69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": true },
+    { "name": "zalando-dot-decimal", "output": "The price converts to 69.95 euros.", "answer_substring": "69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": true },
+    { "name": "zalando-6995-thousands-rejected", "output": "Premium coats reach 6,995 € here.", "answer_substring": "69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": false },
+    { "name": "zalando-not-inside-169,95", "output": "The jacket costs 169,95 €.", "answer_substring": "69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": false },
+    { "name": "zalando-not-inside-69,950", "output": "Order total: 69,950", "answer_substring": "69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": false },
+
+    { "name": "amazon-standing-price", "output": "NEW JETO Queen 14 Inch: $53.99", "answer_substring": "53.99", "match_rule": "strip $; keep decimal", "expected": true },
+    { "name": "amazon-promo-price-rejected", "output": "$43.99 with the store card offer.", "answer_substring": "53.99", "match_rule": "strip $; keep decimal", "expected": false },
+    { "name": "amazon-other-size-rejected", "output": "Twin size is $39.99.", "answer_substring": "53.99", "match_rule": "strip $; keep decimal", "expected": false },
+
+    { "name": "ticketmaster-opener", "output": "Special guest: Gregory Alan Isakov.", "answer_substring": "Gregory Alan Isakov | Hare Stadium", "match_rule": "any-of; case-normalize (proper noun)", "expected": true },
+    { "name": "ticketmaster-case-and-spaces", "output": "GREGORY  ALAN  ISAKOV opens the show", "answer_substring": "Gregory Alan Isakov | Hare Stadium", "match_rule": "any-of; case-normalize (proper noun)", "expected": true },
+    { "name": "ticketmaster-venue-alt-hyphenated", "output": "Live at Jordan-Hare Stadium, Auburn AL.", "answer_substring": "Gregory Alan Isakov | Hare Stadium", "match_rule": "any-of; case-normalize (proper noun)", "expected": true },
+    { "name": "ticketmaster-wrong-act", "output": "Kings of Leon open on October 10.", "answer_substring": "Gregory Alan Isakov | Hare Stadium", "match_rule": "any-of; case-normalize (proper noun)", "expected": false },
+
+    { "name": "empty-output-fails", "output": "", "answer_substring": "2.9%", "match_rule": "exact", "expected": false },
+    { "name": "blocked-sentinel-does-not-match", "output": "BLOCKED", "answer_substring": "2.9%", "match_rule": "exact", "expected": false }
+  ]
+}

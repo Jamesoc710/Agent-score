@@ -200,6 +200,8 @@ function computeEntry(
     site_id: site.site_id,
     name: site.name,
     start_url: site.start_url,
+    tier: site.tier,
+    flag: site.flag,
     lh_total: lh?.lh_total ?? null,
     lh_accessibility_tree: lh?.lh_accessibility_tree ?? null,
     lh_layout_stability: lh?.lh_layout_stability ?? null,

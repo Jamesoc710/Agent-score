@@ -16,9 +16,8 @@
  * Requires SUPABASE_SERVICE_ROLE_KEY. `sites` must be seeded first (npm run seed:sites) —
  * both result tables have a foreign key to it.
  *
- * Note: data/lighthouse-results.json is a pre-migration artifact from the draft cohort
- * (scripts/cohort.json ids). It is not imported; Lane 1 is re-run against the canonical
- * cohort in Phase 3.
+ * Note: data/lighthouse-results.json is a pre-migration artifact from the retired draft
+ * cohort. It is not imported; Lane 1 is re-run against the canonical cohort in Phase 3.
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -58,16 +57,16 @@ async function main() {
   }
 
   // Report unknown site_ids up front rather than letting Postgres reject the batch with a
-  // foreign-key error. Until Phase 2 the lanes read scripts/cohort.json, whose ids differ
-  // from data/cohort.csv (ca_dmv vs dmv_ca, irs vs irs_gov) — that mismatch shows up here.
+  // foreign-key error — e.g. an artifact written before a site was added to (or renamed
+  // in) data/cohort.csv and reseeded.
   const orphans = [
     ...new Set([...lighthouse, ...runs].map((r) => r.site_id).filter((id) => !known.has(id))),
   ];
   if (orphans.length > 0) {
     console.error(
       `\n✗ These site_ids are not in \`sites\`: ${orphans.join(", ")}\n` +
-        `  Either they are missing from data/cohort.csv, or the lane wrote draft-cohort ids ` +
-        `(scripts/cohort.json). Nothing was imported.`
+        `  They are missing from data/cohort.csv (or the artifact predates a rename). ` +
+        `Run \`npm run seed:sites\` after cohort changes. Nothing was imported.`
     );
     process.exit(1);
   }

@@ -3,43 +3,101 @@
 Sequenced phases first, then the product backlog. The active working plan with per-session
 state lives in `.claude/plans/buildout.md`.
 
-## Phase 1 — Supabase + Vercel foundation
+**The one hard deadline in this document:** `docs/METHODOLOGY.md` fixes one agent, one prompt,
+one harness per dataset version — any change to the agent loop forks the dataset. So every
+harness change has to land *before* the Phase 3 run. Afterwards the choice is re-running 28
+sites × 5 trials or carrying a known-weak dataset forever. UI work has no such deadline, which
+is why it sits after the data rather than before it.
 
-- Create the Supabase project; schema via git-tracked CLI migrations: `sites`,
-  `lighthouse_results`, `agent_runs` (with `agent_id`).
-- Swap `lib/queries.ts` and both lanes from Firestore to the Supabase client; fixtures move
-  behind an explicit dev flag instead of being the silent default.
-- Remove all Firebase code, config, and dependencies. Connect Vercel.
+## Phase 1 — Supabase + Vercel foundation ✅ complete (2026-08-01)
 
-## Phase 2 — Cohort + scoring correctness
+- Schema as git-tracked CLI migrations: `sites`, `lighthouse_results`, `agent_runs`. Result
+  tables are append-only, keyed by `batch_label`; RLS is select-only and only `scripts/` holds
+  a key that can write.
+- `lib/queries.ts` and both lanes off Firestore; fixtures behind `USE_FAKE_DATA=true` with no
+  silent fallback. All Firebase code, config and dependencies removed.
+- Deployed: <https://agent-score-weld.vercel.app>. Any push to `main` deploys production.
 
-- Wire `data/cohort.csv` (28 sites, canonical) into the lanes and seeds; retire
-  `scripts/cohort.json`.
-- Resolve the 8 `[confirm exact URL]` entries in `docs/COHORT.md` (manual, James).
-- Implement the METHODOLOGY.md scoring contract as a shared, unit-tested module and wire it
-  into the harness, replacing the naive substring check.
+## Phase 2 — Cohort, scoring, and harness correctness
+
+Everything here is a prerequisite for the run, not a nice-to-have. The loop is frozen at the
+end of this phase.
+
+**Cohort**
+
+- Wire `data/cohort.csv` (28 sites, canonical) into both lanes and retire
+  `scripts/cohort.json`. Its ids (`dmv_ca`, `irs_gov`) do not even foreign-key into the seeded
+  cohort, so `import-results.ts` currently rejects anything the lanes produce.
+- Resolve the 6 `[confirm exact URL]` entries in `docs/COHORT.md` — `bestbuy`, `ikea`,
+  `powells`, `zalando`, `amazon`, `ticketmaster` (manual, James). Confirm the registered answer
+  still holds for `shopify`, `github`, `notion`, `zalando`. (METHODOLOGY.md says 8; the real
+  count is 6 — correction flagged, not yet applied, because that file is the pre-registration
+  record.)
+
+**Scoring**
+
+- Implement the METHODOLOGY.md contract as a shared, unit-tested module and wire it into the
+  harness, replacing the naive substring check.
+
+**Harness validity** — the y-axis is only as trustworthy as the loop that produces it
+
+- **A Gemini API failure is currently recorded as the site's failure.** `lane2-agent.py:153`
+  swallows every exception and returns `answer: ""`, which line 210 scores as
+  `wrong_extraction`. Rate limits and blips therefore inflate site failure rates for reasons
+  unrelated to agent-readiness. Must become `failure_mode: "error"`.
+- Retry with backoff around the model call. There is none today.
+- Structured output (JSON mode) instead of regex-stripping code fences off a text response.
+- Parameterize the prompt with the per-site `question`, as METHODOLOGY already specifies; the
+  harness still uses `task_hint` from the draft cohort.
+- Consent/cookie handling — the cohort deliberately includes a consent-wall site, so today that
+  obstacle tests the harness rather than the site.
+- Click robustness: scroll-into-view, iframe awareness, popup/new-tab handling. The current
+  fallback is a CSS selector, then a text match, then give up.
+- Revisit the 2000-character page-text truncation, which can cut the answer out of the model's
+  context on long pages.
+- Local JSONL persistence: done in Phase 1. `--resume` still outstanding.
+
+**Cheap presentation fixes** — pulled forward only because the link is already public
+
+- Favicon (404s today) and an OG image, since the URL is shareable now.
+- Show each site's `question` on `/site/[slug]` — the task the agent was given is currently
+  invisible.
+- Surface `tier` and `flag` on the leaderboard. Both are in the database and rendered nowhere,
+  so "Amazon 0%" reads as a broken benchmark instead of `intentional blocker (expect blocked)`.
 
 ## Phase 3 — Real data
 
+The harness is frozen for the duration of this phase.
+
 - Verify the `agentic-browsing` audit IDs against current Lighthouse (all-zero `lh_webmcp` in
   the draft batch is unexplained), then run Lane 1 across the full 28-site cohort.
-- Harden Lane 2: local JSONL persistence + `--resume`. Prove the loop on 5 sites, then the
-  full run: 5 trials x 28 sites.
+- Re-verify the volatile registered prices immediately before the run: `bestbuy`, `ikea`,
+  `zalando`, `amazon`.
+- Prove the loop on 5 sites as its own `batch_label`, then the full run: 5 trials × 28 sites.
 - Commit the pre-registration receipt (git-hashed answer key) before the full run.
 
 ## Phase 4 — Leaderboard launch
 
 - Frontend on real data by default; graceful gaps for sites missing a lane.
 - Replace bare Pearson with Spearman rank correlation + bootstrap 95% CI + explicit n.
-- `loading` / `error` / `not-found` states; deploy to Vercel.
+- `loading` / `error` / `not-found` states (none exist today).
+
+## Phase 5 — Presentation
+
+Deliberately after the data: a leaderboard should be designed around real distributions, not
+around 28 zeroes.
+
+- **Per-step transcript replay.** Transcripts are already stored and nothing renders them.
+  Render the timeline and mark the step that flipped the run into its failure mode. Makes
+  failure labels auditable and is the single most convincing demo asset.
+- A real design pass on all three pages. What exists is a functional first draft.
+- Leaderboard sorting and filtering — by tier, by failure mode, by either axis.
+- Responsive and dark-mode behaviour, neither of which has ever been checked.
 
 ## Backlog — hardening the result
 
 Roughly ordered by credibility-per-hour:
 
-- **Per-step transcript replay.** Transcripts are already stored; render the timeline and mark
-  the step that flipped the run into its failure mode. Makes failure labels auditable and is
-  the single most convincing demo asset.
 - **Sub-audit attribution.** Split the cohort by pass/fail on each Lighthouse sub-audit and
   show the success-rate gap each buys (with CI). Produces the quotable finding ("only
   accessibility-tree predicted success").
@@ -81,3 +139,4 @@ the schema, a datasheet pinning agent + task template + scoring rule per version
   public transcript, positioned alongside Lighthouse rather than against it.
 - **Longitudinal re-runs** — dated batches turn the scatter into a time series; a within-site
   before/after when a site ships llms.txt or WebMCP is the closest available causal claim.
+  The `batch_label` schema already supports this.

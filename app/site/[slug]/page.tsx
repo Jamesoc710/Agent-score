@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSiteDetail } from "@/lib/queries";
 import { Run } from "@/lib/types";
+import { TierBadge, FlagBadge } from "@/components/SiteBadges";
 
 function SubAuditRow({ label, value }: { label: string; value: number | null }) {
   if (value === null) return null;
@@ -60,7 +61,12 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
     failureCounts[r.failure_mode] = (failureCounts[r.failure_mode] ?? 0) + 1;
   });
 
-  const rateColor = successRate >= 70 ? "text-emerald-600" : successRate >= 40 ? "text-amber-600" : "text-red-500";
+  // No trials = no measurement. "0%" here would assert a result nobody produced —
+  // the recurring bug class this project cannot afford (see buildout plan).
+  const rateColor =
+    runs.length === 0
+      ? "text-slate-300"
+      : successRate >= 70 ? "text-emerald-600" : successRate >= 40 ? "text-amber-600" : "text-red-500";
 
   return (
     <div>
@@ -81,9 +87,15 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
           >
             {site.start_url} ↗
           </a>
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <TierBadge tier={site.tier} />
+            <FlagBadge flag={site.flag} />
+          </div>
         </div>
         <div className="text-right">
-          <div className={`text-5xl font-bold tabular-nums ${rateColor}`}>{successRate}%</div>
+          <div className={`text-5xl font-bold tabular-nums ${rateColor}`}>
+            {runs.length > 0 ? `${successRate}%` : "—"}
+          </div>
           <div className="text-sm text-slate-400 mt-1">Agent success rate</div>
           <div className="text-xs text-slate-400">{runs.length} trials</div>
         </div>
@@ -147,6 +159,16 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
             <p className="text-sm text-slate-400">No runs yet. Execute Lane 2 to populate.</p>
           )}
         </div>
+      </div>
+
+      {/* The task the agent was given — previously invisible on the site page */}
+      <div className="bg-white border border-slate-200 rounded-xl p-5 mb-8">
+        <h2 className="font-semibold text-slate-900 mb-1">The task</h2>
+        <p className="text-sm text-slate-600">&ldquo;{site.question}&rdquo;</p>
+        <p className="text-xs text-slate-400 mt-2">
+          Every site gets the same task shape: start at the URL above, navigate to the answer,
+          report it. Only the question varies. The agent never sees the scoring key below.
+        </p>
       </div>
 
       {/* Pre-registered answer */}
