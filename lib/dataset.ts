@@ -6,4 +6,7 @@
 
 export const ACTIVE_BATCH = process.env.ACTIVE_BATCH ?? "dev";
 
-export const ACTIVE_AGENT_ID = process.env.ACTIVE_AGENT_ID ?? "gemini-2.0-flash";
+// The headline agent of the v1 panel: the lite tier is what production agent traffic
+// actually runs, and its failures are the discriminative signal. gemini-3.6-flash runs
+// the identical loop as a second agent_id; select it here (or via env) to publish it.
+export const ACTIVE_AGENT_ID = process.env.ACTIVE_AGENT_ID ?? "gemini-3.5-flash-lite";

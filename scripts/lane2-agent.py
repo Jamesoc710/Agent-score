@@ -24,6 +24,9 @@ Usage:
     # except failure_mode "error" rows (harness failures, not measurements)
     python scripts/lane2-agent.py --batch v1 --resume
 
+    # Panel run: the identical loop driven by a different model, its own agent_id
+    python scripts/lane2-agent.py --model gemini-3.6-flash --batch v1
+
     # Decision-gate fallback: scripted nav + Gemini extraction only
     python scripts/lane2-agent.py --scripted-only --sites irs
 
@@ -66,10 +69,12 @@ from scoring import score_answer
 # Config
 # ---------------------------------------------------------------------------
 
-# gemini-2.0-flash was retired by Google (404 as of 2026-08); this is the current stable
-# Flash tier, verified live with JSON mode on 2026-08-07. The exact id is stamped into
-# every row via agent_id, so the dataset records precisely which model produced it.
-GEMINI_MODEL = "gemini-3.6-flash"      # fast, cheap, multimodal
+# v1 panel design (James, 2026-08-09): the headline agent is the lite tier — production
+# agent traffic runs cheap models, and a weaker agent gives the behavioral axis its
+# discriminative power — with gemini-3.6-flash run as a second agent_id over the
+# IDENTICAL frozen loop. (gemini-2.0-flash, originally registered, was retired by
+# Google 2026-08.) Whatever model runs is stamped into every row via agent_id.
+GEMINI_MODEL = "gemini-3.5-flash-lite"  # default/headline; per-run override: --model
 MAX_STEPS = 15
 TIMEOUT_SECONDS = 90
 DEFAULT_TRIALS = 5
@@ -415,15 +420,17 @@ async def run_scripted_extraction(page: Page, site: dict, task: str, trial_numbe
 
 
 async def main():
-    global BATCH_LABEL, AGENT_ID
+    global BATCH_LABEL, AGENT_ID, GEMINI_MODEL
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--sites", nargs="*", help="Site IDs to run (default: all)")
     parser.add_argument("--trials", type=int, default=DEFAULT_TRIALS)
     parser.add_argument("--batch", default=BATCH_LABEL,
                         help="Dataset label written on every row (default: $ACTIVE_BATCH or 'dev')")
-    parser.add_argument("--agent-id", default=AGENT_ID,
-                        help="Identifies this agent loop in agent_runs (default: the Gemini model)")
+    parser.add_argument("--model", default=GEMINI_MODEL,
+                        help="Gemini model that drives the loop (default: %(default)s)")
+    parser.add_argument("--agent-id", default=None,
+                        help="Identifies this agent loop in agent_runs (default: the model id)")
     parser.add_argument("--resume", action="store_true",
                         help="Skip trials already in this batch's artifact (error rows are re-run)")
     parser.add_argument("--scripted-only", action="store_true",
@@ -431,7 +438,8 @@ async def main():
     args = parser.parse_args()
 
     BATCH_LABEL = args.batch
-    AGENT_ID = args.agent_id
+    GEMINI_MODEL = args.model
+    AGENT_ID = args.agent_id or args.model
     out_path = artifact_path(BATCH_LABEL)
 
     cohort = read_cohort()
