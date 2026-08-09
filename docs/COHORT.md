@@ -17,16 +17,16 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 2. Shopify (`shopify`)
 - **URL:** https://www.shopify.com/pricing
 - **Question:** What is the monthly price of Shopify's Basic plan?
-- **answer_substring:** `$29`
-- **match rule:** strip $; numeric word-boundary
-- **answer_note:** Monthly price of the entry-level Basic plan. Confirm the annual-vs-monthly figure shown by default.
+- **answer_substring:** `$29 | $39`
+- **match rule:** any-of; strip $; numeric word-boundary
+- **answer_note:** Monthly price of the entry-level Basic plan: $29/mo billed annually, $39/mo billed monthly (verified 2026-08-09); any-of accepts either.
 
 ### 3. GitHub (`github`)
 - **URL:** https://github.com/pricing
 - **Question:** What is the per-user monthly price of GitHub's Enterprise plan?
 - **answer_substring:** `$21`
 - **match rule:** strip $; numeric word-boundary
-- **answer_note:** Per-user monthly price of the Enterprise plan. Confirm it is displayed (not contact-sales); note billing cycle.
+- **answer_note:** Per-user monthly price of the Enterprise plan, $21, displayed on the pricing page (verified 2026-08-09).
 
 ### 4. Twilio (`twilio`)
 - **URL:** https://www.twilio.com/en-us/sms/pricing/us
@@ -38,9 +38,9 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 5. Notion (`notion`)
 - **URL:** https://www.notion.com/pricing
 - **Question:** What is the monthly per-user price of Notion's Plus plan?
-- **answer_substring:** `$12`
-- **match rule:** strip $; numeric word-boundary
-- **answer_note:** Monthly per-user price of the Plus plan. Confirm billing cycle; check no '$12x' annual total appears elsewhere on the page.
+- **answer_substring:** `$12 | $10`
+- **match rule:** any-of; strip $; numeric word-boundary
+- **answer_note:** Monthly per-user price of the Plus plan: $12/mo billed monthly, $10/mo billed annually (verified 2026-08-09); any-of accepts either.
 
 ### 6. Cloudflare (`cloudflare`)
 - **URL:** https://www.cloudflare.com/plans/
@@ -53,11 +53,11 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ## Mainstream middle (retail / media / membership)
 
 ### 7. Best Buy (`bestbuy`)
-- **URL:** [identified 2026-08-09: model 90YA003GUS, SKU 12293931, now $1,999.00 via marketplace seller PC Heaven — awaiting URL paste + amendment approval]
+- **URL:** https://www.bestbuy.com/product/lenovo-legion-tower-5i-gaming-desktop-intel-core-ultra-7-processor-265f-32gb-ram-nvidia-rtx-5060ti-8gb-1tb-ssd-eclipse-black/JJGSHP5Z52 (pinned 2026-08-09; $1,999.00 verified, marketplace seller PC Heaven, SKU 12293931)
 - **Question:** What is the price of the Lenovo Legion Tower 5i (Core Ultra 7 265F, 32GB, RTX 5060Ti, 1TB, Eclipse Black)?
-- **answer_substring:** `1848`
+- **answer_substring:** `1999`
 - **match rule:** strip $, commas, trailing .00
-- **answer_note:** Lenovo Legion Tower 5i gaming desktop, $1,848.00, standard price (not discounted).
+- **answer_note:** Lenovo Legion Tower 5i gaming desktop (model 90YA003GUS), $1,999.00 via marketplace seller PC Heaven, standard price, not discounted (verified 2026-08-09).
 
 ### 8. IKEA (`ikea`)
 - **URL:** https://www.ikea.com/us/en/p/kivik-sectional-4-seat-with-chaise-grann-bomstad-black-s99443193/ (pinned 2026-08-09; $2,099.00 verified, not discounted)
@@ -199,12 +199,12 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 - **answer_note:** Job-posting fee (US) is $10-75; '75' is the unique distinctive token on the page. Most other fees are $5 (shared), avoided. Plain old HTML, expected low Lighthouse but high behavioral success - mirror of Apple.
 
 ### 26. Zalando (`zalando`)
-- **URL:** https://www.zalando.pt/adidas-originals-calcas-multicolor-bronze-strata-ad121a1k5-o11.html (pinned 2026-08-09, bronze strata colorway; page shows 62,95 sale from 69,95 original, and a carbon colorway of the same name shows 59,45 — amendment decision pending. Site browses fine from US; only shipping is restricted)
-- **Question:** What is the price of the adidas Originals Wide Leg Leo Print Satin Pants on Zalando (Portugal)?
-- **answer_substring:** `69,95 | 69.95`
+- **URL:** https://www.zalando.pt/adidas-originals-calcas-multicolor-bronze-strata-ad121a1k5-o11.html (pinned 2026-08-09, bronze strata colorway; site browses fine from US, only shipping is restricted)
+- **Question:** What is the price of the adidas Originals Wide Leg Leo Print Satin Pants (multicolor bronze strata) on Zalando (Portugal)?
+- **answer_substring:** `62,95 | 62.95 | 69,95 | 69.95`
 - **match rule:** any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)
 - **flag:** off-diagonal: high static / low behavioral; language confound
-- **answer_note:** adidas Originals satin pants on Zalando Portugal (zalando.pt), 69,95 euros (VAT incl.). Comma is a DECIMAL, not a thousands separator, so do NOT comma-strip this row; any-of catches '69,95' and '69.95'. Pin the .pt product URL. Confirm not discounted. Portuguese-language page is a confound to note when interpreting its result.
+- **answer_note:** adidas Originals satin pants, bronze strata colorway, on zalando.pt: standing price 69,95 euros, on sale at 62,95 (-10%) as of 2026-08-09; any-of accepts sale or standing, comma or dot decimal. Comma is a DECIMAL, not a thousands separator, so do NOT comma-strip this row. Colorway named in the question because a carbon colorway shares the product name at a different price. Portuguese-language page is a confound; re-pin same-day before the run.
 
 
 ## Intentional blockers (anti-bot)
@@ -212,10 +212,10 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 27. Amazon (`amazon`)
 - **URL:** https://www.amazon.com/NEW-JETO-Frame-Simple-Atmospheric-Platform/dp/B0B8VQLN6Y (pinned 2026-08-09, Queen 14-inch variant; price found $59.99 that day — answer-key amendment from 53.99 pending approval)
 - **Question:** What is the price of the NEW JETO metal bed frame in Queen size (14 inch)?
-- **answer_substring:** `53.99`
+- **answer_substring:** `59.99`
 - **match rule:** strip $; keep decimal
 - **flag:** intentional blocker (expect blocked)
-- **answer_note:** NEW JETO metal bed frame, Queen 14-inch, $53.99. Size variants (Twin $39.99, Full $52.99, King $56.99) discriminate; ignore the $43.99 store-card promo. INTENTIONAL BLOCKER: expect failure_mode 'blocked', near-zero success is the finding. Price is volatile but moot if blocked.
+- **answer_note:** NEW JETO metal bed frame, Queen 14-inch, $59.99 (verified 2026-08-09). Size variants discriminate; ignore any store-card promo price. INTENTIONAL BLOCKER: expect failure_mode 'blocked', near-zero success is the finding. Price is volatile but moot if blocked.
 
 ### 28. Ticketmaster (`ticketmaster`)
 - **URL:** https://www.ticketmaster.com/zach-bryan-w-gregory-alan-isakov-auburn-university-10-10-2026/event/Z7r9jZ1A7r4ev (pinned 2026-08-09; Gregory Alan Isakov confirmed as opener)

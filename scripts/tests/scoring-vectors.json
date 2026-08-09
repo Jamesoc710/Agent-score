@@ -11,6 +11,10 @@
     { "name": "shopify-not-inside-29000", "output": "Enterprise revenue over $29,000 monthly.", "answer_substring": "$29", "match_rule": "strip $; numeric word-boundary", "expected": false },
     { "name": "shopify-not-29.50", "output": "It costs $29.50 with add-ons.", "answer_substring": "$29", "match_rule": "strip $; numeric word-boundary", "expected": false },
 
+    { "name": "shopify-anyof-monthly-billing", "output": "Basic is $39 per month when billed monthly.", "answer_substring": "$29 | $39", "match_rule": "any-of; strip $; numeric word-boundary", "expected": true },
+    { "name": "notion-anyof-annual-billing", "output": "Plus costs $10 per member per month, billed annually.", "answer_substring": "$12 | $10", "match_rule": "any-of; strip $; numeric word-boundary", "expected": true },
+    { "name": "notion-10-not-inside-100", "output": "Teams of up to $100 in credits.", "answer_substring": "$12 | $10", "match_rule": "any-of; strip $; numeric word-boundary", "expected": false },
+
     { "name": "github-per-user", "output": "GitHub Enterprise is $21 per user/month.", "answer_substring": "$21", "match_rule": "strip $; numeric word-boundary", "expected": true },
     { "name": "github-not-210", "output": "That would be $210 for ten users.", "answer_substring": "$21", "match_rule": "strip $; numeric word-boundary", "expected": false },
 
@@ -89,6 +93,7 @@
     { "name": "craigslist-card-alt", "output": "We accept Visa and MasterCard.", "answer_substring": "75 | Visa | MasterCard | American Express", "match_rule": "any-of; strip $", "expected": true },
     { "name": "craigslist-visa-not-in-advisable", "output": "It is advisable to post early.", "answer_substring": "75 | Visa | MasterCard | American Express", "match_rule": "any-of; strip $", "expected": false },
 
+    { "name": "zalando-sale-price", "output": "62,95 € IVA incluído. Originalmente: 69,95 €", "answer_substring": "62,95 | 62.95 | 69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": true },
     { "name": "zalando-comma-decimal", "output": "adidas Originals satin pants — 69,95 € VAT included", "answer_substring": "69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": true },
     { "name": "zalando-dot-decimal", "output": "The price converts to 69.95 euros.", "answer_substring": "69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": true },
     { "name": "zalando-6995-thousands-rejected", "output": "Premium coats reach 6,995 € here.", "answer_substring": "69,95 | 69.95", "match_rule": "any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)", "expected": false },
