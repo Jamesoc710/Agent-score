@@ -53,14 +53,14 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ## Mainstream middle (retail / media / membership)
 
 ### 7. Best Buy (`bestbuy`)
-- **URL:** [confirm exact Lenovo Legion Tower 5i product page URL]
+- **URL:** [identified 2026-08-09: model 90YA003GUS, SKU 12293931, now $1,999.00 via marketplace seller PC Heaven — awaiting URL paste + amendment approval]
 - **Question:** What is the price of the Lenovo Legion Tower 5i (Core Ultra 7 265F, 32GB, RTX 5060Ti, 1TB, Eclipse Black)?
 - **answer_substring:** `1848`
 - **match rule:** strip $, commas, trailing .00
 - **answer_note:** Lenovo Legion Tower 5i gaming desktop, $1,848.00, standard price (not discounted).
 
 ### 8. IKEA (`ikea`)
-- **URL:** [confirm exact KIVIK sectional product page URL, IKEA US]
+- **URL:** https://www.ikea.com/us/en/p/kivik-sectional-4-seat-with-chaise-grann-bomstad-black-s99443193/ (pinned 2026-08-09; $2,099.00 verified, not discounted)
 - **Question:** What is the price of the KIVIK 4-seat sectional with chaise (Grann/Bomstad black)?
 - **answer_substring:** `2099`
 - **match rule:** strip $, commas, trailing .00
@@ -152,7 +152,7 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ## Small business / one-pagers
 
 ### 20. Powell's Books (`powells`)
-- **URL:** [confirm exact 'Practices in Apparition' product page URL]
+- **URL:** https://www.powells.com/book/practices-in-apparition-9781945649608?condition=New (pinned 2026-08-09; $22.95 Trade Paperback, New, verified)
 - **Question:** What is the Trade Paperback price of 'Practices in Apparition' by Gabi Abrao on Powell's?
 - **answer_substring:** `22.95`
 - **match rule:** strip $; keep decimal
@@ -199,7 +199,7 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 - **answer_note:** Job-posting fee (US) is $10-75; '75' is the unique distinctive token on the page. Most other fees are $5 (shared), avoided. Plain old HTML, expected low Lighthouse but high behavioral success - mirror of Apple.
 
 ### 26. Zalando (`zalando`)
-- **URL:** [confirm exact zalando.pt adidas product page URL - PIN to .pt]
+- **URL:** https://www.zalando.pt/adidas-originals-calcas-multicolor-bronze-strata-ad121a1k5-o11.html (pinned 2026-08-09, bronze strata colorway; page shows 62,95 sale from 69,95 original, and a carbon colorway of the same name shows 59,45 — amendment decision pending. Site browses fine from US; only shipping is restricted)
 - **Question:** What is the price of the adidas Originals Wide Leg Leo Print Satin Pants on Zalando (Portugal)?
 - **answer_substring:** `69,95 | 69.95`
 - **match rule:** any-of; strip euro symbol; DO NOT comma-strip (comma is the decimal)
@@ -210,7 +210,7 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ## Intentional blockers (anti-bot)
 
 ### 27. Amazon (`amazon`)
-- **URL:** [confirm exact NEW JETO bed frame product page URL]
+- **URL:** https://www.amazon.com/NEW-JETO-Frame-Simple-Atmospheric-Platform/dp/B0B8VQLN6Y (pinned 2026-08-09, Queen 14-inch variant; price found $59.99 that day — answer-key amendment from 53.99 pending approval)
 - **Question:** What is the price of the NEW JETO metal bed frame in Queen size (14 inch)?
 - **answer_substring:** `53.99`
 - **match rule:** strip $; keep decimal
@@ -218,7 +218,7 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 - **answer_note:** NEW JETO metal bed frame, Queen 14-inch, $53.99. Size variants (Twin $39.99, Full $52.99, King $56.99) discriminate; ignore the $43.99 store-card promo. INTENTIONAL BLOCKER: expect failure_mode 'blocked', near-zero success is the finding. Price is volatile but moot if blocked.
 
 ### 28. Ticketmaster (`ticketmaster`)
-- **URL:** [confirm exact Zach Bryan Oct 10 2026 event page URL]
+- **URL:** https://www.ticketmaster.com/zach-bryan-w-gregory-alan-isakov-auburn-university-10-10-2026/event/Z7r9jZ1A7r4ev (pinned 2026-08-09; Gregory Alan Isakov confirmed as opener)
 - **Question:** Who is the opening act for Zach Bryan on October 10, 2026?
 - **answer_substring:** `Gregory Alan Isakov | Hare Stadium`
 - **match rule:** any-of; case-normalize (proper noun)
