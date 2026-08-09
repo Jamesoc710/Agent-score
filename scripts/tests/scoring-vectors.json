@@ -48,6 +48,7 @@
     { "name": "txdmv-phrase", "output": "You may renew up to 90 days before your registration expires.", "answer_substring": "90 days", "match_rule": "exact phrase; case/space-normalize", "expected": true },
     { "name": "txdmv-not-390-days", "output": "Renewals are accepted 390 days after issuance.", "answer_substring": "90 days", "match_rule": "exact phrase; case/space-normalize", "expected": false },
 
+    { "name": "usps-2026-rate", "output": "A First-Class Forever stamp costs $0.82.", "answer_substring": "0.82 | 82 cents", "match_rule": "any-of; strip $; keep decimal", "expected": true },
     { "name": "usps-decimal-form", "output": "A First-Class Forever stamp costs $0.78.", "answer_substring": "0.78 | 78 cents", "match_rule": "any-of; strip $; keep decimal", "expected": true },
     { "name": "usps-cents-words", "output": "Stamps are 78 cents each.", "answer_substring": "0.78 | 78 cents", "match_rule": "any-of; strip $; keep decimal", "expected": true },
     { "name": "usps-not-178-cents", "output": "A large flat is 178 cents.", "answer_substring": "0.78 | 78 cents", "match_rule": "any-of; strip $; keep decimal", "expected": false },

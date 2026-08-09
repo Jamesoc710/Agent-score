@@ -108,9 +108,9 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 14. USPS (`usps`)
 - **URL:** https://www.usps.com/ship/first-class-mail.htm
 - **Question:** What is the current price of a First-Class Forever stamp (1 oz)?
-- **answer_substring:** `0.78 | 78 cents`
+- **answer_substring:** `0.82 | 82 cents`
 - **match rule:** any-of; strip $; keep decimal
-- **answer_note:** Current First-Class Forever stamp price (1 oz), $0.78. Other prices on the page ($0.61, $1.27, $1.63) differ, so $0.78 discriminates.
+- **answer_note:** Current First-Class Forever stamp price (1 oz), $0.82 (verified 2026-08-09 after a rate increase from the $0.78 registered in July; caught by the pilot). Other prices on the page ($0.65, $1.31, $1.69) differ, so $0.82 discriminates.
 
 ### 15. IRS (`irs`)
 - **URL:** https://www.irs.gov/credits-and-deductions-for-individuals
