@@ -55,9 +55,9 @@ The **URL** field on each entry is the answer page (where the fact lives, used f
 ### 7. Best Buy (`bestbuy`)
 - **URL:** https://www.bestbuy.com/product/lenovo-legion-tower-5i-gaming-desktop-intel-core-ultra-7-processor-265f-32gb-ram-nvidia-rtx-5060ti-8gb-1tb-ssd-eclipse-black/JJGSHP5Z52 (pinned 2026-08-09; $1,999.00 verified, marketplace seller PC Heaven, SKU 12293931)
 - **Question:** What is the price of the Lenovo Legion Tower 5i (Core Ultra 7 265F, 32GB, RTX 5060Ti, 1TB, Eclipse Black)?
-- **answer_substring:** `1999`
-- **match rule:** strip $, commas, trailing .00
-- **answer_note:** Lenovo Legion Tower 5i gaming desktop (model 90YA003GUS), $1,999.00 via marketplace seller PC Heaven, standard price, not discounted (verified 2026-08-09).
+- **answer_substring:** `1949 | 1999`
+- **match rule:** any-of; strip $, commas, trailing .00
+- **answer_note:** Lenovo Legion Tower 5i gaming desktop (model 90YA003GUS). 2026-08-19: selling price $1,949.00 (Save $50) with $1,999.00 as Comp. Value; any-of accepts either. Seller changed from marketplace PC Heaven since 08-09. Volatile row; re-pin before any future batch.
 
 ### 8. IKEA (`ikea`)
 - **URL:** https://www.ikea.com/us/en/p/kivik-sectional-4-seat-with-chaise-grann-bomstad-black-s99443193/ (pinned 2026-08-09; $2,099.00 verified, not discounted)

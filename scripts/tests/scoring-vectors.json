@@ -28,6 +28,7 @@
     { "name": "costco-65", "output": "A Gold Star membership is $65 per year.", "answer_substring": "$65", "match_rule": "strip $; numeric word-boundary ($65 != $650)", "expected": true },
     { "name": "costco-not-650", "output": "Executive members spending $650 get rewards.", "answer_substring": "$65", "match_rule": "strip $; numeric word-boundary ($65 != $650)", "expected": false },
 
+    { "name": "bestbuy-2026-sale-price", "output": "$1,949.00 Save $50. Comp. Value: $1,999.00", "answer_substring": "1949 | 1999", "match_rule": "any-of; strip $, commas, trailing .00", "expected": true },
     { "name": "bestbuy-full-price-format", "output": "Lenovo Legion Tower 5i — $1,848.00", "answer_substring": "1848", "match_rule": "strip $, commas, trailing .00", "expected": true },
     { "name": "bestbuy-comma-no-cents", "output": "Your price: $1,848", "answer_substring": "1848", "match_rule": "strip $, commas, trailing .00", "expected": true },
     { "name": "bestbuy-bare-digits", "output": "price 1848 dollars", "answer_substring": "1848", "match_rule": "strip $, commas, trailing .00", "expected": true },
