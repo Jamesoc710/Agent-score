@@ -158,6 +158,15 @@ function maybeRow<T>(label: string, res: PostgrestResult): T | null {
 // Aggregation helpers
 // ---------------------------------------------------------------------------
 
+// METHODOLOGY.md failure-mode rule: "error" rows are excluded from success-rate
+// denominators ONLY if the run never reached the site (goto failed, step_count 0).
+// Errors after the site was reached stay in the denominator as failures. A site whose
+// every trial never connected (e.g. connection-level bot rejection) therefore has no
+// behavioral measurement at all — not a 0% success rate.
+export function measuredRuns(runs: Run[]): Run[] {
+  return runs.filter((r) => !(r.failure_mode === "error" && r.step_count === 0));
+}
+
 function rankEntries(entries: SiteLeaderboardEntry[]): SiteLeaderboardEntry[] {
   // Deterministic order for a published table: success rate, then static score, then name.
   // Without the tie-breaks, sites with equal success rates (common while a batch is still
@@ -175,8 +184,10 @@ function rankEntries(entries: SiteLeaderboardEntry[]): SiteLeaderboardEntry[] {
 function computeEntry(
   site: Site,
   lh: LighthouseResult | undefined,
-  runs: Run[]
+  allRuns: Run[]
 ): SiteLeaderboardEntry {
+  // Never-reached-the-site errors carry no behavioral information about the site.
+  const runs = measuredRuns(allRuns);
   const successes = runs.filter((r) => r.success).length;
   const success_rate = runs.length > 0 ? successes / runs.length : 0;
   const mean_steps =

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSiteDetail } from "@/lib/queries";
+import { getSiteDetail, measuredRuns } from "@/lib/queries";
 import { Run } from "@/lib/types";
 import { TierBadge, FlagBadge } from "@/components/SiteBadges";
 
@@ -48,7 +48,11 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
   const data = await getSiteDetail(params.slug);
   if (!data) notFound();
 
-  const { site, lighthouse, runs } = data;
+  const { site, lighthouse, runs: allRuns } = data;
+  // Summary stats follow the METHODOLOGY denominator rule (see measuredRuns); the
+  // trial log below still shows every recorded row, excluded ones included.
+  const runs = measuredRuns(allRuns);
+  const excluded = allRuns.length - runs.length;
   const successes = runs.filter((r) => r.success).length;
   const successRate = runs.length > 0 ? Math.round((successes / runs.length) * 100) : 0;
   const meanSteps =
@@ -97,7 +101,12 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
             {runs.length > 0 ? `${successRate}%` : "—"}
           </div>
           <div className="text-sm text-slate-400 mt-1">Agent success rate</div>
-          <div className="text-xs text-slate-400">{runs.length} trials</div>
+          <div className="text-xs text-slate-400">{runs.length} measured trials</div>
+          {excluded > 0 && (
+            <div className="text-xs text-slate-400">
+              +{excluded} excluded: never reached the site
+            </div>
+          )}
         </div>
       </div>
 
@@ -191,8 +200,8 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
         </p>
       </div>
 
-      {/* Trial log */}
-      {runs.length > 0 && (
+      {/* Trial log — every recorded row, including excluded never-reached errors */}
+      {allRuns.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
             <h2 className="font-semibold text-slate-900">Trial log</h2>
@@ -208,7 +217,7 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
               </tr>
             </thead>
             <tbody>
-              {runs.sort((a, b) => a.trial_number - b.trial_number).map((run) => (
+              {allRuns.sort((a, b) => a.trial_number - b.trial_number).map((run) => (
                 <TrialRow key={run.trial_number} run={run} />
               ))}
             </tbody>
