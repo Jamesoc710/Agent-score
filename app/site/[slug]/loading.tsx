@@ -29,8 +29,10 @@ export default function SiteLoading() {
         </div>
       </div>
 
+      {/* The trial log now carries a collapsed replay row per trial, so the block it stands in
+          for is roughly twice as tall. Shapes only, never numbers. */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <SkeletonBar className="h-40 w-full" />
+        <SkeletonBar className="h-72 w-full" />
       </div>
       <p className="sr-only">Loading this site&apos;s results.</p>
     </div>

@@ -1,11 +1,14 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSiteDetail, measuredRuns } from "@/lib/queries";
 import { Run } from "@/lib/types";
 import { TierBadge, FlagBadge } from "@/components/SiteBadges";
 import AgentToggle from "@/components/AgentToggle";
+import TrialReplay from "@/components/TrialReplay";
 import { agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
 import { formatRunWindow } from "@/lib/format";
+import { resolveTrialParam } from "@/lib/transcript";
 
 function SubAuditRow({ label, value }: { label: string; value: number | null }) {
   if (value === null) return null;
@@ -19,7 +22,7 @@ function SubAuditRow({ label, value }: { label: string; value: number | null }) 
   );
 }
 
-function TrialRow({ run, excluded }: { run: Run; excluded: boolean }) {
+function TrialRow({ run, excluded, href }: { run: Run; excluded: boolean; href: string }) {
   const failureLabels: Record<string, string> = {
     success: "✓ success",
     blocked: "⛔ blocked",
@@ -29,8 +32,13 @@ function TrialRow({ run, excluded }: { run: Run; excluded: boolean }) {
     error: "💥 error",
   };
   return (
-    <tr className="border-b border-slate-100 last:border-0 text-sm">
-      <td className="px-4 py-2 text-slate-500">Trial {run.trial_number}</td>
+    <tr className="border-b border-slate-100 text-sm">
+      <td className="px-4 py-2 text-slate-500">
+        {/* Links to this trial's replay, open, so a single transcript can be shared. */}
+        <Link href={href} className="hover:text-sky-600 transition-colors">
+          Trial {run.trial_number}
+        </Link>
+      </td>
       <td className="px-4 py-2">
         {/* An attempt that never reached the site is not the site failing the task, so it is
             not scored as a failure — it is excluded from the denominator entirely. */}
@@ -63,7 +71,7 @@ export default async function SiteDetailPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { agent?: string };
+  searchParams: { agent?: string; trial?: string };
 }) {
   const agentId = resolveAgentId(searchParams.agent);
   const data = await getSiteDetail(params.slug, agentId);
@@ -95,6 +103,12 @@ export default async function SiteDetailPage({
   );
 
   const measuredIds = new Set(runs.map((r) => r.trial_number));
+
+  // Which trial's replay renders open. An unrecognised, non-numeric or out-of-range value
+  // opens nothing: a bad link shows the page, never a 404 and never an invented trial.
+  const openTrial = resolveTrialParam(searchParams.trial, allRuns);
+  const trialHref = (trialNumber: number) =>
+    `${withAgent(`/site/${site.site_id}?trial=${trialNumber}`, agentId)}#trial-${trialNumber}`;
 
   const failureCounts: Record<string, number> = {};
   runs.forEach((r) => {
@@ -265,7 +279,9 @@ export default async function SiteDetailPage({
             <h2 className="font-semibold text-slate-900">Trial log</h2>
             <p className="text-xs text-slate-400 mt-0.5">
               Every recorded trial for {agentLabel(measuredAgentId)}, including attempts excluded from the
-              success rate because they never reached the site.
+              success rate because they never reached the site. Expand a trial to replay the
+              steps the agent recorded, and to see whether the record marks a failure point at
+              all.
             </p>
           </div>
           <table className="w-full">
@@ -282,11 +298,22 @@ export default async function SiteDetailPage({
               {allRuns
                 .sort((a, b) => a.trial_number - b.trial_number)
                 .map((run) => (
-                  <TrialRow
-                    key={run.trial_number}
-                    run={run}
-                    excluded={!measuredIds.has(run.trial_number)}
-                  />
+                  <Fragment key={run.trial_number}>
+                    <TrialRow
+                      run={run}
+                      excluded={!measuredIds.has(run.trial_number)}
+                      href={trialHref(run.trial_number)}
+                    />
+                    <tr className="border-b border-slate-100 last:border-0 bg-slate-50/60">
+                      <td colSpan={5} className="px-4 py-2">
+                        <TrialReplay
+                          run={run}
+                          id={`trial-${run.trial_number}`}
+                          open={openTrial === run.trial_number}
+                        />
+                      </td>
+                    </tr>
+                  </Fragment>
                 ))}
             </tbody>
           </table>
