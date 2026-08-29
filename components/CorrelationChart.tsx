@@ -8,16 +8,19 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
   Label,
 } from "recharts";
 import { CorrelationPoint } from "@/lib/types";
 
 interface Props {
   points: CorrelationPoint[];
-  slope: number;
-  intercept: number;
-  r: number;
+  /** Least-squares fit, or null when there is nothing (or nothing varying) to fit. */
+  fit: { slope: number; intercept: number } | null;
+}
+
+/** Keep the fitted line inside the plotted 0–100% range. */
+function clamp(value: number): number {
+  return Math.max(0, Math.min(1, value));
 }
 
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payload: CorrelationPoint }[] }) {
@@ -49,7 +52,7 @@ function CustomDot(props: {
   );
 }
 
-export default function CorrelationChart({ points, slope, intercept, r }: Props) {
+export default function CorrelationChart({ points, fit }: Props) {
   // Guard the empty/partial-data case (e.g. Lane 1 hasn't run yet) so Math.min/max over an
   // empty array can't produce an Infinity axis domain and NaN stats.
   if (points.length === 0) {
@@ -64,10 +67,12 @@ export default function CorrelationChart({ points, slope, intercept, r }: Props)
   const xs = points.map((p) => p.lh_total);
   const xMin = Math.max(0, Math.min(...xs) - 5);
   const xMax = Math.min(100, Math.max(...xs) + 5);
-  const trendData = [
-    { lh_total: xMin, success_rate: Math.max(0, Math.min(1, slope * xMin + intercept)) },
-    { lh_total: xMax, success_rate: Math.max(0, Math.min(1, slope * xMax + intercept)) },
-  ];
+  const trendData = fit
+    ? [
+        { lh_total: xMin, success_rate: clamp(fit.slope * xMin + fit.intercept) },
+        { lh_total: xMax, success_rate: clamp(fit.slope * xMax + fit.intercept) },
+      ]
+    : [];
 
   const scatterData = points.map((p) => ({
     ...p,
@@ -78,19 +83,6 @@ export default function CorrelationChart({ points, slope, intercept, r }: Props)
 
   return (
     <div>
-      <div className="flex items-center gap-4 mb-4">
-        <div className="bg-sky-50 border border-sky-200 rounded-lg px-4 py-3 text-center">
-          <p className="text-2xl font-bold text-sky-700 tabular-nums">{r.toFixed(2)}</p>
-          <p className="text-xs text-sky-600 mt-0.5">Pearson r</p>
-        </div>
-        <p className="text-sm text-slate-500 max-w-sm">
-          {Math.abs(r) >= 0.7
-            ? "Strong correlation — Lighthouse score is a good predictor of agent success."
-            : Math.abs(r) >= 0.4
-            ? "Moderate correlation — Lighthouse score has some predictive power."
-            : "Weak correlation — Google's rubric barely predicts real agent success. That's the finding."}
-        </p>
-      </div>
       <ResponsiveContainer width="100%" height={420}>
         <ScatterChart margin={{ top: 20, right: 60, bottom: 40, left: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />

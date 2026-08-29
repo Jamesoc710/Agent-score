@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { getSiteDetail, measuredRuns } from "@/lib/queries";
 import { Run } from "@/lib/types";
 import { TierBadge, FlagBadge } from "@/components/SiteBadges";
+import AgentToggle from "@/components/AgentToggle";
+import { agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
+import { formatRunWindow } from "@/lib/format";
 
 function SubAuditRow({ label, value }: { label: string; value: number | null }) {
   if (value === null) return null;
@@ -16,7 +19,7 @@ function SubAuditRow({ label, value }: { label: string; value: number | null }) 
   );
 }
 
-function TrialRow({ run }: { run: Run }) {
+function TrialRow({ run, excluded }: { run: Run; excluded: boolean }) {
   const failureLabels: Record<string, string> = {
     success: "✓ success",
     blocked: "⛔ blocked",
@@ -29,9 +32,20 @@ function TrialRow({ run }: { run: Run }) {
     <tr className="border-b border-slate-100 last:border-0 text-sm">
       <td className="px-4 py-2 text-slate-500">Trial {run.trial_number}</td>
       <td className="px-4 py-2">
-        <span className={`font-medium ${run.success ? "text-emerald-600" : "text-red-500"}`}>
-          {run.success ? "✓ Success" : "✗ Failed"}
-        </span>
+        {/* An attempt that never reached the site is not the site failing the task, so it is
+            not scored as a failure — it is excluded from the denominator entirely. */}
+        {excluded ? (
+          <span
+            className="font-medium text-slate-400"
+            title="Excluded from the success rate: the agent never reached the site (0 steps), so this trial measures nothing about it."
+          >
+            — excluded
+          </span>
+        ) : (
+          <span className={`font-medium ${run.success ? "text-emerald-600" : "text-red-500"}`}>
+            {run.success ? "✓ Success" : "✗ Failed"}
+          </span>
+        )}
       </td>
       <td className="px-4 py-2 text-slate-500">{failureLabels[run.failure_mode]}</td>
       <td className="px-4 py-2 text-slate-500 tabular-nums">{run.step_count} steps</td>
@@ -44,11 +58,22 @@ function TrialRow({ run }: { run: Run }) {
 // and a build should not need database credentials.
 export const dynamic = "force-dynamic";
 
-export default async function SiteDetailPage({ params }: { params: { slug: string } }) {
-  const data = await getSiteDetail(params.slug);
+export default async function SiteDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams: { agent?: string };
+}) {
+  const agentId = resolveAgentId(searchParams.agent);
+  const data = await getSiteDetail(params.slug, agentId);
   if (!data) notFound();
 
   const { site, lighthouse, runs: allRuns } = data;
+  // Label the numbers with the agent that actually produced these rows. In fixture mode the
+  // requested agent and the fixture agent differ, and attributing invented trials to a real
+  // model is exactly the kind of false statement this project cannot make.
+  const measuredAgentId = allRuns[0]?.agent_id ?? agentId;
   // Summary stats follow the METHODOLOGY denominator rule (see measuredRuns); the
   // trial log below still shows every recorded row, excluded ones included.
   const runs = measuredRuns(allRuns);
@@ -59,6 +84,17 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
     runs.length > 0
       ? (runs.reduce((s, r) => s + r.step_count, 0) / runs.length).toFixed(1)
       : "—";
+
+  const runWindow = formatRunWindow(
+    allRuns.length > 0
+      ? {
+          first: allRuns.reduce((a, r) => (r.run_at < a ? r.run_at : a), allRuns[0].run_at),
+          last: allRuns.reduce((a, r) => (r.run_at > a ? r.run_at : a), allRuns[0].run_at),
+        }
+      : null
+  );
+
+  const measuredIds = new Set(runs.map((r) => r.trial_number));
 
   const failureCounts: Record<string, number> = {};
   runs.forEach((r) => {
@@ -74,10 +110,14 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
 
   return (
     <div>
-      <div className="mb-6">
-        <Link href="/" className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <Link
+          href={withAgent("/", agentId)}
+          className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+        >
           ← Leaderboard
         </Link>
+        <AgentToggle selected={agentId} basePath={`/site/${site.site_id}`} />
       </div>
 
       <div className="flex items-start justify-between mb-8">
@@ -100,11 +140,25 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
           <div className={`text-5xl font-bold tabular-nums ${rateColor}`}>
             {runs.length > 0 ? `${successRate}%` : "—"}
           </div>
-          <div className="text-sm text-slate-400 mt-1">Agent success rate</div>
-          <div className="text-xs text-slate-400">{runs.length} measured trials</div>
+          <div className="text-sm text-slate-400 mt-1">
+            {runs.length > 0 ? "Agent success rate" : "Not measured"}
+          </div>
+          <div className="text-xs text-slate-400">
+            {runs.length} measured trials · {agentLabel(measuredAgentId)}
+            {runWindow && <> · {runWindow}</>}
+          </div>
           {excluded > 0 && (
-            <div className="text-xs text-slate-400">
-              +{excluded} excluded: never reached the site
+            <div className="text-xs text-slate-400 max-w-xs ml-auto mt-1">
+              {runs.length === 0 ? (
+                <>
+                  All {excluded} recorded trials failed before the agent reached the site
+                  (connection-level rejection at navigation, 0 steps), so this site has no
+                  behavioral measurement — not a 0% success rate. Every attempt is in the trial
+                  log below.
+                </>
+              ) : (
+                <>+{excluded} excluded: never reached the site</>
+              )}
             </div>
           )}
         </div>
@@ -165,7 +219,11 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
               </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-400">No runs yet. Execute Lane 2 to populate.</p>
+            <p className="text-sm text-slate-400">
+              {allRuns.length === 0
+                ? "No runs yet. Execute Lane 2 to populate."
+                : `No measured trials: all ${allRuns.length} recorded attempts ended before the agent reached the site, so there is nothing to summarise. The trial log below shows every attempt.`}
+            </p>
           )}
         </div>
       </div>
@@ -205,6 +263,10 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
             <h2 className="font-semibold text-slate-900">Trial log</h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Every recorded trial for {agentLabel(measuredAgentId)}, including attempts excluded from the
+              success rate because they never reached the site.
+            </p>
           </div>
           <table className="w-full">
             <thead>
@@ -217,9 +279,15 @@ export default async function SiteDetailPage({ params }: { params: { slug: strin
               </tr>
             </thead>
             <tbody>
-              {allRuns.sort((a, b) => a.trial_number - b.trial_number).map((run) => (
-                <TrialRow key={run.trial_number} run={run} />
-              ))}
+              {allRuns
+                .sort((a, b) => a.trial_number - b.trial_number)
+                .map((run) => (
+                  <TrialRow
+                    key={run.trial_number}
+                    run={run}
+                    excluded={!measuredIds.has(run.trial_number)}
+                  />
+                ))}
             </tbody>
           </table>
         </div>
