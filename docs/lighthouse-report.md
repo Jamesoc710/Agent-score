@@ -74,8 +74,9 @@ one-line change we cannot make without forking the frozen dataset.
 **Behavioral axis — one frozen loop.** Playwright + Gemini, screenshot and page text per step.
 Frozen 2026-08-09 and unchanged since; any change forks the dataset under a new `agent_id`.
 Max 15 steps, hard 90-second wall clock, `temperature = 0`, `max_output_tokens = 512`, JSON
-response mode, 8,000 characters of page text per step, 3 retries with exponential backoff on
-transient model failures (backoff time excluded from the trial clock). The prompt is one
+response mode, 8,000 characters of page text per step, up to 3 attempts per model call with
+exponential backoff on transient failures (backoff time excluded from the trial clock, so an
+API blip cannot become a `timeout` verdict against the site). The prompt is one
 template parameterized only by the site's `question`; a test proves no registered answer can
 appear in it.
 
