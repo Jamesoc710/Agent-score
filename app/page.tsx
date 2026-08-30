@@ -171,7 +171,7 @@ export default async function LeaderboardPage({
               {rhoCI ? (
                 <>
                   {relationshipVerdict(rhoCI) === "none"
-                    ? "Google's Lighthouse Agentic Browsing score did not predict which sites it succeeded on"
+                    ? "No relationship between Google's Lighthouse Agentic Browsing score and where it succeeded was distinguishable from noise"
                     : `Google's Lighthouse Agentic Browsing score tracked where it succeeded (${
                         relationshipVerdict(rhoCI) === "positive" ? "higher" : "lower"
                       } scores, more successes)`}
