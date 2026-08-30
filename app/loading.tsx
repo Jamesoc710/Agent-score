@@ -4,7 +4,7 @@ export default function LeaderboardLoading() {
   return (
     <div>
       <div className="mb-8">
-        <SkeletonBar className="h-8 w-80" />
+        <SkeletonBar className="h-8 w-full max-w-xs sm:max-w-sm" />
         <SkeletonBar className="h-4 w-full max-w-2xl mt-3" />
         <SkeletonBar className="h-4 w-2/3 max-w-xl mt-2" />
       </div>
@@ -15,7 +15,7 @@ export default function LeaderboardLoading() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <tbody>
             <SkeletonTableRows rows={10} cols={6} />

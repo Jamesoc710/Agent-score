@@ -4,25 +4,25 @@ export default function SiteLoading() {
   return (
     <div>
       <SkeletonBar className="h-4 w-28 mb-6" />
-      <div className="flex items-start justify-between mb-8">
-        <div className="w-full max-w-md">
+      <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="w-full max-w-md min-w-0">
           <SkeletonBar className="h-8 w-64" />
           <SkeletonBar className="h-4 w-48 mt-2" />
           <SkeletonBar className="h-4 w-32 mt-2" />
         </div>
-        <div className="text-right">
-          <SkeletonBar className="h-12 w-28 ml-auto" />
-          <SkeletonBar className="h-3 w-24 mt-2 ml-auto" />
+        <div className="shrink-0 sm:text-right">
+          <SkeletonBar className="h-12 w-28 sm:ml-auto" />
+          <SkeletonBar className="h-3 w-24 mt-2 sm:ml-auto" />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+      <div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
+        <div className="card card-pad space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <SkeletonBar key={i} className="h-5 w-full" />
           ))}
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+        <div className="card card-pad space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <SkeletonBar key={i} className="h-5 w-full" />
           ))}
@@ -31,7 +31,7 @@ export default function SiteLoading() {
 
       {/* The trial log now carries a collapsed replay row per trial, so the block it stands in
           for is roughly twice as tall. Shapes only, never numbers. */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <div className="card card-pad">
         <SkeletonBar className="h-72 w-full" />
       </div>
       <p className="sr-only">Loading this site&apos;s results.</p>
