@@ -277,10 +277,10 @@ export default async function CorrelationPage({
             </>
           ) : relationshipVerdict(rhoCI) === "none" ? (
             <>
-              On {n} sites, Google&apos;s Agentic Browsing score did not predict whether{" "}
-              {agentLabel(measuredAgentId)} could complete a real task (ρ&nbsp;=&nbsp;{formatR(rho)}, 95%
-              CI&nbsp;{formatInterval(rhoCI)}). The static rubric and the behavioral outcome are
-              measuring different things.
+              On {n} sites, no relationship between Google&apos;s Agentic Browsing score and whether{" "}
+              {agentLabel(measuredAgentId)} could complete a real task was distinguishable from noise
+              (ρ&nbsp;=&nbsp;{formatR(rho)}, 95% CI&nbsp;{formatInterval(rhoCI)}). The interval spans
+              zero: this cohort cannot separate the rubric&apos;s predictive power from none at all.
             </>
           ) : (
             <>
