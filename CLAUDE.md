@@ -29,6 +29,11 @@ scanning is the product direction. Solo project (James), built with Claude in th
 - Pipeline lanes: `scripts/lane1-lighthouse.ts` (Lighthouse CLI, static x-axis) and
   `scripts/lane2-agent.py` (Gemini + Playwright, behavioral y-axis, Python). Both write local
   per-batch artifacts under `data/`; `scripts/import-results.ts` is the only DB writer.
+- Published statistics live in `lib/stats.ts` and `lib/sub-audits.ts` as pure functions,
+  mirrored by `scripts/stats_reference.py` and pinned by `scripts/tests/stats-vectors.json`.
+  **A number the site publishes is computed twice, in two languages, and the test suite fails
+  if they disagree.** Extend that contract rather than working around it. Tests:
+  `npm test` (pytest, the scoring contract) and `npm run test:unit` (vitest, the read path).
 - Result tables are append-only, keyed by `batch_label`; `lib/dataset.ts` names the batch and
   agent the app publishes.
 
@@ -52,7 +57,9 @@ scanning is the product direction. Solo project (James), built with Claude in th
 - Scoring changes require tests. The match rules in `docs/METHODOLOGY.md` are the spec.
 - Real agent runs and Lighthouse batches cost time/money and produce data others may cite:
   confirm with James before full-cohort runs.
-- Known debt (as of 2026-07): `lane2-agent.py` still uses naive substring matching instead of
-  the documented match rules; `scripts/cohort.json` is the stale draft cohort, superseded by
-  `data/cohort.csv` but still what the scripts read. Both are scheduled in the roadmap; don't
-  build on them without checking `docs/ROADMAP.md`.
+- Both items of known debt from 2026-07 are cleared: `scripts/scoring.py` implements the
+  documented match rules and `scripts/cohort.json` is deleted. **The live debt as of
+  2026-08-30 is different: v1 is published and its loop is frozen, so the cheap work is
+  finished and the open questions all cost money or change the claim.** See
+  `docs/ROADMAP.md` for the state of each phase and `.claude/plans/buildout.md` for the
+  session log.

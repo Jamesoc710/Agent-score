@@ -26,9 +26,11 @@ data/cohort.csv  (canonical cohort: question, answer, match rule per site)
                   |
                   v
       Next.js app  (lib/queries.ts is the single data layer)
-        /            leaderboard: success rate, LH score, top failure mode
-        /site/[slug] sub-audit breakdown, trial log, answer key
-        /correlation scatter + correlation stats + sub-audit ranking
+        /                   leaderboard: success rate, LH score, top failure mode
+        /site/[slug]        sub-audit breakdown, trial log, per-trial transcript replay,
+                            answer key
+        /correlation        scatter + rank correlation with bootstrap CI and n
+        /correlation/audits per-sub-audit attribution, multiplicity-corrected
 ```
 
 Neither lane talks to the database. They write local artifacts; `import-results.ts` loads a
@@ -89,15 +91,30 @@ over the newest batch per site, for ad-hoc inspection rather than for the app.
 - Real data is the default path. Fixtures (`lib/fake-data.ts`, 3 rows sampled from the
   canonical cohort) render only when `USE_FAKE_DATA=true` — there is no silent fallback, so a
   misconfigured deploy fails loudly instead of serving invented numbers.
-- `scripts/cohort.json` is the stale draft cohort (30 sites, mostly unverified) that both
-  lanes still read. `data/cohort.csv` (28 sites, verified manual pass) is canonical, is what
-  `seed-sites.ts` loads, and gets wired into the lanes in Phase 2. Do not add sites to
-  cohort.json. Until then the lanes emit draft-cohort `site_id`s, which
-  `import-results.ts` rejects with an explicit list rather than a foreign-key error.
+- `data/cohort.csv` (28 sites, verified manual pass) is the single canonical cohort, read by
+  `seed-sites.ts` and by both lanes. The draft `scripts/cohort.json` was deleted in Phase 2.
 - `data/lighthouse-results.json` is a pre-migration artifact from the draft cohort, kept as
-  history and not imported; Lane 1 is re-run against the canonical cohort in Phase 3.
-- Lane 2 has no `--resume` yet, but its artifact is an append log, so a re-run only duplicates
-  trials the importer would dedupe anyway.
+  history and never imported. The published Lane 1 batch is `data/lighthouse-v1.json`; the
+  published Lane 2 batch is `data/agent-runs-v1.jsonl` (280 trials, two agents).
+- Lane 2 has `--resume`, which skips recorded trials and re-runs rows recorded as `error`.
+- **The v1 loop is frozen** (2026-08-09). Any change to it forks the dataset.
+
+## Read-path modules added after the data landed
+
+Aggregation still happens at read time in `lib/queries.ts`; these sit beside it as pure,
+separately tested functions with no data access:
+
+- `lib/stats.ts` — Spearman rho, Pearson, average ranks, a seeded percentile bootstrap that
+  resamples sites, group sizes for binary splits. Anything uncomputable returns `null`, never
+  `0`. Mirrored operation-for-operation by `scripts/stats_reference.py`, with
+  `scripts/tests/stats-vectors.json` pinning the values both implementations must produce —
+  the same cross-language arrangement `scoring-vectors.json` provides for the scorer.
+- `lib/sub-audits.ts` — the per-audit attribution analysis behind `/correlation/audits`:
+  success-rate gaps with intervals, a Westfall-Young maxT family correction, tier-stratified
+  permutation for the confound test, and the power/ceiling arithmetic.
+- `lib/transcript.ts` — turns one stored transcript into what can honestly be said about how
+  that trial ended, including the case where nothing in the record names a failure step.
+- `lib/format.ts` — one place decides how a measurement is worded.
 
 ## Environment
 

@@ -3,11 +3,19 @@
 Sequenced phases first, then the product backlog. The active working plan with per-session
 state lives in `.claude/plans/buildout.md`.
 
-**The one hard deadline in this document:** `docs/METHODOLOGY.md` fixes one agent, one prompt,
-one harness per dataset version — any change to the agent loop forks the dataset. So every
-harness change has to land *before* the Phase 3 run. Afterwards the choice is re-running 28
-sites × 5 trials or carrying a known-weak dataset forever. UI work has no such deadline, which
-is why it sits after the data rather than before it.
+**Status as of 2026-08-30:** Phases 1-4 are complete and deployed, Phase 5 is complete except
+for leaderboard sorting/filtering, and the first backlog item (sub-audit attribution) has
+shipped. The measurement side of the project has produced two null results and a power
+analysis showing this cohort could not have detected the effect it was built to look for; the
+open decisions are therefore about what to measure next, not how to present v1. Phase numbers
+in this file are the only canonical ones — session notes elsewhere have occasionally numbered
+the sub-audit work "Phase 6", which does not exist here.
+
+**The hard deadline this document was built around has passed, and the rule it came from still
+binds:** `docs/METHODOLOGY.md` fixes one agent, one prompt, one harness per dataset version.
+The v1 loop froze on 2026-08-09 and the run completed on 2026-08-19, so **any change to the
+agent loop from here forks the dataset** — a new `agent_id` or `batch_label`, never an
+amendment in place.
 
 ## Phase 1 — Supabase + Vercel foundation ✅ complete (2026-08-01)
 
@@ -18,10 +26,17 @@ is why it sits after the data rather than before it.
   silent fallback. All Firebase code, config and dependencies removed.
 - Deployed: <https://agent-score-weld.vercel.app>. Any push to `main` deploys production.
 
-## Phase 2 — Cohort, scoring, and harness correctness
+## Phase 2 — Cohort, scoring, and harness correctness ✅ complete (2026-08-09)
 
-Everything here is a prerequisite for the run, not a nice-to-have. The loop is frozen at the
-end of this phase.
+Delivered: `scripts/scoring.py` implements the METHODOLOGY contract with 174 pytest cases and
+a language-neutral vector file; `scripts/cohort.json` deleted and both lanes read
+`data/cohort.csv`; the prompt parameterized with each site's `question`; every harness
+validity fix below landed, including `--resume`; the six `[confirm exact URL]` entries
+resolved. The loop was frozen at the end of this phase and has not changed since.
+
+<details><summary>The original scope, kept as the record</summary>
+
+Everything here was a prerequisite for the run, not a nice-to-have.
 
 **Cohort**
 
@@ -65,9 +80,20 @@ end of this phase.
 - Surface `tier` and `flag` on the leaderboard. Both are in the database and rendered nowhere,
   so "Amazon 0%" reads as a broken benchmark instead of `intentional blocker (expect blocked)`.
 
-## Phase 3 — Real data
+</details>
 
-The harness is frozen for the duration of this phase.
+## Phase 3 — Real data ✅ complete (2026-08-19)
+
+Delivered: Lane 1 across all 28 sites, Lane 2 at 28 x 5 trials x 2 models (280 trials),
+imported as batch `v1`, pre-registration receipt tagged. **Headline result: the Lighthouse
+Agentic Browsing score showed no relationship with behavioral success that this cohort could
+distinguish from noise** (rho = 0.11, 95% CI [-0.29, 0.48], n = 27; the 28th site was never
+reached and is excluded rather than scored 0%). Overall success: 51% for
+`gemini-3.5-flash-lite`, 57% for `gemini-3.6-flash`.
+
+<details><summary>The original scope, kept as the record</summary>
+
+The harness was frozen for the duration of this phase.
 
 - Verify the `agentic-browsing` audit IDs against current Lighthouse (all-zero `lh_webmcp` in
   the draft batch is unexplained), then run Lane 1 across the full 28-site cohort.
@@ -76,31 +102,53 @@ The harness is frozen for the duration of this phase.
 - Prove the loop on 5 sites as its own `batch_label`, then the full run: 5 trials × 28 sites.
 - Commit the pre-registration receipt (git-hashed answer key) before the full run.
 
-## Phase 4 — Leaderboard launch
+</details>
 
-- Frontend on real data by default; graceful gaps for sites missing a lane.
-- Replace bare Pearson with Spearman rank correlation + bootstrap 95% CI + explicit n.
-- `loading` / `error` / `not-found` states (none exist today).
+## Phase 4 — Leaderboard launch ✅ complete (2026-08-30)
 
-## Phase 5 — Presentation
+- Frontend on real data by default; graceful gaps for sites missing a lane. ✅
+- Bare Pearson replaced with Spearman rho + a seeded percentile bootstrap 95% CI + explicit n,
+  in `lib/stats.ts`, cross-checked against an independent Python implementation
+  (`scripts/stats_reference.py`) through a committed vector file. ✅
+- `loading` / `error` / `not-found` for every route. ✅
+- Beyond the original scope: an agent toggle (`?agent=`) publishing either model of the panel,
+  and a "not measured" affordance distinguishing "no measurement exists" from "0% success".
+
+## Phase 5 — Presentation — mostly complete (2026-08-30)
 
 Deliberately after the data: a leaderboard should be designed around real distributions, not
 around 28 zeroes.
 
-- **Per-step transcript replay.** Transcripts are already stored and nothing renders them.
-  Render the timeline and mark the step that flipped the run into its failure mode. Makes
-  failure labels auditable and is the single most convincing demo asset.
-- A real design pass on all three pages. What exists is a functional first draft.
-- Leaderboard sorting and filtering — by tier, by failure mode, by either axis.
-- Responsive and dark-mode behaviour, neither of which has ever been checked.
+- **Per-step transcript replay.** ✅ Every trial in the log expands into the steps it
+  recorded, deep-linkable at `?trial=N`, with no client component. The original wording of
+  this item ("mark the step that flipped the run into its failure mode") turned out to be
+  unsupportable: 63 of 280 v1 trials are ended from *outside* the transcript, by the wall
+  clock or the step budget, and nothing in the record names a cause. Those read "Failure
+  point: not recorded" rather than pointing at whatever action happened to be last.
+- A real design pass on all pages. ✅ Semantic colour tokens, dark mode via
+  `prefers-color-scheme`, AA contrast verified across every route in both themes (the fine
+  print went from 2.56:1 to 5.39:1), responsive at 375/768/1280.
+- Responsive and dark-mode behaviour. ✅ (folded into the design pass)
+- Leaderboard sorting and filtering — **still open, and deliberately deprioritized**: at 28
+  rows it buys little, and the table is already deterministically ordered.
 
 ## Backlog — hardening the result
 
 Roughly ordered by credibility-per-hour:
 
-- **Sub-audit attribution.** Split the cohort by pass/fail on each Lighthouse sub-audit and
-  show the success-rate gap each buys (with CI). Produces the quotable finding ("only
-  accessibility-tree predicted success").
+- ~~**Sub-audit attribution.**~~ ✅ **Done (2026-08-30), and the quotable finding is not
+  there.** Live at `/correlation/audits`. Six comparisons (four audits, two agents; two
+  audits usable per agent plus one unfalsifiable), family-wise p from 0.153 to 1.000 under a
+  Westfall-Young maxT correction — **no individual sub-audit is distinguishable from noise
+  either.** Three results worth more than the headline: (a) the family-wise critical value is
+  a 49-point success gap and the 80%-power threshold is 67, while the largest gap this cohort
+  can *physically* produce on a 6-of-27 split is 62.9 — so an llms.txt-shaped effect could not
+  have been detected here at all; (b) llms.txt is confounded past rescue with cohort design
+  (tier-stratified p = 1.000 / 0.754, and for `gemini-3.6-flash` `tier == anchor` and
+  `lh_llms_txt` are numerically identical predictors); (c) `lh_webmcp` is unfalsifiable at
+  1-of-27 — the smallest p any arrangement of that split could produce is 0.259. This also
+  resolves the METHODOLOGY open item about all-zero `lh_webmcp`: the audit id is live, and
+  1 of 28 passing is adoption data rather than a harness bug.
 - **Difficulty-residual baseline.** Run extraction-only (direct nav to the answer page) per
   site; full-agent minus extraction-only isolates navigation difficulty from "is the fact
   hard to read." Defuses the main methodological objection.
