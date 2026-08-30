@@ -16,6 +16,16 @@ interface Props {
   points: CorrelationPoint[];
   /** Least-squares fit, or null when there is nothing (or nothing varying) to fit. */
   fit: { slope: number; intercept: number } | null;
+  /**
+   * Authored points overlaid on the measured cohort, drawn as outlined diamonds.
+   *
+   * Used by /correlation/exhibit for the two Goodhart pages. They are a separate Recharts
+   * series fed by a separate prop, and no statistic on this site ever sees them: rho, the
+   * bootstrap interval, the fitted line and n are all computed upstream from `points` alone.
+   * When this is non-empty the cohort dots are drawn small, muted and unlabelled, so the
+   * overlay reads as an annotation on the cohort rather than as more cohort data.
+   */
+  authored?: CorrelationPoint[];
 }
 
 /** Keep the fitted line inside the plotted 0–100% range. */
@@ -23,12 +33,21 @@ function clamp(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payload: CorrelationPoint }[] }) {
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload: CorrelationPoint & { authored?: boolean } }[];
+}) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
     <div className="rounded-lg border border-line bg-surface px-3 py-2 text-sm shadow-lg">
       <p className="font-semibold text-ink">{d.name}</p>
+      {d.authored && (
+        <p className="mb-1 text-xs text-ink-muted">Authored exhibit, not cohort data</p>
+      )}
       <p className="text-ink-muted">
         Lighthouse: <span className="font-mono tabular-nums text-ink-body">{d.lh_total}</span>
       </p>
@@ -42,9 +61,14 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payl
   );
 }
 
-function CustomDot(props: { cx?: number; cy?: number; payload?: CorrelationPoint }) {
-  const { cx, cy, payload } = props;
+function CustomDot(props: { cx?: number; cy?: number; payload?: CorrelationPoint; muted?: boolean }) {
+  const { cx, cy, payload, muted } = props;
   if (!cx || !cy || !payload) return null;
+  // Backdrop mode: the cohort is context for an overlay, so it keeps its positions and loses
+  // its labels and its success-rate hue. 28 names plus two annotated ones is unreadable ink.
+  if (muted) {
+    return <circle cx={cx} cy={cy} r={4} className="chart-dot chart-dot-muted" strokeWidth={1} />;
+  }
   const rate = payload.success_rate;
   // Redundant with the y position, which is the channel that actually carries the value.
   const tone = rate >= 0.7 ? "good" : rate >= 0.4 ? "mid" : "bad";
@@ -75,10 +99,42 @@ function CustomDot(props: { cx?: number; cy?: number; payload?: CorrelationPoint
   );
 }
 
-export default function CorrelationChart({ points, fit }: Props) {
+/**
+ * An authored point: an outlined diamond, so it is a different mark and not just a different
+ * colour. The label is always drawn, including below `sm` where the cohort labels are dropped,
+ * because on this chart there are exactly two of them and they are the subject.
+ */
+function AuthoredMark(props: { cx?: number; cy?: number; payload?: CorrelationPoint }) {
+  const { cx, cy, payload } = props;
+  if (!cx || !cy || !payload) return null;
+  const r = 7;
+  const flip = payload.lh_total > 62;
+  return (
+    <g>
+      <path
+        d={`M ${cx} ${cy - r} L ${cx + r} ${cy} L ${cx} ${cy + r} L ${cx - r} ${cy} Z`}
+        strokeWidth={2}
+        className="chart-mark-authored"
+      />
+      <text
+        x={flip ? cx - 12 : cx + 12}
+        y={cy + 4}
+        fontSize={11}
+        textAnchor={flip ? "end" : "start"}
+        className="chart-mark-authored-label"
+      >
+        {payload.name}
+      </text>
+    </g>
+  );
+}
+
+export default function CorrelationChart({ points, fit, authored = [] }: Props) {
+  const hasAuthored = authored.length > 0;
+
   // Guard the empty/partial-data case (e.g. Lane 1 hasn't run yet) so Math.min/max over an
   // empty array can't produce an Infinity axis domain and NaN stats.
-  if (points.length === 0) {
+  if (points.length === 0 && !hasAuthored) {
     return (
       <div className="flex h-[320px] items-center justify-center px-4 text-center text-sm text-ink-muted sm:h-[420px]">
         No correlation data yet — run Lane 1 (Lighthouse) and Lane 2 (agent) to populate the scatter.
@@ -86,8 +142,9 @@ export default function CorrelationChart({ points, fit }: Props) {
     );
   }
 
-  // Build trend line from min to max x
-  const xs = points.map((p) => p.lh_total);
+  // Build trend line from min to max x. Only the cohort's own points set its extent: the
+  // authored overlay must not stretch, shorten or otherwise touch the fitted line.
+  const xs = points.length > 0 ? points.map((p) => p.lh_total) : [0, 100];
   const xMin = Math.max(0, Math.min(...xs) - 5);
   const xMax = Math.min(100, Math.max(...xs) + 5);
   const trendData = fit
@@ -157,8 +214,15 @@ export default function CorrelationChart({ points, fit }: Props) {
             line={{ strokeDasharray: "4 4", strokeWidth: 1.5, className: "chart-trend" }}
             shape={() => <g />}
           />
-          {/* Data points */}
-          <Scatter data={scatterData} shape={<CustomDot />} />
+          {/* Measured cohort points */}
+          <Scatter data={scatterData} shape={<CustomDot muted={hasAuthored} />} />
+          {/* Authored overlay, kept a separate series so no statistic can pick it up */}
+          {hasAuthored && (
+            <Scatter
+              data={authored.map((p) => ({ ...p, authored: true }))}
+              shape={<AuthoredMark />}
+            />
+          )}
         </ScatterChart>
       </ResponsiveContainer>
     </div>

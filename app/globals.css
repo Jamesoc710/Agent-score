@@ -331,6 +331,25 @@
   stroke: rgb(var(--c-ink-muted));
 }
 
+/*
+ * The authored overlay on /correlation/exhibit. A different mark, not a different colour: an
+ * outlined diamond against filled circles reads as "not the same kind of thing" even in
+ * greyscale, which is the distinction the page depends on a reader making.
+ */
+.chart .chart-dot-muted {
+  fill: rgb(var(--c-ink-muted));
+}
+
+.chart .chart-mark-authored {
+  fill: rgb(var(--c-surface));
+  stroke: rgb(var(--c-accent));
+}
+
+.chart .chart-mark-authored-label {
+  fill: rgb(var(--c-ink));
+  font-weight: 600;
+}
+
 /* The scatter labels each point with its site name. Below `sm` there is not enough width for
    28 of them to be anything but overlapping ink, so they are dropped — the tooltip still
    names every point, and the axes still carry the measurement. */

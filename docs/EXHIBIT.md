@@ -64,9 +64,11 @@ takes a screenshot and `document.body.innerText`):
 | Target row reachable by `window.scrollBy` | not needed | no |
 | Target row reachable by a person | yes | yes, scroll the container |
 
-The load screenshots are byte-identical (same md5), so the two pages are not merely similar,
-they are visually the same page. The target row on Exhibit B is not off-screen. It is absent:
-not in the DOM, not in the accessibility tree, not in the text, not in the pixels.
+The load screenshots are byte-identical, so the two pages are not merely similar, they are
+visually the same page. Captured with the harness's own settings (headless Chromium, 1280x800,
+the same user agent), both PNGs hash to `8870b70d7d59599242e969d113b356c7`; the check is one
+`page.screenshot()` per page and an `md5`. The target row on Exhibit B is not off-screen. It
+is absent: not in the DOM, not in the accessibility tree, not in the text, not in the pixels.
 
 ### The one asymmetry, stated plainly
 
@@ -134,6 +136,35 @@ tagged, and anyone can serve the identical bytes with the two commands above and
 lanes. When this branch is merged the same files are served at `/exhibit/pair-a.html` and
 `/exhibit/pair-b.html` on the public site, and the run can be repeated against that origin as
 a confirmation batch.
+
+## The measured result (appended 2026-08-30, after the run)
+
+Registration was commit `7a4ae51`, tagged `exhibit-key-v1`. The run followed it. Nothing in the
+pages or the key changed in between, and nothing changed after.
+
+**Lane 1**, batch `goodhart`: both pages `lh_total = 100`, with identical sub-audits
+(`agent-accessibility-tree` pass, `cumulative-layout-shift` pass; the `llms-txt` and three
+`webmcp` audits report `notApplicable` and are reweighted out). Lane 1's x-axis spread check
+prints its "BORING BLOB, spread 0pts" warning, which is a cohort-design gate and is precisely
+the intent here: a matched pair is supposed to have no spread on the static axis.
+
+**Lane 2**, batch `goodhart`, 20 trials, zero harness errors, every trial reached its page:
+
+| agent | page | success | recorded mode | steps | seconds |
+|---|---|---|---|---|---|
+| `gemini-3.5-flash-lite` | Exhibit A | 5/5 | success | 1 | 0 to 1 |
+| `gemini-3.5-flash-lite` | Exhibit B | 0/5 | navigation_stuck | 15 | 19 to 21 |
+| `gemini-3.6-flash` | Exhibit A | 5/5 | success | 1 | 1 to 2 |
+| `gemini-3.6-flash` | Exhibit B | 0/5 | navigation_stuck | 15 | 27 to 29 |
+
+All ten Exhibit A trials reported `PAB-2493-PT` on their first step. All ten Exhibit B trials
+spent the entire 15-step budget emitting `scroll`, each step reasoning that SM-133 was not
+visible yet. One transcript states the mechanism in the agent's own words at step 2: "Need to
+find sensor module SM-133 in the table, which is currently showing up to SM-116." SM-116 is the
+sixteenth row, which is exactly where the mounted window ends.
+
+Every trial and its transcript is at `/correlation/exhibit`, and in
+`data/agent-runs-goodhart.jsonl`.
 
 ## Isolation from the cohort
 

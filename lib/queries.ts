@@ -18,6 +18,7 @@ import {
   FAKE_RUNS,
 } from "./fake-data";
 import { ACTIVE_BATCH, ACTIVE_AGENT_ID, PUBLISHED_AGENTS, USING_FIXTURES } from "./dataset";
+import { measuredRuns } from "./runs";
 
 // The single data layer. Aggregation (success rate, ranking, correlation) happens here at
 // read time, not in the pipeline or in SQL views — see docs/ARCHITECTURE.md. Correlation
@@ -315,9 +316,11 @@ function maybeRow<T>(label: string, res: PostgrestResult): T | null {
 // Errors after the site was reached stay in the denominator as failures. A site whose
 // every trial never connected (e.g. connection-level bot rejection) therefore has no
 // behavioral measurement at all — not a 0% success rate.
-export function measuredRuns(runs: Run[]): Run[] {
-  return runs.filter((r) => !(r.failure_mode === "error" && r.step_count === 0));
-}
+//
+// The rule itself moved to lib/runs.ts when lib/exhibit.ts needed the identical one: this
+// module memoizes its batch read with react/cache and so cannot be imported outside React.
+// Re-exported here because this is where every existing caller looks for it.
+export { measuredRuns };
 
 /** Trial-level totals, denominators and the run window for one published slice. */
 function summarize(
