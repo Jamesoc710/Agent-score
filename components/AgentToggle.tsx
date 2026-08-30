@@ -16,17 +16,15 @@ export default function AgentToggle({
   // that does not exist.
   if (USING_FIXTURES) {
     return (
-      <div className="inline-flex items-center gap-2 text-xs text-slate-400">
-        <span className="rounded bg-slate-100 px-2 py-1 font-medium text-slate-500">
-          Fixture data — single agent
-        </span>
-      </div>
+      <span className="inline-block rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 text-xs font-medium text-ink-muted">
+        Fixture data — single agent
+      </span>
     );
   }
 
   return (
-    <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
-      <span className="px-2 text-xs font-medium text-slate-400">Agent</span>
+    <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-line bg-surface p-1">
+      <span className="px-2 text-xs font-medium text-ink-muted">Agent</span>
       {PUBLISHED_AGENTS.map((agent) => {
         const active = agent.id === selected;
         return (
@@ -35,10 +33,12 @@ export default function AgentToggle({
             href={withAgent(basePath, agent.id)}
             title={agent.note}
             aria-current={active ? "true" : undefined}
-            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+            // The selected agent is marked by weight and an outline as well as by fill, so the
+            // control still reads as a two-state control without colour.
+            className={`rounded-md px-2.5 py-1.5 text-xs transition-colors ${
               active
-                ? "bg-sky-50 text-sky-700"
-                : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                ? "bg-accent-soft font-semibold text-accent ring-1 ring-inset ring-accent/30"
+                : "font-medium text-ink-muted hover:bg-surface-2 hover:text-ink"
             }`}
           >
             {agent.label}
