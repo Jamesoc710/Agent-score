@@ -21,17 +21,18 @@ import {
 // budget end them from outside the transcript — and the panel says "not recorded" rather than
 // pointing at whatever action happens to be last.
 
+// Categorical, not ordinal: these separate kinds of action, they do not rank them. The
+// action name is always printed beside the colour.
 const ACTION_STYLES: Record<string, string> = {
-  click: "bg-sky-50 text-sky-700",
-  type: "bg-violet-50 text-violet-700",
-  scroll: "bg-slate-100 text-slate-600",
-  navigate: "bg-indigo-50 text-indigo-700",
-  done: "bg-emerald-50 text-emerald-700",
+  click: "chip-sky",
+  type: "chip-violet",
+  scroll: "chip-slate",
+  navigate: "chip-indigo",
+  done: "chip-emerald",
 };
 
 function Chip({ tone, children }: { tone: "slate" | "amber"; children: React.ReactNode }) {
-  const styles =
-    tone === "amber" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-500";
+  const styles = tone === "amber" ? "bg-mid-soft text-mid-ink" : "bg-surface-2 text-ink-body";
   return (
     <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] ${styles}`}>{children}</span>
   );
@@ -43,11 +44,11 @@ function AnswerCallout({ step }: { step: NormalizedStep }) {
   // carries a `matched` key at all.
   if (step.answer === "BLOCKED") {
     return (
-      <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2">
-        <p className="text-xs font-medium text-rose-800">
+      <div className="mt-2 rounded-lg border border-bad/30 bg-bad-soft px-3 py-2">
+        <p className="text-xs font-medium text-bad-ink">
           The agent reported <code className="font-mono">BLOCKED</code>.
         </p>
-        <p className="mt-0.5 text-[11px] text-rose-600">
+        <p className="mt-0.5 text-[11px] text-bad-ink">
           This is the agent&apos;s own report of a wall, not an independent observation that the
           site blocked it. The harness records the report and scores the trial as blocked.
         </p>
@@ -58,28 +59,28 @@ function AnswerCallout({ step }: { step: NormalizedStep }) {
   const matched = step.matched;
   const tone =
     matched !== null
-      ? "border-emerald-200 bg-emerald-50"
+      ? "border-good/30 bg-good-soft"
       : step.hasMatchedKey
-        ? "border-amber-200 bg-amber-50"
-        : "border-slate-200 bg-slate-50";
+        ? "border-mid/30 bg-mid-soft"
+        : "border-line bg-surface-2";
 
   return (
     <div className={`mt-2 rounded-lg border px-3 py-2 ${tone}`}>
-      <p className="text-xs text-slate-500">Reported answer</p>
-      <p className="mt-0.5 break-words font-mono text-xs text-slate-800">
-        {step.answer ?? <span className="text-slate-400">(empty)</span>}
+      <p className="text-xs text-ink-muted">Reported answer</p>
+      <p className="mt-0.5 break-words font-mono text-xs text-ink">
+        {step.answer ?? <span className="text-ink-muted">(empty)</span>}
       </p>
       {matched !== null ? (
-        <p className="mt-1 text-[11px] text-emerald-700">
+        <p className="mt-1 text-[11px] text-good-ink">
           Matched the registered candidate{" "}
-          <code className="rounded bg-emerald-100 px-1 font-mono">{matched}</code>.
+          <code className="rounded bg-good/15 px-1 font-mono">{matched}</code>.
         </p>
       ) : step.hasMatchedKey ? (
-        <p className="mt-1 text-[11px] text-amber-700">
+        <p className="mt-1 text-[11px] text-mid-ink">
           Scored against the pre-registered key; no candidate matched.
         </p>
       ) : (
-        <p className="mt-1 text-[11px] text-slate-500">
+        <p className="mt-1 text-[11px] text-ink-muted">
           The transcript does not record which registered candidate matched.
         </p>
       )}
@@ -99,11 +100,11 @@ function StepEntry({
 }) {
   if (step.kind === "note") {
     return (
-      <li className="border-l-2 border-slate-200 py-1.5 pl-4 text-xs text-slate-500">
-        <span className="font-medium text-slate-600">Harness note</span>, before step{" "}
+      <li className="border-l-2 border-line py-1.5 pl-4 text-xs text-ink-muted">
+        <span className="font-medium text-ink-body">Harness note</span>, before step{" "}
         {step.displayStep}: <span className="italic">{step.note}</span>
         {step.url && (
-          <span className="ml-1 break-all font-mono text-[11px] text-slate-400">{step.url}</span>
+          <span className="ml-1 break-all font-mono text-[11px] text-ink-muted">{step.url}</span>
         )}
       </li>
     );
@@ -111,17 +112,15 @@ function StepEntry({
 
   if (step.kind === "error") {
     return (
-      <li className="border-l-2 border-red-300 py-2 pl-4">
-        <p className="text-xs font-semibold text-slate-700">
+      <li className="border-l-2 border-bad py-2 pl-4">
+        <p className="text-xs font-semibold text-ink-strong">
           {navigationFailure ? "Before step 1" : `Step ${step.displayStep}`}
-          <span className="ml-2 rounded bg-red-50 px-1.5 py-0.5 text-[11px] font-medium text-red-700">
+          <span className="ml-2 rounded bg-bad-soft px-1.5 py-0.5 text-[11px] font-medium text-bad-ink">
             harness error
           </span>
         </p>
-        <pre className="mt-1.5 overflow-x-auto whitespace-pre-wrap break-words rounded bg-slate-900 px-3 py-2 font-mono text-[11px] leading-relaxed text-slate-100">
-          {step.error}
-        </pre>
-        <p className="mt-1 text-[11px] text-slate-500">
+        <pre className="code-well mt-1.5">{step.error}</pre>
+        <p className="mt-1 text-[11px] text-ink-muted">
           Recorded by the harness. A technical failure is not a result about the site.
         </p>
       </li>
@@ -130,7 +129,7 @@ function StepEntry({
 
   if (step.kind === "unknown") {
     return (
-      <li className="border-l-2 border-slate-200 py-2 pl-4 text-xs text-slate-500">
+      <li className="border-l-2 border-line py-2 pl-4 text-xs text-ink-muted">
         Step {step.displayStep}: entry recorded in an unrecognised shape, shown as stored in the
         raw JSON below.
       </li>
@@ -141,12 +140,12 @@ function StepEntry({
   const isDone = kind === "done";
 
   return (
-    <li className={`border-l-2 py-2 pl-4 ${isDone ? "border-slate-400" : "border-slate-200"}`}>
+    <li className={`border-l-2 py-2 pl-4 ${isDone ? "border-ink-muted" : "border-line"}`}>
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span className="text-xs font-semibold text-slate-700">Step {step.displayStep}</span>
+        <span className="text-xs font-semibold text-ink-strong">Step {step.displayStep}</span>
         <span
           className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${
-            ACTION_STYLES[kind] ?? "bg-slate-100 text-slate-600"
+            ACTION_STYLES[kind] ?? "chip-slate"
           }`}
         >
           {kind}
@@ -160,15 +159,15 @@ function StepEntry({
       </div>
 
       {step.url && (
-        <p className="mt-1 break-all font-mono text-[11px] text-slate-400">{step.url}</p>
+        <p className="mt-1 break-all font-mono text-[11px] text-ink-muted">{step.url}</p>
       )}
 
       {step.target && !isDone && (
-        <p className="mt-1 break-all font-mono text-xs text-slate-700">{step.target}</p>
+        <p className="mt-1 break-all font-mono text-xs text-ink-body">{step.target}</p>
       )}
 
       {step.reasoning && (
-        <p className="mt-1 text-xs italic leading-relaxed text-slate-500">
+        <p className="mt-1 text-xs italic leading-relaxed text-ink-muted">
           &ldquo;{step.reasoning}&rdquo;
         </p>
       )}
@@ -194,19 +193,19 @@ function Verdict({
   lastActionStep: number | null;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-      <p className="text-xs text-slate-600">
-        <span className="font-semibold text-slate-800">Recorded outcome:</span>{" "}
+    <div className="rounded-lg border border-line bg-surface px-4 py-3">
+      <p className="text-xs text-ink-body">
+        <span className="font-semibold text-ink">Recorded outcome:</span>{" "}
         <code className="font-mono">{outcome.mode}</code> — {MODE_DEFINITIONS[outcome.mode]}.
       </p>
 
-      <p className="mt-1.5 text-xs leading-relaxed text-slate-600">
-        <span className="font-semibold text-slate-800">Failure point:</span>{" "}
+      <p className="mt-1.5 text-xs leading-relaxed text-ink-body">
+        <span className="font-semibold text-ink">Failure point:</span>{" "}
         <VerdictDetail run={run} outcome={outcome} lastActionStep={lastActionStep} />
       </p>
 
       {outcome.contradicted && (
-        <p className="mt-1.5 text-xs text-amber-700">
+        <p className="mt-1.5 text-xs text-mid-ink">
           The transcript does not corroborate this label. The recorded row is authoritative and
           is what the success rate counts; the mismatch is shown rather than smoothed over.
         </p>
@@ -227,7 +226,7 @@ function VerdictDetail({
   if (outcome.evidence === "no-transcript") {
     return (
       <>
-        <span className="font-medium text-slate-500">not recorded.</span> No transcript was
+        <span className="font-medium text-ink-muted">not recorded.</span> No transcript was
         stored for this trial, so there is nothing here to audit. The outcome above comes from
         the recorded row.
       </>
@@ -238,7 +237,7 @@ function VerdictDetail({
     if (outcome.mode === "timeout") {
       return (
         <>
-          <span className="font-medium text-slate-500">not recorded.</span> The trial clock ran
+          <span className="font-medium text-ink-muted">not recorded.</span> The trial clock ran
           out, so nothing in the transcript is written down as the cause.{" "}
           {outcome.unrecordedSteps > 0 && (
             <>
@@ -255,7 +254,7 @@ function VerdictDetail({
     if (outcome.mode === "navigation_stuck") {
       return (
         <>
-          <span className="font-medium text-slate-500">not recorded.</span> The agent used its
+          <span className="font-medium text-ink-muted">not recorded.</span> The agent used its
           full step budget ({run.step_count} steps) without ever reporting an answer, so no
           single step is the failure point.
         </>
@@ -264,7 +263,7 @@ function VerdictDetail({
 
     return (
       <>
-        <span className="font-medium text-slate-500">not recorded.</span> The transcript ends on
+        <span className="font-medium text-ink-muted">not recorded.</span> The transcript ends on
         an ordinary action; nothing in it marks where or why the trial stopped.
       </>
     );
@@ -275,7 +274,7 @@ function VerdictDetail({
     if (outcome.neverReachedSite) {
       return (
         <>
-          <span className="font-medium text-slate-700">recorded, before step 1.</span> Navigation
+          <span className="font-medium text-ink">recorded, before step 1.</span> Navigation
           to the start URL failed, so the agent never reached the site. This trial is excluded
           from the success rate rather than scored as a 0%.
         </>
@@ -283,7 +282,7 @@ function VerdictDetail({
     }
     return (
       <>
-        <span className="font-medium text-slate-700">recorded: step {outcome.failureStep}.</span>{" "}
+        <span className="font-medium text-ink">recorded: step {outcome.failureStep}.</span>{" "}
         The harness failed there. That is a technical failure, not a result about the site, and
         it stays in the denominator because the agent had already reached the site.
       </>
@@ -293,7 +292,7 @@ function VerdictDetail({
   if (outcome.mode === "blocked") {
     return (
       <>
-        <span className="font-medium text-slate-700">recorded: step {outcome.failureStep}.</span>{" "}
+        <span className="font-medium text-ink">recorded: step {outcome.failureStep}.</span>{" "}
         The agent itself reported <code className="font-mono">BLOCKED</code> there. That is the
         agent&apos;s own report of a wall, not an independent observation that the site blocked
         it.
@@ -304,11 +303,11 @@ function VerdictDetail({
   if (outcome.mode === "success") {
     return (
       <>
-        <span className="font-medium text-slate-700">recorded: step {outcome.failureStep}.</span>{" "}
+        <span className="font-medium text-ink">recorded: step {outcome.failureStep}.</span>{" "}
         {outcome.matched !== null ? (
           <>
             The reported answer contained the registered candidate{" "}
-            <code className="rounded bg-slate-100 px-1 font-mono">{outcome.matched}</code>.
+            <code className="rounded bg-surface-2 px-1 font-mono">{outcome.matched}</code>.
           </>
         ) : (
           <>
@@ -323,7 +322,7 @@ function VerdictDetail({
   if (outcome.mode === "wrong_extraction") {
     return (
       <>
-        <span className="font-medium text-slate-700">recorded: step {outcome.failureStep}.</span>{" "}
+        <span className="font-medium text-ink">recorded: step {outcome.failureStep}.</span>{" "}
         The agent reported an answer there and no registered candidate matched it.
       </>
     );
@@ -331,7 +330,7 @@ function VerdictDetail({
 
   return (
     <>
-      <span className="font-medium text-slate-700">recorded: step {outcome.failureStep}.</span>{" "}
+      <span className="font-medium text-ink">recorded: step {outcome.failureStep}.</span>{" "}
       That is the last entry the harness wrote for this trial.
     </>
   );
@@ -356,8 +355,11 @@ export default function TrialReplay({
 
   return (
     <details id={id} open={open} className="group">
-      <summary className="cursor-pointer list-none text-xs text-sky-600 hover:text-sky-800">
-        <span className="inline-block transition-transform group-open:rotate-90">▸</span>{" "}
+      {/* -mx/-my keeps the visual position while giving the control a ~32px hit target. */}
+      <summary className="-mx-1.5 -my-1 inline-flex cursor-pointer list-none items-center gap-1.5 rounded px-1.5 py-1 text-xs font-medium text-accent transition-colors hover:text-accent-hover">
+        <span className="inline-block transition-transform group-open:rotate-90" aria-hidden>
+          ▸
+        </span>
         {steps.length === 0
           ? "Replay — no transcript recorded"
           : `Replay — ${steps.length} recorded ${steps.length === 1 ? "entry" : "entries"}`}
@@ -369,14 +371,14 @@ export default function TrialReplay({
         {steps.length === 0 ? (
           // Never an empty timeline: that would read as "the agent did nothing", which is a
           // different claim from "nothing was stored".
-          <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500">
-            <span className="font-medium text-slate-700">No transcript recorded.</span> This
+          <p className="rounded-lg border border-line bg-surface px-4 py-3 text-xs text-ink-muted">
+            <span className="font-medium text-ink">No transcript recorded.</span> This
             trial has no stored steps, so what the agent did cannot be shown. Its recorded
             outcome, step count and duration are in the row above.
           </p>
         ) : (
           <>
-            <ol className="space-y-1 rounded-lg border border-slate-200 bg-white px-4 py-3">
+            <ol className="space-y-1 rounded-lg border border-line bg-surface px-4 py-3">
               {steps.map((step) => (
                 <StepEntry
                   key={step.index}
@@ -387,7 +389,7 @@ export default function TrialReplay({
               ))}
             </ol>
 
-            <p className="text-[11px] leading-relaxed text-slate-400">
+            <p className="text-[11px] leading-relaxed text-ink-muted">
               The URL is recorded at the start of each step, before the action runs, and a click
               that matched nothing on the page is not recorded at all. So &ldquo;URL
               unchanged&rdquo; is an observation about this record, not evidence that a click
@@ -398,10 +400,10 @@ export default function TrialReplay({
         )}
 
         <details>
-          <summary className="cursor-pointer text-[11px] text-slate-400 hover:text-slate-600">
+          <summary className="-mx-1.5 -my-1 inline-block cursor-pointer rounded px-1.5 py-1 text-[11px] text-ink-muted transition-colors hover:text-ink">
             Raw stored transcript (JSON)
           </summary>
-          <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-slate-900 px-3 py-2 font-mono text-[11px] leading-relaxed text-slate-100">
+          <pre className="code-well mt-2 max-h-96 overflow-auto">
             {JSON.stringify(run.transcript ?? null, null, 2)}
           </pre>
         </details>

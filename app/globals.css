@@ -2,13 +2,340 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * The palette is a set of semantic tokens, not a set of Tailwind shades.
+ *
+ * Every colour the pages use is named for its job (`surface`, `ink-muted`, `bad-soft`) and
+ * resolved here, once, per theme. Dark mode is then a redefinition of these ~40 channels under
+ * `prefers-color-scheme` rather than a `dark:` variant on each of ~480 colour classes — which
+ * is the difference between a theme that is provably complete and one that is complete until
+ * someone adds a card.
+ *
+ * Values are space-separated RGB channels so Tailwind's `<alpha-value>` slot works
+ * (`bg-surface-2/60` is used on the trial log).
+ *
+ * Every foreground/background pair below is measured: all body and caption text clears WCAG AA
+ * (4.5:1) in both themes, on every surface it can land on including a hovered table row. The
+ * light theme's old `text-slate-400` fine print was 2.56:1 and is now `ink-muted` at 5.39:1;
+ * hierarchy is carried by size and weight instead of by a contrast level that failed.
+ */
+
 :root {
-  --foreground: #0f172a;
-  --background: #f8fafc;
+  color-scheme: light;
+
+  /* Surfaces */
+  --c-canvas: 248 250 252;
+  --c-surface: 255 255 255;
+  --c-surface-2: 241 245 249;
+  --c-line: 226 232 240;
+  --c-line-soft: 241 245 249;
+
+  /* Text */
+  --c-ink: 15 23 42;
+  --c-ink-strong: 51 65 85;
+  --c-ink-body: 71 85 105;
+  /* Darker than slate-500 so caption text still clears 4.5:1 on a hovered table row
+     (surface-2), not only on the card. */
+  --c-ink-muted: 95 107 127;
+
+  /* Interactive */
+  --c-accent: 3 105 161;
+  --c-accent-hover: 7 89 133;
+  --c-accent-soft: 240 249 255;
+  --c-focus: 2 132 199;
+
+  /* Outcome tones. Never the only channel carrying a meaning: every place these appear, a
+     number, a glyph or a word says the same thing. */
+  --c-good: 4 120 87;
+  --c-good-soft: 236 253 245;
+  --c-good-ink: 6 95 70;
+  --c-mid: 180 83 9;
+  --c-mid-soft: 255 251 235;
+  --c-mid-ink: 146 64 14;
+  --c-bad: 185 28 28;
+  --c-bad-soft: 254 242 242;
+  --c-bad-ink: 185 28 28;
+
+  /* Bar fills — graphics, read against the track rather than as text. */
+  --c-bar-good: 16 185 129;
+  --c-bar-mid: 245 158 11;
+  --c-bar-bad: 239 68 68;
+
+  /* The "finding" cards. Deliberate emphasis, so they must read as a different kind of
+     surface from an ordinary card in BOTH themes. Light: inverted, a dark panel on a pale
+     page. Dark: inverting again would produce a flashbang, so it lifts above the page
+     instead and takes a cool accent border that no other card has. */
+  --c-emphasis: 15 23 42;
+  --c-emphasis-line: 30 41 59;
+  --c-emphasis-ink: 255 255 255;
+  --c-emphasis-body: 203 213 225;
+  --c-emphasis-muted: 148 163 184;
+  --c-emphasis-link: 125 211 252;
+
+  /* Notice cards: the exploratory banner and the pre-registered scoring key. */
+  --c-notice: 255 251 235;
+  --c-notice-line: 253 230 138;
+  --c-notice-ink: 120 53 15;
+  --c-notice-body: 146 64 14;
+  --c-notice-soft: 254 243 199;
+
+  /* Raw-transcript wells. */
+  --c-code: 15 23 42;
+  --c-code-ink: 241 245 249;
+
+  /* Hue chips: cohort tiers and transcript action kinds. */
+  --c-chip-slate-bg: 241 245 249;
+  --c-chip-slate-fg: 71 85 105;
+  --c-chip-sky-bg: 240 249 255;
+  --c-chip-sky-fg: 3 105 161;
+  --c-chip-indigo-bg: 238 242 255;
+  --c-chip-indigo-fg: 67 56 202;
+  --c-chip-violet-bg: 245 243 255;
+  --c-chip-violet-fg: 109 40 217;
+  --c-chip-teal-bg: 240 253 250;
+  --c-chip-teal-fg: 15 118 110;
+  --c-chip-rose-bg: 255 241 242;
+  --c-chip-rose-fg: 190 18 60;
+  --c-chip-emerald-bg: 236 253 245;
+  --c-chip-emerald-fg: 6 95 70;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --c-canvas: 8 13 24;
+    --c-surface: 20 28 44;
+    --c-surface-2: 29 39 57;
+    --c-line: 49 64 90;
+    --c-line-soft: 35 46 66;
+
+    --c-ink: 241 245 249;
+    --c-ink-strong: 226 232 240;
+    --c-ink-body: 203 213 225;
+    --c-ink-muted: 154 168 189;
+
+    --c-accent: 56 189 248;
+    --c-accent-hover: 125 211 252;
+    --c-accent-soft: 12 39 64;
+    --c-focus: 56 189 248;
+
+    --c-good: 52 211 153;
+    --c-good-soft: 13 47 36;
+    --c-good-ink: 110 231 183;
+    --c-mid: 251 191 36;
+    --c-mid-soft: 58 42 10;
+    --c-mid-ink: 252 211 77;
+    --c-bad: 248 113 113;
+    --c-bad-soft: 58 20 23;
+    --c-bad-ink: 252 165 165;
+
+    --c-bar-good: 52 211 153;
+    --c-bar-mid: 251 191 36;
+    --c-bar-bad: 248 113 113;
+
+    --c-emphasis: 34 49 78;
+    --c-emphasis-line: 64 88 126;
+    --c-emphasis-ink: 255 255 255;
+    --c-emphasis-body: 203 213 225;
+    --c-emphasis-muted: 154 168 189;
+    --c-emphasis-link: 125 211 252;
+
+    --c-notice: 42 32 8;
+    --c-notice-line: 91 68 19;
+    --c-notice-ink: 252 211 77;
+    --c-notice-body: 253 230 138;
+    --c-notice-soft: 61 46 12;
+
+    --c-code: 5 9 18;
+    --c-code-ink: 226 232 240;
+
+    --c-chip-slate-bg: 35 46 66;
+    --c-chip-slate-fg: 203 213 225;
+    --c-chip-sky-bg: 12 39 64;
+    --c-chip-sky-fg: 125 211 252;
+    --c-chip-indigo-bg: 27 34 71;
+    --c-chip-indigo-fg: 165 180 252;
+    --c-chip-violet-bg: 36 31 61;
+    --c-chip-violet-fg: 196 181 253;
+    --c-chip-teal-bg: 11 47 44;
+    --c-chip-teal-fg: 94 234 212;
+    --c-chip-rose-bg: 58 20 32;
+    --c-chip-rose-fg: 253 164 175;
+    --c-chip-emerald-bg: 13 47 36;
+    --c-chip-emerald-fg: 110 231 183;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-ink-body antialiased;
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* Headings set their own measure; balancing stops a two-word orphan on the third line. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* One focus indicator for every interactive element, including <summary>, which the
+     browser default styles inconsistently. 3:1 against every surface in both themes. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-focus));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* `?trial=` deep links land on a <details> mid-page; without this the heading sits flush
+     against the viewport edge. */
+  [id] {
+    scroll-margin-top: 5rem;
+  }
+}
+
+@layer components {
+  /*
+   * Hue chips. One shape, seven hues, used by the cohort tier badges and by the transcript
+   * action kinds — the two places that need a categorical (not ordinal) colour.
+   */
+  .chip {
+    @apply inline-block whitespace-nowrap rounded px-1.5 py-0.5 text-xs;
+  }
+  .chip-slate {
+    background-color: rgb(var(--c-chip-slate-bg));
+    color: rgb(var(--c-chip-slate-fg));
+  }
+  .chip-sky {
+    background-color: rgb(var(--c-chip-sky-bg));
+    color: rgb(var(--c-chip-sky-fg));
+  }
+  .chip-indigo {
+    background-color: rgb(var(--c-chip-indigo-bg));
+    color: rgb(var(--c-chip-indigo-fg));
+  }
+  .chip-violet {
+    background-color: rgb(var(--c-chip-violet-bg));
+    color: rgb(var(--c-chip-violet-fg));
+  }
+  .chip-teal {
+    background-color: rgb(var(--c-chip-teal-bg));
+    color: rgb(var(--c-chip-teal-fg));
+  }
+  .chip-rose {
+    background-color: rgb(var(--c-chip-rose-bg));
+    color: rgb(var(--c-chip-rose-fg));
+  }
+  .chip-emerald {
+    background-color: rgb(var(--c-chip-emerald-bg));
+    color: rgb(var(--c-chip-emerald-fg));
+  }
+
+  /*
+   * Card and section rhythm. The four routes were written weeks apart and had drifted to
+   * three different card paddings and two heading scales; these are the one definition.
+   */
+  .card {
+    @apply rounded-xl border border-line bg-surface;
+  }
+  .card-pad {
+    @apply p-5 sm:p-6;
+  }
+  .card-title {
+    @apply text-base font-semibold text-ink;
+  }
+  .card-note {
+    @apply mt-1 text-xs leading-relaxed text-ink-muted;
+  }
+  .page-title {
+    @apply text-2xl font-bold tracking-tight text-ink sm:text-3xl;
+  }
+  .page-lead {
+    @apply mt-2 max-w-2xl text-ink-body;
+  }
+  .back-link {
+    @apply -mx-1 inline-block rounded px-1 py-1 text-sm text-ink-muted transition-colors hover:text-ink;
+  }
+
+  /* The deliberate-emphasis card. See --c-emphasis above for why the treatment inverts. */
+  .card-emphasis {
+    @apply rounded-xl border p-5 sm:p-6;
+    background-color: rgb(var(--c-emphasis));
+    border-color: rgb(var(--c-emphasis-line));
+    color: rgb(var(--c-emphasis-body));
+  }
+  .card-notice {
+    @apply rounded-xl border border-notice-line bg-notice p-5;
+  }
+
+  /* Raw transcript / harness error wells. */
+  .code-well {
+    @apply overflow-x-auto whitespace-pre-wrap break-words rounded-lg border border-line px-3 py-2 font-mono text-[11px] leading-relaxed;
+    background-color: rgb(var(--c-code));
+    color: rgb(var(--c-code-ink));
+  }
+}
+
+/*
+ * Recharts renders client-side and hardcodes its colours as SVG presentation attributes.
+ * Author CSS outranks presentation attributes in the cascade, so theming it from here — using
+ * the same tokens as everything else — needs no client-side theme detection and cannot flash
+ * the wrong theme: the rules apply on the SVG's first paint.
+ */
+.chart .recharts-cartesian-grid line {
+  stroke: rgb(var(--c-line-soft));
+}
+
+.chart .recharts-cartesian-axis-line,
+.chart .recharts-tooltip-cursor {
+  stroke: rgb(var(--c-line));
+}
+
+.chart .recharts-cartesian-axis-tick-value {
+  fill: rgb(var(--c-ink-muted));
+}
+
+.chart .recharts-label {
+  fill: rgb(var(--c-ink-body));
+}
+
+/* The least-squares fit. Recharts draws a Scatter's `line` as its own path. */
+.chart .recharts-scatter-line path,
+.chart .recharts-scatter-line line {
+  stroke: rgb(var(--c-ink-muted));
+}
+
+.chart .chart-dot {
+  stroke: rgb(var(--c-surface));
+}
+
+.chart .chart-dot-good {
+  fill: rgb(var(--c-bar-good));
+}
+
+.chart .chart-dot-mid {
+  fill: rgb(var(--c-bar-mid));
+}
+
+.chart .chart-dot-bad {
+  fill: rgb(var(--c-bar-bad));
+}
+
+.chart .chart-dot-label {
+  fill: rgb(var(--c-ink-muted));
+}
+
+.chart .chart-trend {
+  stroke: rgb(var(--c-ink-muted));
+}
+
+/* The scatter labels each point with its site name. Below `sm` there is not enough width for
+   28 of them to be anything but overlapping ink, so they are dropped — the tooltip still
+   names every point, and the axes still carry the measurement. */
+@media (max-width: 639px) {
+  .chart .chart-dot-label {
+    display: none;
+  }
 }

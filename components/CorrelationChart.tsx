@@ -27,27 +27,50 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payl
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2 text-sm">
-      <p className="font-semibold text-slate-900">{d.name}</p>
-      <p className="text-slate-500">Lighthouse: <span className="font-mono text-slate-700">{d.lh_total}</span></p>
-      <p className="text-slate-500">Success rate: <span className="font-mono text-slate-700">{Math.round(d.success_rate * 100)}%</span></p>
+    <div className="rounded-lg border border-line bg-surface px-3 py-2 text-sm shadow-lg">
+      <p className="font-semibold text-ink">{d.name}</p>
+      <p className="text-ink-muted">
+        Lighthouse: <span className="font-mono tabular-nums text-ink-body">{d.lh_total}</span>
+      </p>
+      <p className="text-ink-muted">
+        Success rate:{" "}
+        <span className="font-mono tabular-nums text-ink-body">
+          {Math.round(d.success_rate * 100)}%
+        </span>
+      </p>
     </div>
   );
 }
 
-function CustomDot(props: {
-  cx?: number;
-  cy?: number;
-  payload?: CorrelationPoint;
-}) {
+function CustomDot(props: { cx?: number; cy?: number; payload?: CorrelationPoint }) {
   const { cx, cy, payload } = props;
   if (!cx || !cy || !payload) return null;
   const rate = payload.success_rate;
-  const fill = rate >= 0.7 ? "#10b981" : rate >= 0.4 ? "#f59e0b" : "#ef4444";
+  // Redundant with the y position, which is the channel that actually carries the value.
+  const tone = rate >= 0.7 ? "good" : rate >= 0.4 ? "mid" : "bad";
+  // Sites scoring near 100 sit against the right edge, where a label drawn rightwards is
+  // clipped by the plot area. Flip it to the left of the dot instead of paying for the
+  // clearance with a permanently wide right margin, which would cost plot width at 375px.
+  const flip = payload.lh_total > 62;
   return (
     <g>
-      <circle cx={cx} cy={cy} r={6} fill={fill} fillOpacity={0.8} stroke="white" strokeWidth={1.5} />
-      <text x={cx + 9} y={cy + 4} fontSize={11} fill="#64748b">{payload.name}</text>
+      <circle
+        cx={cx}
+        cy={cy}
+        r={6}
+        fillOpacity={0.85}
+        strokeWidth={1.5}
+        className={`chart-dot chart-dot-${tone}`}
+      />
+      <text
+        x={flip ? cx - 9 : cx + 9}
+        y={cy + 4}
+        fontSize={11}
+        textAnchor={flip ? "end" : "start"}
+        className="chart-dot-label"
+      >
+        {payload.name}
+      </text>
     </g>
   );
 }
@@ -57,7 +80,7 @@ export default function CorrelationChart({ points, fit }: Props) {
   // empty array can't produce an Infinity axis domain and NaN stats.
   if (points.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[420px] text-sm text-slate-400">
+      <div className="flex h-[320px] items-center justify-center px-4 text-center text-sm text-ink-muted sm:h-[420px]">
         No correlation data yet — run Lane 1 (Lighthouse) and Lane 2 (agent) to populate the scatter.
       </div>
     );
@@ -82,32 +105,58 @@ export default function CorrelationChart({ points, fit }: Props) {
   }));
 
   return (
-    <div>
-      <ResponsiveContainer width="100%" height={420}>
-        <ScatterChart margin={{ top: 20, right: 60, bottom: 40, left: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+    // Every colour below comes from the same CSS custom properties as the rest of the site,
+    // applied by author rules in globals.css that outrank Recharts' own presentation
+    // attributes. The chart therefore themes itself on first paint with no client-side theme
+    // detection, and cannot flash a light chart on a dark page.
+    //
+    // Height is set on the wrapper rather than on ResponsiveContainer so it can respond: at
+    // 375px a 420px-tall plot with 28 labels is unreadable, and the labels are dropped by a
+    // media query in globals.css.
+    <div className="chart h-[340px] w-full sm:h-[420px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart margin={{ top: 16, right: 24, bottom: 40, left: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="lh_total"
             type="number"
             domain={[0, 100]}
-            tick={{ fontSize: 12, fill: "#94a3b8" }}
+            tick={{ fontSize: 12 }}
             tickLine={false}
           >
-            <Label value="Lighthouse Agentic Browsing Score (0–100)" offset={-10} position="insideBottom" style={{ fontSize: 12, fill: "#64748b" }} />
+            <Label
+              value="Lighthouse Agentic Browsing Score (0–100)"
+              offset={-12}
+              position="insideBottom"
+              style={{ fontSize: 12 }}
+            />
           </XAxis>
           <YAxis
             dataKey="success_rate"
             type="number"
             domain={[0, 1]}
             tickFormatter={(v) => `${Math.round(v * 100)}%`}
-            tick={{ fontSize: 12, fill: "#94a3b8" }}
+            tick={{ fontSize: 12 }}
             tickLine={false}
+            // Wide enough that the rotated axis title gets its own gutter instead of
+            // overprinting the "100%" tick.
+            width={62}
           >
-            <Label value="Agent Success Rate" angle={-90} position="insideLeft" style={{ fontSize: 12, fill: "#64748b" }} />
+            <Label
+              value="Agent Success Rate"
+              angle={-90}
+              position="insideLeft"
+              offset={0}
+              style={{ fontSize: 12, textAnchor: "middle" }}
+            />
           </YAxis>
           <Tooltip content={<CustomTooltip />} />
           {/* Trend line */}
-          <Scatter data={trendData} line={{ stroke: "#94a3b8", strokeDasharray: "4 4", strokeWidth: 1.5 }} shape={() => <g />} />
+          <Scatter
+            data={trendData}
+            line={{ strokeDasharray: "4 4", strokeWidth: 1.5, className: "chart-trend" }}
+            shape={() => <g />}
+          />
           {/* Data points */}
           <Scatter data={scatterData} shape={<CustomDot />} />
         </ScatterChart>
