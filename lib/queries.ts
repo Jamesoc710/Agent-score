@@ -96,8 +96,13 @@ const readBatch = cache(async function readBatch(): Promise<BatchRead> {
   const db = getSupabase();
 
   const [sitesRes, lhRes, runsRes] = await Promise.all([
-    db.from("sites").select("*"),
-    db.from("lighthouse_results").select("*").eq("batch_label", ACTIVE_BATCH),
+    // Ordered explicitly: Postgres does not promise a row order, and while every published
+    // statistic is order-invariant by construction (bootstrapCI and the permutation family
+    // both sort canonically), the prose lists derived from these rows are not — the sub-audit
+    // confound section was naming the same six sites in a different order between reloads.
+    // A page whose argument is reproducibility cannot reshuffle itself.
+    db.from("sites").select("*").order("site_id"),
+    db.from("lighthouse_results").select("*").eq("batch_label", ACTIVE_BATCH).order("site_id"),
     db.from("agent_runs").select(RUN_SUMMARY_COLUMNS).eq("batch_label", ACTIVE_BATCH),
   ]);
 
