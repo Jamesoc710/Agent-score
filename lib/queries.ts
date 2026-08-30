@@ -4,6 +4,8 @@ import type {
   Run,
   SiteLeaderboardEntry,
   CorrelationPoint,
+  DatasetSummary,
+  AgentPanelSummary,
   FailureMode,
 } from "./types";
 import {
@@ -13,30 +15,56 @@ import {
   FAKE_LIGHTHOUSE,
   FAKE_RUNS,
 } from "./fake-data";
-import { ACTIVE_BATCH, ACTIVE_AGENT_ID } from "./dataset";
+import { ACTIVE_BATCH, ACTIVE_AGENT_ID, USING_FIXTURES } from "./dataset";
 
 // The single data layer. Aggregation (success rate, ranking, correlation) happens here at
-// read time, not in the pipeline or in SQL views — see docs/ARCHITECTURE.md.
+// read time, not in the pipeline or in SQL views — see docs/ARCHITECTURE.md. Correlation
+// statistics themselves live in lib/stats.ts as pure, separately tested functions.
 //
 // Fixtures are opt-in and nothing else. Before the Supabase migration this fell back to fake
 // data whenever DB credentials were absent, which meant a misconfigured deploy served
 // invented numbers as if they were results.
-const USE_FAKE = process.env.USE_FAKE_DATA === "true";
-
-// Every read is scoped to one published dataset: mixing batches or agents would silently
-// blend two experiments into one success rate.
-const RUN_SCOPE = { batch_label: ACTIVE_BATCH, agent_id: ACTIVE_AGENT_ID };
+const USE_FAKE = USING_FIXTURES;
 
 // The leaderboard never needs transcripts, which are the only large column.
 const RUN_SUMMARY_COLUMNS =
   "site_id,agent_id,batch_label,trial_number,success,step_count,duration_seconds,failure_mode,run_at";
 
+export interface PublishedDataset {
+  /** Which agent these entries describe. */
+  agent_id: string;
+  entries: SiteLeaderboardEntry[];
+  summary: DatasetSummary;
+  /** Every agent in the batch, for the model-gap comparison. */
+  panel: AgentPanelSummary[];
+}
+
 // ---------------------------------------------------------------------------
-// Leaderboard
+// The published slice: one read of the batch, scoped to the requested agent
 // ---------------------------------------------------------------------------
 
-export async function getLeaderboard(): Promise<SiteLeaderboardEntry[]> {
-  if (USE_FAKE) return FAKE_LEADERBOARD;
+/**
+ * Everything the leaderboard and hero need, from one pass over the batch.
+ *
+ * Reads are scoped to one batch and one agent: mixing them would silently blend two
+ * experiments into one success rate. The batch's other agents are still summarised (trial
+ * counts only) because the panel gap between them is itself a published finding.
+ */
+export async function getPublishedDataset(
+  agentId: string = ACTIVE_AGENT_ID
+): Promise<PublishedDataset> {
+  if (USE_FAKE) {
+    // Fixtures are their own batch and their own agent. Labelling them with the deployment's
+    // ACTIVE_BATCH/agent would print a real dataset's name over invented numbers.
+    const fixtureAgent = FAKE_RUNS[0]?.agent_id ?? agentId;
+    const fixtureBatch = FAKE_RUNS[0]?.batch_label ?? ACTIVE_BATCH;
+    return {
+      agent_id: fixtureAgent,
+      entries: FAKE_LEADERBOARD,
+      summary: summarize(FAKE_SITES, FAKE_RUNS, fixtureBatch, fixtureAgent),
+      panel: panelSummaries(FAKE_RUNS),
+    };
+  }
 
   const { getSupabase } = await import("./supabase");
   const db = getSupabase();
@@ -44,7 +72,9 @@ export async function getLeaderboard(): Promise<SiteLeaderboardEntry[]> {
   const [sitesRes, lhRes, runsRes] = await Promise.all([
     db.from("sites").select("*"),
     db.from("lighthouse_results").select("*").eq("batch_label", ACTIVE_BATCH),
-    db.from("agent_runs").select(RUN_SUMMARY_COLUMNS).match(RUN_SCOPE),
+    // Unfiltered by agent on purpose — one read serves the selected agent's leaderboard and
+    // the whole panel's trial counts.
+    db.from("agent_runs").select(RUN_SUMMARY_COLUMNS).eq("batch_label", ACTIVE_BATCH),
   ]);
 
   const sites = rows<Site>("sites", sitesRes);
@@ -52,8 +82,11 @@ export async function getLeaderboard(): Promise<SiteLeaderboardEntry[]> {
     rows<LighthouseResult>("lighthouse_results", lhRes).map((lh) => [lh.site_id, lh])
   );
 
+  const allRuns = rows<Run>("agent_runs", runsRes);
+  const agentRuns = allRuns.filter((r) => r.agent_id === agentId);
+
   const runsBySite = new Map<string, Run[]>();
-  for (const run of rows<Run>("agent_runs", runsRes)) {
+  for (const run of agentRuns) {
     const arr = runsBySite.get(run.site_id) ?? [];
     arr.push(run);
     runsBySite.set(run.site_id, arr);
@@ -63,14 +96,32 @@ export async function getLeaderboard(): Promise<SiteLeaderboardEntry[]> {
     computeEntry(site, lhBySite.get(site.site_id), runsBySite.get(site.site_id) ?? [])
   );
 
-  return rankEntries(entries);
+  return {
+    agent_id: agentId,
+    entries: rankEntries(entries),
+    summary: summarize(sites, agentRuns, ACTIVE_BATCH, agentId),
+    panel: panelSummaries(allRuns),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Leaderboard
+// ---------------------------------------------------------------------------
+
+export async function getLeaderboard(
+  agentId: string = ACTIVE_AGENT_ID
+): Promise<SiteLeaderboardEntry[]> {
+  return (await getPublishedDataset(agentId)).entries;
 }
 
 // ---------------------------------------------------------------------------
 // Single site detail
 // ---------------------------------------------------------------------------
 
-export async function getSiteDetail(slug: string): Promise<{
+export async function getSiteDetail(
+  slug: string,
+  agentId: string = ACTIVE_AGENT_ID
+): Promise<{
   site: Site;
   lighthouse: LighthouseResult | null;
   runs: Run[];
@@ -100,7 +151,7 @@ export async function getSiteDetail(slug: string): Promise<{
       .from("agent_runs")
       .select("*")
       .eq("site_id", slug)
-      .match(RUN_SCOPE)
+      .match({ batch_label: ACTIVE_BATCH, agent_id: agentId })
       .order("trial_number"),
   ]);
 
@@ -118,24 +169,30 @@ export async function getSiteDetail(slug: string): Promise<{
 // Correlation page
 // ---------------------------------------------------------------------------
 
-export async function getCorrelationPoints(): Promise<CorrelationPoint[]> {
-  if (USE_FAKE) return FAKE_CORRELATION_POINTS;
+export function toCorrelationPoints(entries: SiteLeaderboardEntry[]): CorrelationPoint[] {
+  return (
+    entries
+      // A site with a Lighthouse score but no trials has no behavioral measurement — plotting
+      // it would put a fabricated 0% on the scatter.
+      .filter((e) => e.lh_total !== null && e.trial_count > 0)
+      .map((e) => ({
+        site_id: e.site_id,
+        name: e.name,
+        lh_total: e.lh_total!,
+        success_rate: e.success_rate,
+        lh_accessibility_tree: e.lh_accessibility_tree ?? 0,
+        lh_layout_stability: e.lh_layout_stability ?? 0,
+        lh_llms_txt: e.lh_llms_txt ?? 0,
+        lh_webmcp: e.lh_webmcp ?? 0,
+      }))
+  );
+}
 
-  const entries = await getLeaderboard();
-  return entries
-    // A site with a Lighthouse score but no trials has no behavioral measurement — plotting
-    // it would put a fabricated 0% on the scatter.
-    .filter((e) => e.lh_total !== null && e.trial_count > 0)
-    .map((e) => ({
-      site_id: e.site_id,
-      name: e.name,
-      lh_total: e.lh_total!,
-      success_rate: e.success_rate,
-      lh_accessibility_tree: e.lh_accessibility_tree ?? 0,
-      lh_layout_stability: e.lh_layout_stability ?? 0,
-      lh_llms_txt: e.lh_llms_txt ?? 0,
-      lh_webmcp: e.lh_webmcp ?? 0,
-    }));
+export async function getCorrelationPoints(
+  agentId: string = ACTIVE_AGENT_ID
+): Promise<CorrelationPoint[]> {
+  if (USE_FAKE) return FAKE_CORRELATION_POINTS;
+  return toCorrelationPoints(await getLeaderboard(agentId));
 }
 
 // ---------------------------------------------------------------------------
@@ -165,6 +222,62 @@ function maybeRow<T>(label: string, res: PostgrestResult): T | null {
 // behavioral measurement at all — not a 0% success rate.
 export function measuredRuns(runs: Run[]): Run[] {
   return runs.filter((r) => !(r.failure_mode === "error" && r.step_count === 0));
+}
+
+/** Trial-level totals, denominators and the run window for one published slice. */
+function summarize(
+  sites: Site[],
+  agentRuns: Run[],
+  batchLabel: string,
+  agentId: string
+): DatasetSummary {
+  const measured = measuredRuns(agentRuns);
+  const measuredSites = new Set(measured.map((r) => r.site_id));
+
+  // A site is "unmeasured" only if it has recorded trials that all failed to reach it.
+  // Sites with no rows at all have simply not been run for this agent.
+  const attempted = new Set(agentRuns.map((r) => r.site_id));
+  const unmeasured = [...attempted].filter((id) => !measuredSites.has(id)).sort();
+
+  const times = agentRuns.map((r) => r.run_at).sort();
+
+  return {
+    batch_label: batchLabel,
+    agent_id: agentId,
+    site_count: sites.length,
+    measured_site_count: measuredSites.size,
+    unmeasured_site_ids: unmeasured,
+    trial_count: measured.length,
+    excluded_trial_count: agentRuns.length - measured.length,
+    success_count: measured.filter((r) => r.success).length,
+    // No measured trials means no rate exists. Reporting 0% would invent a result.
+    success_rate: measured.length > 0 ? measured.filter((r) => r.success).length / measured.length : null,
+    run_window: times.length > 0 ? { first: times[0], last: times[times.length - 1] } : null,
+  };
+}
+
+/** One row per agent present in the batch, ordered by the published panel. */
+function panelSummaries(allRuns: Run[]): AgentPanelSummary[] {
+  const byAgent = new Map<string, Run[]>();
+  for (const run of allRuns) {
+    const arr = byAgent.get(run.agent_id) ?? [];
+    arr.push(run);
+    byAgent.set(run.agent_id, arr);
+  }
+
+  return [...byAgent.entries()]
+    .map(([agent_id, runs]) => {
+      const measured = measuredRuns(runs);
+      const successes = measured.filter((r) => r.success).length;
+      return {
+        agent_id,
+        trial_count: measured.length,
+        success_count: successes,
+        success_rate: measured.length > 0 ? successes / measured.length : null,
+        measured_site_count: new Set(measured.map((r) => r.site_id)).size,
+      };
+    })
+    .sort((a, b) => a.agent_id.localeCompare(b.agent_id));
 }
 
 function rankEntries(entries: SiteLeaderboardEntry[]): SiteLeaderboardEntry[] {
@@ -224,47 +337,4 @@ function computeEntry(
     top_failure_mode,
     rank: 0,
   };
-}
-
-// ---------------------------------------------------------------------------
-// Pearson correlation — used on the /correlation page
-// ---------------------------------------------------------------------------
-
-export function pearsonR(points: { x: number; y: number }[]): number {
-  const n = points.length;
-  if (n < 2) return 0;
-
-  const meanX = points.reduce((s, p) => s + p.x, 0) / n;
-  const meanY = points.reduce((s, p) => s + p.y, 0) / n;
-
-  let num = 0, denomX = 0, denomY = 0;
-  for (const p of points) {
-    const dx = p.x - meanX;
-    const dy = p.y - meanY;
-    num += dx * dy;
-    denomX += dx * dx;
-    denomY += dy * dy;
-  }
-
-  const denom = Math.sqrt(denomX * denomY);
-  return denom === 0 ? 0 : num / denom;
-}
-
-// Linear regression — returns {slope, intercept} for the trend line
-export function linearRegression(points: { x: number; y: number }[]): { slope: number; intercept: number } {
-  const n = points.length;
-  if (n < 2) return { slope: 0, intercept: 0 };
-
-  const meanX = points.reduce((s, p) => s + p.x, 0) / n;
-  const meanY = points.reduce((s, p) => s + p.y, 0) / n;
-
-  let num = 0, denom = 0;
-  for (const p of points) {
-    num += (p.x - meanX) * (p.y - meanY);
-    denom += (p.x - meanX) ** 2;
-  }
-
-  const slope = denom === 0 ? 0 : num / denom;
-  const intercept = meanY - slope * meanX;
-  return { slope, intercept };
 }

@@ -11,7 +11,9 @@
     "seed:sites": "npx tsx scripts/seed-sites.ts",
     "import": "npx tsx scripts/import-results.ts",
     "lane1": "npx tsx scripts/lane1-lighthouse.ts",
-    "lane1:single": "npx tsx scripts/lane1-lighthouse.ts stripe"
+    "lane1:single": "npx tsx scripts/lane1-lighthouse.ts stripe",
+    "test:unit": "vitest run",
+    "test:all": "npm test && npm run test:unit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.9",
@@ -36,6 +38,7 @@
     "supabase": "^2.110.0",
     "tailwindcss": "^3.4.0",
     "tsx": "^4.11.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }

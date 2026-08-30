@@ -96,6 +96,31 @@ export interface SiteLeaderboardEntry {
   rank: number;
 }
 
+// Derived view: what one published (batch, agent) slice actually measured. Every field is a
+// denominator or a window the pages are required to state — a success rate is never shown
+// without the trials it came from or the dates it was measured on.
+export interface DatasetSummary {
+  batch_label: string;
+  agent_id: string;
+  site_count: number;            // sites in the cohort
+  measured_site_count: number;   // sites with at least one measured trial
+  unmeasured_site_ids: string[]; // reached-the-site never happened; not 0% success
+  trial_count: number;           // measured trials (the success-rate denominator)
+  excluded_trial_count: number;  // recorded but never reached the site
+  success_count: number;
+  success_rate: number | null;   // null when nothing was measured, never 0
+  run_window: { first: string; last: string } | null;
+}
+
+// Derived view: one row per agent in the published panel, for the model-gap comparison.
+export interface AgentPanelSummary {
+  agent_id: string;
+  trial_count: number;
+  success_count: number;
+  success_rate: number | null;
+  measured_site_count: number;
+}
+
 // For the correlation page
 export interface CorrelationPoint {
   site_id: string;
