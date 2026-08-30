@@ -214,7 +214,8 @@ function ResultRow({ row, siteCount }: { row: AuditRow; siteCount: number }) {
           <span className="font-medium text-slate-600">
             {unfalsifiable ? "Unfalsifiable" : "Not reportable"}
           </span>{" "}
-          — {row.groups.ones} of {siteCount} sites pass
+          — {row.groups.ones} of {siteCount} sites{" "}
+          {row.groups.ones === 1 ? "passes" : "pass"}
           {unfalsifiable && (
             <>
               , and the smallest p <em>any</em> arrangement of that split could have produced is{" "}
@@ -750,9 +751,10 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
         <span className="font-medium text-slate-700">Estimand:</span> the difference in mean site
         success rate between the sites that pass an audit and the sites that fail it, in percentage
         points. The site is the unit of analysis, so the bootstrap resamples sites and the mean is
-        a mean of site rates, not of trials. In this batch every measured site carries the same
-        number of trials, so the two happen to be identical to every digit shown — that stops being
-        true the first time a batch has a partially excluded site.
+        a mean of site rates, not of trials.{" "}
+        {analysis.trialsPerSite !== null
+          ? "In this batch every measured site carries the same number of trials, so the two happen to be identical to every digit shown — that stops being true the first time a batch has a partially excluded site."
+          : "Sites in this batch carry different numbers of trials, so the two differ: a mean of site rates weights every site equally, which is the intent."}
       </p>
       <p className="max-w-3xl">
         <span className="font-medium text-slate-700">Inference:</span> a two-sided permutation test
@@ -784,11 +786,25 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
         Trials per site: {analysis.trialsPerSite ?? "mixed"}.
       </p>
       <p className="max-w-3xl">
-        <span className="font-medium text-slate-700">WebMCP:</span> one site in the cohort passes{" "}
-        <span className="font-mono">webmcp-registered-tools</span>. That resolves an open question
-        in the methodology record, which flagged an all-zero column in an earlier draft batch as
-        possibly a broken audit id: the id is live, and 1 of 28 major sites is an adoption finding
-        rather than a harness fault. It is not enough sites to test anything.
+        <span className="font-medium text-slate-700">WebMCP adoption:</span>{" "}
+        {analysis.cohort.passing.lh_webmcp} of {analysis.cohort.siteCount} sites in this batch pass{" "}
+        <span className="font-mono">webmcp-registered-tools</span> — counted over the whole cohort,
+        including sites with no behavioral measurement, because adoption is a property of the site
+        rather than of the trial.{" "}
+        {analysis.cohort.passing.lh_webmcp > 0 ? (
+          <>
+            That resolves an open question in the methodology record, which flagged an all-zero
+            column in an earlier draft batch as possibly a broken audit id: the id is live, and a
+            single-digit pass count across major sites is an adoption finding rather than a harness
+            fault. It is still not enough sites to test anything.
+          </>
+        ) : (
+          <>
+            No site passes it here, which is not by itself evidence either way about adoption — the
+            methodology record flags an all-zero column in an earlier draft batch as possibly a
+            broken audit id, and a batch this small cannot separate the two.
+          </>
+        )}
       </p>
       <p>
         <Link

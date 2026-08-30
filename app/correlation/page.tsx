@@ -212,10 +212,10 @@ export default async function CorrelationPage({
                     </span>
                   ) : (
                     <span className="whitespace-nowrap text-xs text-slate-400">
-                      <span className="font-mono font-semibold tabular-nums text-slate-600 mr-2">
+                      <span className="font-mono font-semibold tabular-nums text-slate-600">
                         {formatPoints(audit.estimate.gap)} pts
                       </span>
-                      p = {formatP(audit.pFamilyWise!)}
+                      {"  ·  "}p = {formatP(audit.pFamilyWise!)}
                     </span>
                   )}
                 </div>

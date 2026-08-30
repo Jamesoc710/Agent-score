@@ -31,7 +31,7 @@ export function formatPercent(rate: number | null): string {
 }
 
 /**
- * A success-rate difference in percentage points, always signed: "+41.4", "-9.7", "+0.3".
+ * A success-rate difference in percentage points, signed: "+41.4", "−9.7", "0.0".
  *
  * One decimal, because the underlying rates come from 5 trials a site and a second decimal
  * would be precision the measurement does not have.
@@ -40,7 +40,7 @@ export function formatPoints(gap: number): string {
   const value = gap * 100;
   // -0.0 reads as a negative finding that is not there.
   const rounded = Math.abs(value) < 0.05 ? 0 : value;
-  return `${rounded > 0 ? "+" : rounded < 0 ? "−" : "±"}${Math.abs(rounded).toFixed(1)}`;
+  return `${rounded > 0 ? "+" : rounded < 0 ? "−" : ""}${Math.abs(rounded).toFixed(1)}`;
 }
 
 /** "[−0.1, +71.7]" in percentage points. */

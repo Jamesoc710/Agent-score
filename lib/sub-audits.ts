@@ -215,6 +215,12 @@ export interface PooledReport {
 export interface SubAuditAnalysis {
   agents: AgentAuditRows[];
   siteCount: number;
+  /**
+   * The whole batch, measured or not, and how many of it passes each audit. Adoption is a fact
+   * about the cohort rather than about the behavioral measurement, so it survives the exclusion
+   * rule that removes never-reached sites from every estimate.
+   */
+  cohort: { siteCount: number; passing: Record<AuditKey, number> };
   /** Null when no audit has a reportable split — the honest empty state. */
   family: FamilyPermutation | null;
   power: PowerReport[] | null;
@@ -350,6 +356,14 @@ export function analyzeSubAudits(
 
   const trialsPerSite = uniformTrialCount(agents.flatMap((a) => a.measured));
 
+  const cohortPoints = panel[0]?.points ?? [];
+  const cohort = {
+    siteCount: cohortPoints.length,
+    passing: Object.fromEntries(
+      AUDITS.map((audit) => [audit.key, cohortPoints.filter((p) => p[audit.key] === 1).length])
+    ) as Record<AuditKey, number>,
+  };
+
   // --- the family -----------------------------------------------------------
   // Membership is decided by group size alone, before any outcome is looked at, and it spans
   // every published agent: both were examined, so both count against the correction.
@@ -448,6 +462,7 @@ export function analyzeSubAudits(
     return {
       agents: agentRows,
       siteCount,
+      cohort,
       family,
       power: null,
       sizing: null,
@@ -578,6 +593,7 @@ export function analyzeSubAudits(
   return {
     agents: agentRows,
     siteCount,
+    cohort,
     family,
     power,
     sizing,
