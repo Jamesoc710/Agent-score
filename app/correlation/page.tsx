@@ -117,7 +117,7 @@ export default async function CorrelationPage({
               <p>
                 <span className="font-semibold text-ink">
                   {relationshipVerdict(rhoCI) === "none"
-                    ? "No measurable relationship."
+                    ? "No relationship distinguishable from noise."
                     : `A ${strengthLabel(rho)} relationship.`}
                 </span>{" "}
                 {relationshipVerdict(rhoCI) === "none" ? (
