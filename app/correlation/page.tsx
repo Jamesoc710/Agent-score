@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { getPublishedDataset, toCorrelationPoints } from "@/lib/queries";
+import { getPanelAuditPoints, getPublishedDataset, toCorrelationPoints } from "@/lib/queries";
 import {
   MIN_GROUP,
   MIN_N,
-  binaryGroupSizes,
   bootstrapCI,
   formatInterval,
   formatR,
@@ -14,21 +13,15 @@ import {
   strengthLabel,
   type Pair,
 } from "@/lib/stats";
+import { analyzeSubAudits } from "@/lib/sub-audits";
 import { agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
-import { formatRunWindow } from "@/lib/format";
+import { formatP, formatPoints, formatRunWindow } from "@/lib/format";
 import CorrelationChart from "@/components/CorrelationChart";
 import AgentToggle from "@/components/AgentToggle";
 
 // Rendered per request: results change when a batch is imported, not when the app is built,
 // and a build should not need database credentials.
 export const dynamic = "force-dynamic";
-
-const SUB_AUDITS = [
-  { key: "lh_accessibility_tree" as const, label: "Accessibility Tree" },
-  { key: "lh_layout_stability" as const, label: "Layout Stability" },
-  { key: "lh_llms_txt" as const, label: "llms.txt" },
-  { key: "lh_webmcp" as const, label: "WebMCP" },
-];
 
 export default async function CorrelationPage({
   searchParams,
@@ -54,19 +47,18 @@ export default async function CorrelationPage({
   const fit = linearRegression(pairs);
   const runWindow = formatRunWindow(summary.run_window);
 
-  // Each sub-audit is a 0/1 split of the same sites. A split with almost nothing on one side
-  // cannot support a correlation: in v1 exactly one site passes WebMCP, so a number there
-  // would be an artifact of that single site, not a finding.
-  const subAudits = SUB_AUDITS.map(({ key, label }) => {
-    const auditPairs: Pair[] = points.map((p) => ({ x: p[key], y: p.success_rate }));
-    const groups = binaryGroupSizes(auditPairs);
-    const reportable = Math.min(groups.ones, groups.zeros) >= MIN_GROUP && n >= MIN_N;
-    return { key, label, groups, r: reportable ? pearson(auditPairs) : null };
-    // Strongest first; the audits that cannot be computed sort to the bottom rather than the
-    // top (Math.abs(null ?? -1) would have ranked them above every real correlation).
-  }).sort((a, b) => (b.r === null ? -1 : Math.abs(b.r)) - (a.r === null ? -1 : Math.abs(a.r)));
-
-  const reportableAudits = subAudits.filter((a) => a.r !== null);
+  // Each sub-audit is a 0/1 split of the same sites, and the full analysis of those splits —
+  // six comparisons across both agents, corrected for multiplicity — lives on
+  // /correlation/audits. This page carries the summary and links through, because the family is
+  // what the correction covers and rendering half of it here would misstate it.
+  const subAudits = analyzeSubAudits(await getPanelAuditPoints(), { detail: false });
+  const auditRows =
+    subAudits.agents.find((a) => a.agent_id === measuredAgentId)?.rows ??
+    subAudits.agents[0]?.rows ??
+    [];
+  const distinguishable = subAudits.family
+    ? subAudits.family.comparisons.filter((c) => c.pFamilyWise <= subAudits.family!.level).length
+    : 0;
 
   // The biggest disagreement between the two rankings — the exhibit for "the static rubric
   // gets this one wrong".
@@ -168,65 +160,75 @@ export default async function CorrelationPage({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {/* Sub-audit ranking */}
+        {/* Sub-audit summary — the full family lives on its own page */}
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="font-semibold text-slate-900 mb-1">Which sub-audit predicts success?</h2>
+          <h2 className="font-semibold text-slate-900 mb-1">
+            {subAudits.family === null
+              ? "Which sub-audit is doing the work?"
+              : distinguishable === 0
+              ? "No single sub-audit is distinguishable from noise either"
+              : `${distinguishable} of ${subAudits.family.size} sub-audit comparisons clears the bar`}
+          </h2>
           <p className="text-xs text-slate-400 mb-4">
-            Correlation between passing one audit and behavioral success rate, with the number of
-            sites on each side of the split. Exploratory: four comparisons, no correction for
-            multiple testing, same {n} sites.
+            Each audit splits the cohort into the sites that pass it and the sites that do not. The
+            gap below is the difference in mean success rate between those two groups, for{" "}
+            {agentLabel(measuredAgentId)}
+            {subAudits.family && (
+              <>
+                , with a p-value corrected across all {subAudits.family.size} comparisons the study
+                looked at
+              </>
+            )}
+            .
           </p>
 
-          {n < MIN_N ? (
+          {n < MIN_N || auditRows.length === 0 ? (
             <p className="text-sm text-slate-400">
               Not enough data yet ({n} {n === 1 ? "site" : "sites"} with both lanes measured).
             </p>
           ) : (
-            <div className="space-y-3">
-              {subAudits.map((audit, i) => (
-                <div key={audit.key}>
-                  <div className="flex justify-between text-sm mb-1 gap-3">
-                    <span className={audit.r === null ? "text-slate-400" : "text-slate-700 font-medium"}>
-                      {audit.r !== null && i === 0 && "🥇 "}
-                      {audit.label}
-                      <span className="text-xs text-slate-400 font-normal">
-                        {" "}
-                        ({audit.groups.ones} pass / {audit.groups.zeros} fail)
-                      </span>
+            <div className="space-y-2.5">
+              {auditRows.map((audit) => (
+                <div key={audit.key} className="flex justify-between items-baseline text-sm gap-3">
+                  <span
+                    className={
+                      audit.estimate === null ? "text-slate-400" : "text-slate-700 font-medium"
+                    }
+                  >
+                    {audit.label}
+                    <span className="text-xs text-slate-400 font-normal">
+                      {" "}
+                      ({audit.groups.ones} pass / {audit.groups.zeros} fail)
                     </span>
-                    {audit.r === null ? (
-                      <span
-                        className="text-xs text-slate-400 whitespace-nowrap"
-                        title={`Fewer than ${MIN_GROUP} sites on one side of the split — a correlation here would describe those sites, not the audit.`}
-                      >
-                        not computable
+                  </span>
+                  {audit.estimate === null ? (
+                    <span
+                      className="text-xs text-slate-400 whitespace-nowrap"
+                      title={`Fewer than ${MIN_GROUP} sites on one side of the split — an estimate here would describe those sites, not the audit.`}
+                    >
+                      {audit.minimumAttainableP !== null && audit.minimumAttainableP > 0.05
+                        ? "unfalsifiable at this split"
+                        : "not reportable"}
+                    </span>
+                  ) : (
+                    <span className="whitespace-nowrap text-xs text-slate-400">
+                      <span className="font-mono font-semibold tabular-nums text-slate-600 mr-2">
+                        {formatPoints(audit.estimate.gap)} pts
                       </span>
-                    ) : (
-                      <span
-                        className={`font-mono font-semibold tabular-nums ${
-                          Math.abs(audit.r) >= 0.5 ? "text-sky-600" : "text-slate-400"
-                        }`}
-                      >
-                        r = {formatR(audit.r)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={`h-1.5 rounded-full ${
-                        audit.r === null
-                          ? "bg-slate-200"
-                          : Math.abs(audit.r) >= 0.5
-                          ? "bg-sky-500"
-                          : "bg-slate-300"
-                      }`}
-                      style={{ width: audit.r === null ? "0%" : `${Math.abs(audit.r) * 100}%` }}
-                    />
-                  </div>
+                      p = {formatP(audit.pFamilyWise!)}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
           )}
+
+          <Link
+            href={withAgent("/correlation/audits", agentId)}
+            className="mt-4 inline-block text-sm text-sky-600 hover:underline font-medium"
+          >
+            Full breakdown, both agents, with the power analysis →
+          </Link>
         </div>
 
         {/* Surprising site callout */}
@@ -287,12 +289,21 @@ export default async function CorrelationPage({
             </>
           )}
         </p>
-        {reportableAudits.length > 0 && rho !== null && (
+        {subAudits.family !== null && rho !== null && (
           <p className="text-sm text-slate-300 mt-3">
-            Strongest single audit: {reportableAudits[0].label} (r&nbsp;=&nbsp;
-            {formatR(reportableAudits[0].r!)}), on the same {n} sites and with the same caveat —
-            an interval this wide supports ranking the audits for a follow-up, not a claim about
-            any of them.
+            Nor does any single audit rescue it: all {subAudits.family.size} sub-audit comparisons
+            across both agents are{" "}
+            {distinguishable === 0 ? "not distinguishable from noise" : "reported in full"}, and at{" "}
+            {n} sites an audit needed a{" "}
+            {Math.round(subAudits.family.criticalValue * 100)}-point success-rate gap to clear the
+            bar — more than this cohort can physically produce on the narrowest split.{" "}
+            <Link
+              href={withAgent("/correlation/audits", agentId)}
+              className="text-sky-300 hover:text-sky-200 underline"
+            >
+              The breakdown and its power analysis
+            </Link>
+            .
           </p>
         )}
       </div>

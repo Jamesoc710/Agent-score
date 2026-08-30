@@ -1,5 +1,7 @@
+import { cache } from "react";
 import type {
   Site,
+  SiteTier,
   LighthouseResult,
   Run,
   SiteLeaderboardEntry,
@@ -15,7 +17,7 @@ import {
   FAKE_LIGHTHOUSE,
   FAKE_RUNS,
 } from "./fake-data";
-import { ACTIVE_BATCH, ACTIVE_AGENT_ID, USING_FIXTURES } from "./dataset";
+import { ACTIVE_BATCH, ACTIVE_AGENT_ID, PUBLISHED_AGENTS, USING_FIXTURES } from "./dataset";
 
 // The single data layer. Aggregation (success rate, ranking, correlation) happens here at
 // read time, not in the pipeline or in SQL views — see docs/ARCHITECTURE.md. Correlation
@@ -66,42 +68,65 @@ export async function getPublishedDataset(
     };
   }
 
+  const { sites, lhBySite, allRuns } = await readBatch();
+  const agentRuns = allRuns.filter((r) => r.agent_id === agentId);
+
+  return {
+    agent_id: agentId,
+    entries: rankEntries(entriesFor(sites, lhBySite, allRuns, agentId)),
+    summary: summarize(sites, agentRuns, ACTIVE_BATCH, agentId),
+    panel: panelSummaries(allRuns),
+  };
+}
+
+interface BatchRead {
+  sites: Site[];
+  lhBySite: Map<string, LighthouseResult>;
+  allRuns: Run[];
+}
+
+/**
+ * One pass over the published batch. Runs are unfiltered by agent so one read serves them all.
+ *
+ * Memoized per request: /correlation needs both the selected agent's leaderboard and the whole
+ * panel's audit points, and without this it would issue the same three queries twice.
+ */
+const readBatch = cache(async function readBatch(): Promise<BatchRead> {
   const { getSupabase } = await import("./supabase");
   const db = getSupabase();
 
   const [sitesRes, lhRes, runsRes] = await Promise.all([
     db.from("sites").select("*"),
     db.from("lighthouse_results").select("*").eq("batch_label", ACTIVE_BATCH),
-    // Unfiltered by agent on purpose — one read serves the selected agent's leaderboard and
-    // the whole panel's trial counts.
     db.from("agent_runs").select(RUN_SUMMARY_COLUMNS).eq("batch_label", ACTIVE_BATCH),
   ]);
 
-  const sites = rows<Site>("sites", sitesRes);
-  const lhBySite = new Map(
-    rows<LighthouseResult>("lighthouse_results", lhRes).map((lh) => [lh.site_id, lh])
-  );
+  return {
+    sites: rows<Site>("sites", sitesRes),
+    lhBySite: new Map(
+      rows<LighthouseResult>("lighthouse_results", lhRes).map((lh) => [lh.site_id, lh])
+    ),
+    allRuns: rows<Run>("agent_runs", runsRes),
+  };
+});
 
-  const allRuns = rows<Run>("agent_runs", runsRes);
-  const agentRuns = allRuns.filter((r) => r.agent_id === agentId);
-
+/** The leaderboard view of one agent's slice of a batch read. Unranked. */
+function entriesFor(
+  sites: Site[],
+  lhBySite: Map<string, LighthouseResult>,
+  allRuns: Run[],
+  agentId: string
+): SiteLeaderboardEntry[] {
   const runsBySite = new Map<string, Run[]>();
-  for (const run of agentRuns) {
+  for (const run of allRuns) {
+    if (run.agent_id !== agentId) continue;
     const arr = runsBySite.get(run.site_id) ?? [];
     arr.push(run);
     runsBySite.set(run.site_id, arr);
   }
-
-  const entries = sites.map((site) =>
+  return sites.map((site) =>
     computeEntry(site, lhBySite.get(site.site_id), runsBySite.get(site.site_id) ?? [])
   );
-
-  return {
-    agent_id: agentId,
-    entries: rankEntries(entries),
-    summary: summarize(sites, agentRuns, ACTIVE_BATCH, agentId),
-    panel: panelSummaries(allRuns),
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -193,6 +218,71 @@ export async function getCorrelationPoints(
 ): Promise<CorrelationPoint[]> {
   if (USE_FAKE) return FAKE_CORRELATION_POINTS;
   return toCorrelationPoints(await getLeaderboard(agentId));
+}
+
+// ---------------------------------------------------------------------------
+// Sub-audit attribution: every published agent, from one read
+// ---------------------------------------------------------------------------
+
+/**
+ * One agent's sites for the sub-audit analysis.
+ *
+ * A superset of CorrelationPoint: it carries `tier` (the confound is with the cohort design
+ * bucket, so the analysis has to see it) and `trial_count` (the trial-level exhibit needs the
+ * denominator, and a count of 0 is how a never-reached site identifies itself). Declared here
+ * rather than in lib/types.ts, which is the frozen lane<->frontend contract — this is a derived
+ * read-path view, the same way SiteLeaderboardEntry's tier/flag are.
+ */
+export interface AgentAuditPoints {
+  agent_id: string;
+  points: (CorrelationPoint & { tier: SiteTier; trial_count: number })[];
+}
+
+/**
+ * Both agents' points in one Supabase round trip.
+ *
+ * getPublishedDataset already reads every agent's runs and filters in memory, so calling it once
+ * per agent would repeat the sites and lighthouse reads for nothing. Sites that were attempted
+ * and never reached are INCLUDED here with trial_count 0 — the analysis excludes them from every
+ * estimate and reports separately on what including them would do.
+ */
+export async function getPanelAuditPoints(): Promise<AgentAuditPoints[]> {
+  if (USE_FAKE) {
+    // Fixtures are single-agent; label them with the agent that produced the rows.
+    const fixtureAgent = FAKE_RUNS[0]?.agent_id ?? ACTIVE_AGENT_ID;
+    return [{ agent_id: fixtureAgent, points: toAuditPoints(FAKE_LEADERBOARD) }];
+  }
+
+  const { sites, lhBySite, allRuns } = await readBatch();
+
+  const agentIds = PUBLISHED_AGENTS.map((a) => a.id).filter((id) =>
+    allRuns.some((r) => r.agent_id === id)
+  );
+  // Fall back to whatever agent ids the batch actually holds, as panelSummaries does: the page
+  // must describe the rows that exist, not the panel the deployment expected.
+  const present = agentIds.length > 0 ? agentIds : [...new Set(allRuns.map((r) => r.agent_id))].sort();
+
+  return present.map((agentId) => ({
+    agent_id: agentId,
+    points: toAuditPoints(entriesFor(sites, lhBySite, allRuns, agentId)),
+  }));
+}
+
+function toAuditPoints(entries: SiteLeaderboardEntry[]): AgentAuditPoints["points"] {
+  return entries
+    .filter((e) => e.lh_total !== null)
+    .map((e) => ({
+      site_id: e.site_id,
+      name: e.name,
+      tier: e.tier,
+      trial_count: e.trial_count,
+      lh_total: e.lh_total!,
+      success_rate: e.success_rate,
+      lh_accessibility_tree: e.lh_accessibility_tree ?? 0,
+      lh_layout_stability: e.lh_layout_stability ?? 0,
+      lh_llms_txt: e.lh_llms_txt ?? 0,
+      lh_webmcp: e.lh_webmcp ?? 0,
+    }));
 }
 
 // ---------------------------------------------------------------------------
