@@ -8,6 +8,12 @@ import type { Site, SiteTier } from "../lib/types";
 //
 // Used by the seed script and Lane 1. Lane 2 reads the same file through the Python
 // mirror, scripts/cohort_csv.py — keep the two readers in sync.
+//
+// AGENTRANK_COHORT_CSV points the lanes at a different pre-registered row set without
+// touching the frozen loop or the canonical cohort. It exists for the authored Goodhart
+// exhibit (data/exhibit-cohort.csv, docs/EXHIBIT.md), which is measured by the same lanes
+// into its own batch_label and is never part of the 28-site cohort. Unset, the default is
+// byte-for-byte the previous behaviour.
 
 const TIERS: readonly SiteTier[] = [
   "anchor",
@@ -18,9 +24,15 @@ const TIERS: readonly SiteTier[] = [
   "blocker",
 ];
 
-export const COHORT_CSV_PATH = path.join(process.cwd(), "data", "cohort.csv");
+export const DEFAULT_COHORT_CSV_PATH = path.join(process.cwd(), "data", "cohort.csv");
+export const COHORT_CSV_PATH = DEFAULT_COHORT_CSV_PATH;
 
-export function readCohort(csvPath: string = COHORT_CSV_PATH): Site[] {
+/** The row set the lanes read: data/cohort.csv unless AGENTRANK_COHORT_CSV overrides it. */
+export function defaultCsvPath(): string {
+  return process.env.AGENTRANK_COHORT_CSV || DEFAULT_COHORT_CSV_PATH;
+}
+
+export function readCohort(csvPath: string = defaultCsvPath()): Site[] {
   const records = parse(readFileSync(csvPath, "utf8"), {
     columns: true,
     skip_empty_lines: true,
