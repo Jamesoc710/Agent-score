@@ -815,7 +815,7 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
       <p>
         <Link
           href={withAgent("/correlation", agentId)}
-          className="font-medium text-accent hover:underline"
+          className="-mx-1 inline-block rounded px-1 py-1.5 font-medium text-accent hover:underline"
         >
           ← Back to the composite result
         </Link>

@@ -42,7 +42,7 @@ function TrialRow({ run, excluded, href }: { run: Run; excluded: boolean; href: 
         {/* Links to this trial's replay, open, so a single transcript can be shared. */}
         <Link
           href={href}
-          className="whitespace-nowrap font-medium transition-colors hover:text-accent"
+          className="-my-1 inline-block whitespace-nowrap py-1 font-medium transition-colors hover:text-accent"
         >
           Trial {run.trial_number}
         </Link>
@@ -160,7 +160,7 @@ export default async function SiteDetailPage({
             href={site.start_url}
             target="_blank"
             rel="noreferrer"
-            className="mt-1 inline-block break-all text-sm text-accent hover:underline"
+            className="-mx-1 mt-0.5 inline-block break-all rounded px-1 py-1 text-sm text-accent hover:underline"
           >
             {site.start_url} ↗
           </a>
@@ -295,7 +295,7 @@ export default async function SiteDetailPage({
           </p>
         )}
         <p className="mt-2 text-xs leading-relaxed text-notice-body">{site.answer_note}</p>
-        <p className="mt-2 text-xs leading-relaxed text-notice-body opacity-80">
+        <p className="mt-2 text-xs leading-relaxed text-notice-body">
           Registered before any agent runs. Success = the agent&apos;s final output contains this
           substring after the normalization rules in docs/METHODOLOGY.md.
         </p>

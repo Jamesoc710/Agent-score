@@ -48,6 +48,10 @@ function CustomDot(props: { cx?: number; cy?: number; payload?: CorrelationPoint
   const rate = payload.success_rate;
   // Redundant with the y position, which is the channel that actually carries the value.
   const tone = rate >= 0.7 ? "good" : rate >= 0.4 ? "mid" : "bad";
+  // Sites scoring near 100 sit against the right edge, where a label drawn rightwards is
+  // clipped by the plot area. Flip it to the left of the dot instead of paying for the
+  // clearance with a permanently wide right margin, which would cost plot width at 375px.
+  const flip = payload.lh_total > 62;
   return (
     <g>
       <circle
@@ -58,7 +62,13 @@ function CustomDot(props: { cx?: number; cy?: number; payload?: CorrelationPoint
         strokeWidth={1.5}
         className={`chart-dot chart-dot-${tone}`}
       />
-      <text x={cx + 9} y={cy + 4} fontSize={11} className="chart-dot-label">
+      <text
+        x={flip ? cx - 9 : cx + 9}
+        y={cy + 4}
+        fontSize={11}
+        textAnchor={flip ? "end" : "start"}
+        className="chart-dot-label"
+      >
         {payload.name}
       </text>
     </g>
@@ -105,7 +115,7 @@ export default function CorrelationChart({ points, fit }: Props) {
     // media query in globals.css.
     <div className="chart h-[340px] w-full sm:h-[420px]">
       <ResponsiveContainer width="100%" height="100%">
-        <ScatterChart margin={{ top: 16, right: 24, bottom: 40, left: 8 }}>
+        <ScatterChart margin={{ top: 16, right: 24, bottom: 40, left: 4 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="lh_total"
@@ -128,13 +138,16 @@ export default function CorrelationChart({ points, fit }: Props) {
             tickFormatter={(v) => `${Math.round(v * 100)}%`}
             tick={{ fontSize: 12 }}
             tickLine={false}
-            width={44}
+            // Wide enough that the rotated axis title gets its own gutter instead of
+            // overprinting the "100%" tick.
+            width={62}
           >
             <Label
               value="Agent Success Rate"
               angle={-90}
               position="insideLeft"
-              style={{ fontSize: 12 }}
+              offset={0}
+              style={{ fontSize: 12, textAnchor: "middle" }}
             />
           </YAxis>
           <Tooltip content={<CustomTooltip />} />

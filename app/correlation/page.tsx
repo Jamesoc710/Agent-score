@@ -220,7 +220,7 @@ export default async function CorrelationPage({
 
           <Link
             href={withAgent("/correlation/audits", agentId)}
-            className="mt-5 inline-block text-sm font-medium text-accent hover:underline"
+            className="-mx-1 mt-4 inline-block rounded px-1 py-1.5 text-sm font-medium text-accent hover:underline"
           >
             Full breakdown, both agents, with the power analysis →
           </Link>

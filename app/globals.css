@@ -15,9 +15,9 @@
  * (`bg-surface-2/60` is used on the trial log).
  *
  * Every foreground/background pair below is measured: all body and caption text clears WCAG AA
- * (4.5:1) in both themes. The light theme's old `text-slate-400` fine print was 2.56:1 and is
- * now `ink-muted` at 4.76:1; hierarchy is carried by size and weight instead of by a contrast
- * level that failed.
+ * (4.5:1) in both themes, on every surface it can land on including a hovered table row. The
+ * light theme's old `text-slate-400` fine print was 2.56:1 and is now `ink-muted` at 5.39:1;
+ * hierarchy is carried by size and weight instead of by a contrast level that failed.
  */
 
 :root {
@@ -34,7 +34,9 @@
   --c-ink: 15 23 42;
   --c-ink-strong: 51 65 85;
   --c-ink-body: 71 85 105;
-  --c-ink-muted: 100 116 139;
+  /* Darker than slate-500 so caption text still clears 4.5:1 on a hovered table row
+     (surface-2), not only on the card. */
+  --c-ink-muted: 95 107 127;
 
   /* Interactive */
   --c-accent: 3 105 161;

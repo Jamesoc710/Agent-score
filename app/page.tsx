@@ -73,7 +73,7 @@ function NotMeasured({ href }: { href: string | null }) {
     <Link
       href={href}
       title="Not measured: every recorded trial failed before the agent reached the site (connection-level rejection at navigation, 0 steps), so there is no success rate to report — see the trial log."
-      className="chip chip-slate transition-colors hover:text-ink"
+      className="chip -my-1 inline-block py-1.5 transition-colors chip-slate hover:text-ink"
     >
       not measured ⓘ
     </Link>
@@ -97,7 +97,11 @@ function SubAudits({ entry }: { entry: SiteLeaderboardEntry }) {
           <span
             key={key}
             title={label}
-            className={`chip ${val === 1 ? "chip-emerald" : "chip-slate opacity-70"}`}
+            // Pass reads as filled and green, fail as outlined and neutral — but the ✓/✗
+            // and the audit name carry it on their own.
+            className={`chip ${
+              val === 1 ? "chip-emerald" : "chip-slate ring-1 ring-inset ring-line"
+            }`}
           >
             {val === 1 ? "✓" : "✗"} {label}
           </span>
@@ -273,14 +277,14 @@ export default async function LeaderboardPage({
         <table className="w-full min-w-[56rem] text-sm">
           <thead>
             <tr className="border-b border-line bg-surface-2 text-left">
-              <th scope="col" className="w-10 px-4 py-3 font-semibold text-ink-body">#</th>
-              <th scope="col" className="px-4 py-3 font-semibold text-ink-body">Site</th>
-              <th scope="col" className="px-4 py-3 font-semibold text-ink-body">Tier</th>
-              <th scope="col" className="px-4 py-3 font-semibold text-ink-body">Agent Success</th>
-              <th scope="col" className="px-4 py-3 font-semibold text-ink-body">Top Failure</th>
-              <th scope="col" className="px-4 py-3 font-semibold text-ink-body">Avg Steps</th>
-              <th scope="col" className="px-4 py-3 font-semibold text-ink-body">Lighthouse</th>
-              <th scope="col" className="px-4 py-3 font-semibold text-ink-body">Sub-audits</th>
+              <th scope="col" className="w-10 whitespace-nowrap px-4 py-3 font-semibold text-ink-body">#</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Site</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Tier</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Agent Success</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Top Failure</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Avg Steps</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Lighthouse</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Sub-audits</th>
             </tr>
           </thead>
           <tbody>
@@ -306,7 +310,7 @@ export default async function LeaderboardPage({
                   <td className="px-4 py-3">
                     <Link
                       href={siteHref}
-                      className="font-medium text-ink transition-colors hover:text-accent"
+                      className="-my-1 inline-block py-1 font-medium text-ink transition-colors hover:text-accent"
                     >
                       {entry.name}
                     </Link>
