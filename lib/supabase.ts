@@ -26,6 +26,14 @@ export function getSupabase(): SupabaseClient {
 
   client = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Never serve a cached read. Every page is already `dynamic = "force-dynamic"`, which
+    // makes this redundant in production — but a stale Next Data Cache entry was observed in
+    // development putting a superseded `answer_substring` on screen, and a wrong
+    // pre-registered answer key is the one thing this site must never display. The guarantee
+    // belongs on the client that fetches the data, not on each route that happens to use it.
+    global: {
+      fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+    },
   });
   return client;
 }
