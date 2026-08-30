@@ -18,6 +18,7 @@ import { agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
 import { formatP, formatPoints, formatRunWindow } from "@/lib/format";
 import CorrelationChart from "@/components/CorrelationChart";
 import AgentToggle from "@/components/AgentToggle";
+import { EXHIBIT } from "@/lib/exhibit-data";
 
 // Rendered per request: results change when a batch is imported, not when the app is built,
 // and a build should not need database credentials.
@@ -46,6 +47,13 @@ export default async function CorrelationPage({
   const r = pearson(pairs);
   const fit = linearRegression(pairs);
   const runWindow = formatRunWindow(summary.run_window);
+
+  // The authored exhibit's own static score, read from its committed artifact rather than
+  // written into the copy: this card must not assert a number the exhibit did not measure.
+  const exhibitScores = [
+    ...new Set(EXHIBIT.pages.map((p) => p.lighthouse?.lh_total).filter((v) => v != null)),
+  ];
+  const exhibitScore = exhibitScores.length === 1 ? exhibitScores[0] : null;
 
   // Each sub-audit is a 0/1 split of the same sites, and the full analysis of those splits —
   // six comparisons across both agents, corrected for multiplicity — lives on
@@ -303,6 +311,31 @@ export default async function CorrelationPage({
             .
           </p>
         )}
+      </div>
+
+      {/* The constructive counterpart. A null says what could not be detected; a counterexample
+          says what can be built. The two authored pages behind it are not cohort data and enter
+          no number on this page — the link says so, and so does the page it leads to. */}
+      <div className="card card-pad mt-6">
+        <h2 className="card-title">And here is a page where they come apart by construction</h2>
+        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-body">
+          Everything above is about what {n} sites could and could not detect. The other way to
+          probe a rubric is to build a counterexample: two authored pages, identical down to the
+          rendered pixels, both scoring {exhibitScore ?? "the same"} on the Agentic Browsing
+          category, differing only in whether the rows outside a scroll box are placed in the
+          document. The agent answers on every trial against one of them and on none against the
+          other.
+        </p>
+        <p className="card-note max-w-3xl">
+          Authored demonstration pages, not cohort sites. Their trials are their own batch, are
+          never imported into the database this page reads, and are in no figure above.
+        </p>
+        <Link
+          href={withAgent("/correlation/exhibit", agentId)}
+          className="-mx-1 mt-4 inline-block rounded px-1 py-1.5 text-sm font-medium text-accent hover:underline"
+        >
+          The Goodhart exhibit →
+        </Link>
       </div>
     </div>
   );

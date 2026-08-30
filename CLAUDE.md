@@ -12,6 +12,9 @@ scanning is the product direction. Solo project (James), built with Claude in th
   rules or answer keys after runs exist invalidates results. Treat as append-only; flag any
   change to James.
 - `docs/COHORT.md` + `data/cohort.csv` — the 28-site cohort. The CSV is canonical.
+- `docs/EXHIBIT.md` — the authored Goodhart exhibit's own pre-registration record. Two pages
+  in `public/exhibit/`, measured by the same lanes into batch `goodhart`, never imported and
+  never part of a cohort statistic. Append-only, same as METHODOLOGY.
 - `docs/ROADMAP.md` — current phase and sequencing
 - `.claude/plans/buildout.md` — active working plan and state log; update it at session end
 

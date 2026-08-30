@@ -152,9 +152,18 @@ Roughly ordered by credibility-per-hour:
 - **Difficulty-residual baseline.** Run extraction-only (direct nav to the answer page) per
   site; full-agent minus extraction-only isolates navigation difficulty from "is the fact
   hard to read." Defuses the main methodological objection.
-- **The Goodhart exhibit.** One authored page that scores high on the static audit but
-  reliably defeats the agent (answer behind a JS gate). The static-scores-can-be-gamed
-  critique as a literal, plotted counterexample.
+- ~~**The Goodhart exhibit.**~~ ✅ **Done (2026-08-30).** Live at `/correlation/exhibit`, with
+  its own pre-registration record in `docs/EXHIBIT.md`. Built as a **matched pair** rather than
+  the single page originally scoped, because one page invites "your agent is just bad" and a
+  pair answers it: two authored pages that render the identical screenshot byte for byte, both
+  score **100** on the Agentic Browsing category with identical sub-audits, and differ only in
+  whether the rows outside a scroll box are placed in the document. Registered first (git tag
+  `exhibit-key-v1`, commit `7a4ae51`), then run through the **unchanged** frozen loop as batch
+  `goodhart`: 2 pages × 5 trials × 2 agents = 20 trials, zero harness errors. Control 10/10
+  success in 1 step; gated 0/10, every trial spending its full 15-step budget on `scroll`. What
+  it shows is one authored counterexample, not that the audit is gameable in general (see the
+  page's own limits section). Never imported into Supabase and in no cohort statistic; the v1
+  artifacts and `stats-vectors.json` are byte-identical after the work.
 - **Cross-agent replication.** Claude/GPT behind the identical loop as additional `agent_id`
   columns. Upgrades the claim from "Gemini behaves this way" to "agents behave this way," and
   is the first step toward the panel.

@@ -31,7 +31,16 @@ data/cohort.csv  (canonical cohort: question, answer, match rule per site)
                             answer key
         /correlation        scatter + rank correlation with bootstrap CI and n
         /correlation/audits per-sub-audit attribution, multiplicity-corrected
+        /correlation/exhibit the authored Goodhart pair, off this path entirely: read
+                            from committed artifacts, never in the database
 ```
+
+`AGENTRANK_COHORT_CSV` points both lanes at a different pre-registered row set without
+touching the frozen loop. It exists for the authored Goodhart exhibit
+(`data/exhibit-cohort.csv`, `docs/EXHIBIT.md`), which is measured by the same lanes into its
+own `batch_label` and is deliberately **never imported**: `lib/queries.ts` selects every row of
+`sites`, so a row there would land on the cohort leaderboard and in the cohort's n. Unset, both
+readers still resolve `data/cohort.csv`.
 
 Neither lane talks to the database. They write local artifacts; `import-results.ts` loads a
 batch. So an interrupted or offline run loses nothing already measured, a batch can be
@@ -98,6 +107,10 @@ over the newest batch per site, for ad-hoc inspection rather than for the app.
   published Lane 2 batch is `data/agent-runs-v1.jsonl` (280 trials, two agents).
 - Lane 2 has `--resume`, which skips recorded trials and re-runs rows recorded as `error`.
 - **The v1 loop is frozen** (2026-08-09). Any change to it forks the dataset.
+- The authored Goodhart exhibit (2026-08-30) ran through that loop unchanged as batch
+  `goodhart`: `data/exhibit-cohort.csv` (registered key), `data/lighthouse-goodhart.json`,
+  `data/agent-runs-goodhart.jsonl` (20 trials) and the two pages in `public/exhibit/`. Nothing
+  of it is in Supabase. See `docs/EXHIBIT.md`.
 
 ## Read-path modules added after the data landed
 
@@ -115,6 +128,14 @@ separately tested functions with no data access:
 - `lib/transcript.ts` — turns one stored transcript into what can honestly be said about how
   that trial ended, including the case where nothing in the record names a failure step.
 - `lib/format.ts` — one place decides how a measurement is worded.
+- `lib/runs.ts` — the pre-registered denominator rule (`measuredRuns`), extracted so both
+  `lib/queries.ts` and `lib/exhibit.ts` apply the identical one. `queries.ts` re-exports it.
+- `lib/exhibit.ts` + `lib/exhibit-data.ts` — the authored Goodhart exhibit. The first is the
+  pure fold of its lane artifacts; the second is the committed result of that fold
+  (`data/exhibit-goodhart.json`, written by `scripts/build-exhibit-summary.ts`), because JSONL
+  and CSV are not importable modules. `lib/exhibit.test.ts` re-derives it from the raw
+  artifacts and fails on drift, and asserts the exhibit and cohort datasets are disjoint in
+  both directions.
 
 ## Environment
 
