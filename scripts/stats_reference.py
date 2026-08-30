@@ -19,6 +19,7 @@ Regenerating is a deliberate act: the vectors encode a published result.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 from collections import defaultdict
@@ -27,6 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 RUNS_PATH = ROOT / "data" / "agent-runs-v1.jsonl"
 LIGHTHOUSE_PATH = ROOT / "data" / "lighthouse-v1.json"
+COHORT_PATH = ROOT / "data" / "cohort.csv"
 VECTORS_PATH = ROOT / "scripts" / "tests" / "stats-vectors.json"
 
 # Mirrors the constants in lib/stats.ts.
@@ -34,6 +36,7 @@ MIN_N = 3
 MIN_GROUP = 3
 DEFAULT_SEED = 20260819
 DEFAULT_ITERATIONS = 10000
+TIE_EPSILON = 1e-12
 
 SUB_AUDITS = [
     "lh_accessibility_tree",
@@ -210,6 +213,630 @@ def bootstrap_ci(
     }
 
 
+# ===========================================================================
+# Sub-audit attribution — mirrors the second half of lib/stats.ts
+# ===========================================================================
+
+
+def mean_gap(pairs: list[tuple[float, float]]) -> float | None:
+    sum_ones = sum_zeros = 0.0
+    ones = zeros = 0
+    for x, y in pairs:
+        if x == 1:
+            sum_ones += y
+            ones += 1
+        elif x == 0:
+            sum_zeros += y
+            zeros += 1
+    if ones == 0 or zeros == 0:
+        return None
+    return sum_ones / ones - sum_zeros / zeros
+
+
+def sub_audit_gap(
+    pairs: list[tuple[float, float]],
+    family_size: int = 1,
+    alpha: float = 0.05,
+    seed: int = DEFAULT_SEED,
+    iterations: int = DEFAULT_ITERATIONS,
+) -> dict | None:
+    groups = binary_group_sizes(pairs)
+    if min(groups["ones"], groups["zeros"]) < MIN_GROUP:
+        return None
+    ci = bootstrap_ci(pairs, mean_gap, iterations=iterations, seed=seed, level=1 - alpha)
+    simultaneous = bootstrap_ci(
+        pairs, mean_gap, iterations=iterations, seed=seed, level=1 - alpha / family_size
+    )
+    if ci is None or simultaneous is None:
+        return None
+    return {
+        "groups": groups,
+        "gap": ci["point"],
+        "r": pearson(pairs),
+        "ci": ci,
+        "simultaneous": simultaneous,
+    }
+
+
+def shuffle_indices(n: int, rnd) -> list[int]:
+    """Fisher-Yates, descending i, floor(rnd() * (i + 1)) — identical to lib/stats.ts."""
+    indices = list(range(n))
+    for i in range(n - 1, 0, -1):
+        j = math.floor(rnd() * (i + 1))
+        indices[i], indices[j] = indices[j], indices[i]
+    return indices
+
+
+def permutation_family(
+    inputs: list[dict],
+    statistic,
+    iterations: int = DEFAULT_ITERATIONS,
+    seed: int = DEFAULT_SEED,
+    level: float = 0.05,
+) -> dict | None:
+    """Westfall-Young maxT. One shuffle per iteration, applied to every member."""
+    if not inputs:
+        return None
+
+    site_ids = inputs[0]["site_ids"]
+    n = len(site_ids)
+    stratified = "strata" in inputs[0] and inputs[0]["strata"] is not None
+
+    for member in inputs:
+        if (
+            len(member["predictor"]) != n
+            or len(member["outcome"]) != n
+            or len(member["site_ids"]) != n
+        ):
+            raise ValueError(f"permutation_family: member {member['key']} has the wrong length")
+        if member["site_ids"] != site_ids:
+            raise ValueError(f"permutation_family: member {member['key']} names different sites")
+
+    order = sorted(range(n), key=lambda i: site_ids[i])
+    members = [
+        {
+            "key": m["key"],
+            "predictor": [m["predictor"][i] for i in order],
+            "outcome": [m["outcome"][i] for i in order],
+        }
+        for m in inputs
+    ]
+    strata = [inputs[0]["strata"][i] for i in order] if stratified else None
+
+    observed = []
+    for m in members:
+        value = statistic(m["predictor"], m["outcome"])
+        if value is None:
+            raise ValueError(f"permutation_family: member {m['key']} has no computable statistic")
+        observed.append(abs(value))
+
+    blocks = None
+    if strata is not None:
+        by_label: dict[str, list[int]] = defaultdict(list)
+        for i, label in enumerate(strata):
+            by_label[label].append(i)
+        blocks = [by_label[label] for label in sorted(by_label)]
+
+    rnd = mulberry32(seed)
+    maxima: list[float] = []
+    at_least = [0] * len(members)
+    at_least_family = [0] * len(members)
+    used = 0
+
+    for _ in range(iterations):
+        if blocks is None:
+            permutation = shuffle_indices(n, rnd)
+        else:
+            permutation = [0] * n
+            for block in blocks:
+                within = shuffle_indices(len(block), rnd)
+                for pos, index in enumerate(block):
+                    permutation[index] = block[within[pos]]
+
+        statistics = []
+        computable = True
+        for m in members:
+            permuted = [m["outcome"][source] for source in permutation]
+            value = statistic(m["predictor"], permuted)
+            if value is None:
+                computable = False
+                break
+            statistics.append(abs(value))
+        if not computable:
+            continue
+
+        used += 1
+        maximum = max(statistics)
+        maxima.append(maximum)
+        for j in range(len(members)):
+            if statistics[j] >= observed[j] - TIE_EPSILON:
+                at_least[j] += 1
+            if maximum >= observed[j] - TIE_EPSILON:
+                at_least_family[j] += 1
+
+    if used == 0:
+        return None
+    maxima.sort()
+
+    return {
+        "comparisons": [
+            {
+                "key": m["key"],
+                "observed": observed[j],
+                "p_unadjusted": (at_least[j] + 1) / (used + 1),
+                "p_family_wise": (at_least_family[j] + 1) / (used + 1),
+            }
+            for j, m in enumerate(members)
+        ],
+        "size": len(members),
+        "iterations": iterations,
+        "used": used,
+        "level": level,
+        "critical_value": percentile(maxima, 1 - level),
+        "seed": seed,
+        "stratified": stratified,
+    }
+
+
+# --- the exact permutation null --------------------------------------------
+
+
+def gap_null_distribution(outcome: list[float], ones: int, denominator: int):
+    n = len(outcome)
+    zeros = n - ones
+    if ones < 1 or zeros < 1 or denominator < 1:
+        return None
+
+    scaled = []
+    for y in outcome:
+        value = round(y * denominator)
+        if abs(value / denominator - y) > 1e-9:
+            return None
+        scaled.append(value)
+
+    total = sum(scaled)
+    counts = [[0] * (total + 1) for _ in range(ones + 1)]
+    counts[0][0] = 1
+    for value in scaled:
+        for size in range(min(ones, n) - 1, -1, -1):
+            source = counts[size]
+            target = counts[size + 1]
+            for total_so_far in range(total - value, -1, -1):
+                c = source[total_so_far]
+                if c:
+                    target[total_so_far + value] += c
+
+    buckets = []
+    for total_so_far in range(total + 1):
+        count = counts[ones][total_so_far]
+        if count == 0:
+            continue
+        buckets.append(
+            {
+                "gap": total_so_far / denominator / ones
+                - (total - total_so_far) / denominator / zeros,
+                "count": count,
+            }
+        )
+    return buckets
+
+
+def p_from_null(buckets, observed: float) -> dict:
+    splits = 0
+    extreme = 0
+    for bucket in buckets:
+        splits += bucket["count"]
+        if abs(bucket["gap"]) >= abs(observed) - TIE_EPSILON:
+            extreme += bucket["count"]
+    return {"p": extreme / splits, "splits": splits, "extreme": extreme}
+
+
+def exact_gap_p(predictor: list[float], outcome: list[float], denominator: int) -> dict | None:
+    ones = sum(1 for x in predictor if x == 1)
+    zeros = sum(1 for x in predictor if x == 0)
+    if ones + zeros != len(predictor):
+        return None
+    observed = mean_gap(list(zip(predictor, outcome)))
+    if observed is None:
+        return None
+    buckets = gap_null_distribution(outcome, ones, denominator)
+    if buckets is None:
+        return None
+    return p_from_null(buckets, observed)
+
+
+def minimum_attainable_p(
+    predictor: list[float], outcome: list[float], denominator: int
+) -> float | None:
+    ones = sum(1 for x in predictor if x == 1)
+    buckets = gap_null_distribution(outcome, ones, denominator)
+    if buckets is None:
+        return None
+    most_extreme = max(abs(bucket["gap"]) for bucket in buckets)
+    return p_from_null(buckets, most_extreme)["p"]
+
+
+# --- what this cohort could have detected -----------------------------------
+
+
+def maximum_attainable_gap(ones: int, zeros: int, overall_mean: float) -> float | None:
+    if ones < 1 or zeros < 1:
+        return None
+    total = overall_mean * (ones + zeros)
+    pass_mean = min(1.0, total / ones)
+    fail_mean = (total - ones * pass_mean) / zeros
+    return pass_mean - fail_mean
+
+
+def mean(values: list[float]) -> float | None:
+    """Left-to-right accumulation, deliberately NOT builtin sum().
+
+    Python 3.12's sum() applies Neumaier compensation to float sequences; JavaScript does not.
+    The difference is one bit, and one bit is enough to move a bootstrap draw across zero and
+    change a simulated false-positive count. Every mirrored accumulation adds naively.
+    """
+    if not values:
+        return None
+    total = 0.0
+    for value in values:
+        total += value
+    return total / len(values)
+
+
+def standard_deviation(values: list[float]) -> float | None:
+    n = len(values)
+    if n < 2:
+        return None
+    centre = mean(values)
+    total = 0.0
+    for value in values:
+        total += (value - centre) ** 2
+    return math.sqrt(total / (n - 1))
+
+
+def gap_standard_error(outcome: list[float], ones: int, zeros: int) -> float | None:
+    if len(outcome) < 2 or ones < 1 or zeros < 1:
+        return None
+    return standard_deviation(outcome) * math.sqrt(1 / ones + 1 / zeros)
+
+
+def power_threshold(critical_value: float, se: float, power: float) -> float:
+    return critical_value + normal_quantile(power) * se
+
+
+def sites_for_gap(
+    gap: float,
+    prevalence: float,
+    power: float,
+    critical_value: float,
+    reference_ones: int,
+    reference_zeros: int,
+    sd: float,
+) -> float | None:
+    if gap <= 0 or prevalence <= 0 or prevalence >= 1:
+        return None
+    reference = 1 / reference_ones + 1 / reference_zeros
+    k = critical_value / math.sqrt(reference) + normal_quantile(power) * sd
+    unit = 1 / prevalence + 1 / (1 - prevalence)
+    return (k / gap) ** 2 * unit
+
+
+# --- the wrong test, kept as an exhibit -------------------------------------
+
+
+def two_proportion_z(successes1: int, n1: int, successes0: int, n0: int) -> dict | None:
+    if n1 < 1 or n0 < 1:
+        return None
+    pooled = (successes1 + successes0) / (n1 + n0)
+    if pooled <= 0 or pooled >= 1:
+        return None
+    se = math.sqrt(pooled * (1 - pooled) * (1 / n1 + 1 / n0))
+    if se == 0:
+        return None
+    z = (successes1 / n1 - successes0 / n0) / se
+    return {"z": z, "p": erfc(abs(z) / math.sqrt(2))}
+
+
+# --- normal distribution helpers -------------------------------------------
+#
+# math.erfc and statistics.NormalDist would be right to ~15 digits by a different route. The
+# contract with lib/stats.ts is pinned to 12, so both sides run the identical algorithm instead.
+
+
+def normal_quantile(p: float) -> float:
+    """Inverse standard normal CDF, Wichura AS 241 (PPND16)."""
+    if p <= 0 or p >= 1:
+        return float("nan")
+    q = p - 0.5
+
+    if abs(q) <= 0.425:
+        r = 0.180625 - q * q
+        return q * (
+            (
+                (
+                    (
+                        (
+                            (
+                                (2509.0809287301226727 * r + 33430.575583588128105) * r
+                                + 67265.770927008700853
+                            )
+                            * r
+                            + 45921.953931549871457
+                        )
+                        * r
+                        + 13731.693765509461125
+                    )
+                    * r
+                    + 1971.5909503065514427
+                )
+                * r
+                + 133.14166789178437745
+            )
+            * r
+            + 3.387132872796366608
+        ) / (
+            (
+                (
+                    (
+                        (
+                            (
+                                (5226.495278852854561 * r + 28729.085735721942674) * r
+                                + 39307.89580009271061
+                            )
+                            * r
+                            + 21213.794301586595867
+                        )
+                        * r
+                        + 5394.1960214247511077
+                    )
+                    * r
+                    + 687.1870074920579083
+                )
+                * r
+                + 42.313330701600911252
+            )
+            * r
+            + 1
+        )
+
+    r = p if q < 0 else 1 - p
+    r = math.sqrt(-math.log(r))
+
+    if r <= 5:
+        r -= 1.6
+        value = (
+            (
+                (
+                    (
+                        (
+                            (
+                                (7.7454501427834140764e-4 * r + 0.0227238449892691845833) * r
+                                + 0.24178072517745061177
+                            )
+                            * r
+                            + 1.27045825245236838258
+                        )
+                        * r
+                        + 3.64784832476320460504
+                    )
+                    * r
+                    + 5.7694972214606914055
+                )
+                * r
+                + 4.6303378461565452959
+            )
+            * r
+            + 1.42343711074968357734
+        ) / (
+            (
+                (
+                    (
+                        (
+                            (
+                                (1.05075007164441684324e-9 * r + 5.475938084995344946e-4) * r
+                                + 0.0151986665636164571966
+                            )
+                            * r
+                            + 0.14810397642748007459
+                        )
+                        * r
+                        + 0.68976733498510000455
+                    )
+                    * r
+                    + 1.6763848301838038494
+                )
+                * r
+                + 2.05319162663775882187
+            )
+            * r
+            + 1
+        )
+    else:
+        r -= 5
+        value = (
+            (
+                (
+                    (
+                        (
+                            (
+                                (2.01033439929228813265e-7 * r + 2.71155556874348757815e-5) * r
+                                + 0.0012426609473880784386
+                            )
+                            * r
+                            + 0.026532189526576123093
+                        )
+                        * r
+                        + 0.29656057182850489123
+                    )
+                    * r
+                    + 1.7848265399172913358
+                )
+                * r
+                + 5.4637849111641143699
+            )
+            * r
+            + 6.6579046435011037772
+        ) / (
+            (
+                (
+                    (
+                        (
+                            (
+                                (2.04426310338993978564e-15 * r + 1.4215117583164458887e-7) * r
+                                + 1.8463183175100546818e-5
+                            )
+                            * r
+                            + 7.868691311456132591e-4
+                        )
+                        * r
+                        + 0.0148753612908506148525
+                    )
+                    * r
+                    + 0.13692988092273580531
+                )
+                * r
+                + 0.59983220655588793769
+            )
+            * r
+            + 1
+        )
+
+    return -value if q < 0 else value
+
+
+def erfc(x: float) -> float:
+    """Maclaurin series below 2, modified-Lentz continued fraction above — as in lib/stats.ts."""
+    if x < 0:
+        return 2 - erfc(-x)
+    if x == 0:
+        return 1.0
+
+    if x < 2:
+        term = x
+        total = x
+        for k in range(1, 400):
+            term *= (-x * x) / k
+            add = term / (2 * k + 1)
+            total += add
+            if abs(add) <= 1e-18 * abs(total):
+                break
+        return 1 - (2 / math.sqrt(math.pi)) * total
+
+    tiny = 1e-300
+    f = x
+    c = f
+    d = 0.0
+    for k in range(1, 400):
+        a = k / 2
+        d = x + a * d
+        if d == 0:
+            d = tiny
+        c = x + a / c
+        if c == 0:
+            c = tiny
+        d = 1 / d
+        delta = c * d
+        f *= delta
+        if abs(delta - 1) <= 1e-16:
+            break
+    return math.exp(-x * x) / math.sqrt(math.pi) / f
+
+
+# --- calibration by simulation ---------------------------------------------
+
+
+def simulate_false_positive_rate(
+    outcome: list[float],
+    ones: int,
+    replicates: int,
+    seed: int,
+    iterations: int,
+    level: float,
+    denominator: int,
+) -> dict | None:
+    n = len(outcome)
+    buckets = gap_null_distribution(outcome, ones, denominator)
+    if buckets is None:
+        return None
+
+    rnd = mulberry32(seed)
+    bootstrap_hits = bootstrap_used = permutation_hits = 0
+
+    for replicate in range(replicates):
+        order = shuffle_indices(n, rnd)
+        pairs = [(1.0 if i < ones else 0.0, outcome[source]) for i, source in enumerate(order)]
+
+        ci = bootstrap_ci(
+            pairs, mean_gap, iterations=iterations, seed=seed + replicate, level=1 - level
+        )
+        if ci is not None:
+            bootstrap_used += 1
+            if ci["lo"] > 0 or ci["hi"] < 0:
+                bootstrap_hits += 1
+
+        gap = mean_gap(pairs)
+        if gap is not None and p_from_null(buckets, gap)["p"] <= level:
+            permutation_hits += 1
+
+    if bootstrap_used == 0:
+        return None
+    return {
+        "bootstrap": bootstrap_hits / bootstrap_used,
+        "permutation": permutation_hits / replicates,
+        "replicates": replicates,
+        "iterations": iterations,
+    }
+
+
+def simulate_power(
+    base_rates: list[float],
+    ones: int,
+    zeros: int,
+    effect: float,
+    trials: int,
+    replicates: int,
+    seed: int,
+    critical_value: float,
+    reference_ones: int,
+    reference_zeros: int,
+) -> dict | None:
+    if not base_rates or ones < 1 or zeros < 1 or trials < 1:
+        return None
+
+    n = ones + zeros
+    scaled = critical_value * math.sqrt(
+        (1 / ones + 1 / zeros) / (1 / reference_ones + 1 / reference_zeros)
+    )
+    rnd = mulberry32(seed)
+    hits = 0
+    gap_total = 0.0
+
+    for _ in range(replicates):
+        sum_ones = sum_zeros = 0.0
+        for i in range(n):
+            base = base_rates[math.floor(rnd() * len(base_rates))]
+            rate = min(1.0, base + effect) if i < ones else base
+            successes = 0
+            for _t in range(trials):
+                if rnd() < rate:
+                    successes += 1
+            if i < ones:
+                sum_ones += successes / trials
+            else:
+                sum_zeros += successes / trials
+        gap = sum_ones / ones - sum_zeros / zeros
+        gap_total += gap
+        if abs(gap) > scaled:
+            hits += 1
+
+    return {
+        "power": hits / replicates,
+        "mean_gap": gap_total / replicates,
+        "critical_value": scaled,
+        "replicates": replicates,
+    }
+
+
 # ---------------------------------------------------------------------------
 # The v1 dataset, read the way lib/queries.ts reads it
 # ---------------------------------------------------------------------------
@@ -221,9 +848,17 @@ def measured(runs: list[dict]) -> list[dict]:
     return [r for r in runs if not (r["failure_mode"] == "error" and r["step_count"] == 0)]
 
 
+def load_cohort_tiers() -> dict[str, str]:
+    """site_id -> tier, from the canonical cohort CSV. Read here so the confound the page
+    states can be proven from the vector file without a CSV parser in vitest."""
+    with COHORT_PATH.open(newline="") as handle:
+        return {row["site_id"]: row["tier"] for row in csv.DictReader(handle)}
+
+
 def load_dataset() -> dict:
     runs = [json.loads(line) for line in RUNS_PATH.read_text().splitlines() if line.strip()]
     lighthouse = json.loads(LIGHTHOUSE_PATH.read_text())
+    tiers = load_cohort_tiers()
 
     agents: dict[str, dict] = {}
     for agent_id in sorted({r["agent_id"] for r in runs}):
@@ -233,6 +868,9 @@ def load_dataset() -> dict:
                 by_site[run["site_id"]].append(run)
 
         sites = []
+        # Per-site trial counts and cohort tier, kept OUT of `sites` so the published
+        # v1 vector block stays byte-identical across this file's extensions.
+        site_meta: dict[str, dict] = {}
         unmeasured = []
         trials = 0
         successes = 0
@@ -255,10 +893,16 @@ def load_dataset() -> dict:
                     **{key: lh[key] for key in SUB_AUDITS},
                 }
             )
+            site_meta[site_id] = {
+                "tier": tiers[site_id],
+                "trials": len(kept),
+                "successes": site_successes,
+            }
 
         run_times = sorted(r["run_at"] for r in runs if r["agent_id"] == agent_id)
         agents[agent_id] = {
             "sites": sites,
+            "site_meta": site_meta,
             "unmeasured_sites": unmeasured,
             "trials": trials,
             "successes": successes,
@@ -354,6 +998,414 @@ def edge_cases() -> list[dict]:
     ]
 
 
+# ---------------------------------------------------------------------------
+# Sub-audit attribution vectors — the Phase 6 analysis, computed once, pinned
+# ---------------------------------------------------------------------------
+
+# The family: the audits with a reportable split, across every published agent.
+FAMILY_AUDITS = ["lh_accessibility_tree", "lh_layout_stability", "lh_llms_txt"]
+FAMILY_ALPHA = 0.05
+TRIALS_PER_SITE = 5
+
+# Calibration (see simulate_false_positive_rate). 2,000 bootstrap iterations inside each of
+# 1,000 replicates: the published intervals use 10,000, and the measured rate is the same to
+# within Monte-Carlo error either way, but 6 x 1,000 x 10,000 resamples is a slow test.
+CALIBRATION_SPLITS = [12, 6, 1]
+CALIBRATION_REPLICATES = 1000
+CALIBRATION_ITERATIONS = 2000
+
+POWER_EFFECT = 0.30
+POWER_TRIALS = 5
+POWER_REPLICATES = 20000
+POWER_DESIGN_SIZES = [50, 93]
+
+SIZING_GAPS = [0.30, 0.20]
+SIZING_POWERS = [0.50, 0.80]
+
+
+def _gap_statistic(predictor: list[float], outcome: list[float]) -> float | None:
+    return mean_gap(list(zip(predictor, outcome)))
+
+
+def _pairs(sites: list[dict], key: str) -> list[tuple[float, float]]:
+    return [(float(s[key]), s["success_rate"]) for s in sites]
+
+
+def sub_audit_vectors(agents: dict) -> dict:
+    lighthouse = json.loads(LIGHTHOUSE_PATH.read_text())
+    tiers = load_cohort_tiers()
+    agent_ids = sorted(agents)
+    family_size = len(agent_ids) * len(FAMILY_AUDITS)
+
+    def sites_of(agent_id: str) -> list[dict]:
+        return agents[agent_id]["sites"]
+
+    def meta_of(agent_id: str, site_id: str) -> dict:
+        return agents[agent_id]["site_meta"][site_id]
+
+    # --- the family -------------------------------------------------------
+    members = [
+        {
+            "key": f"{agent_id}|{audit}",
+            "site_ids": [s["site_id"] for s in sites_of(agent_id)],
+            "predictor": [float(s[audit]) for s in sites_of(agent_id)],
+            "outcome": [s["success_rate"] for s in sites_of(agent_id)],
+        }
+        for agent_id in agent_ids
+        for audit in FAMILY_AUDITS
+    ]
+    family = permutation_family(members, _gap_statistic, level=FAMILY_ALPHA)
+    by_key = {c["key"]: c for c in family["comparisons"]}
+
+    per_agent: dict[str, dict] = {}
+    for agent_id in agent_ids:
+        sites = sites_of(agent_id)
+        audits: dict[str, dict] = {}
+        for audit in SUB_AUDITS:
+            pairs = _pairs(sites, audit)
+            groups = binary_group_sizes(pairs)
+            gap = sub_audit_gap(pairs, family_size=family_size, alpha=FAMILY_ALPHA)
+            comparison = by_key.get(f"{agent_id}|{audit}")
+            exact = exact_gap_p([x for x, _ in pairs], [y for _, y in pairs], TRIALS_PER_SITE)
+            audits[audit] = {
+                "groups": groups,
+                "reportable": gap is not None,
+                "gap": gap["gap"] if gap else mean_gap(pairs),
+                "r": gap["r"] if gap else None,
+                "ci95": {k: gap["ci"][k] for k in ("lo", "hi", "used")} if gap else None,
+                "simultaneous": (
+                    {k: gap["simultaneous"][k] for k in ("lo", "hi", "used")} if gap else None
+                ),
+                "p_unadjusted": comparison["p_unadjusted"] if comparison else None,
+                "p_exact": exact["p"] if exact else None,
+                "p_family_wise": comparison["p_family_wise"] if comparison else None,
+            }
+        per_agent[agent_id] = audits
+
+    # --- the WebMCP trap: what the estimator does when the gate is removed --
+    degenerate = {}
+    for agent_id in agent_ids:
+        pairs = _pairs(sites_of(agent_id), "lh_webmcp")
+        ci = bootstrap_ci(pairs, mean_gap)
+        predictor = [x for x, _ in pairs]
+        outcome = [y for _, y in pairs]
+        degenerate[agent_id] = {
+            "groups": binary_group_sizes(pairs),
+            "gap": mean_gap(pairs),
+            "ci95": {k: ci[k] for k in ("lo", "hi", "used", "iterations")},
+            "discarded": ci["iterations"] - ci["used"],
+            "p_exact": exact_gap_p(predictor, outcome, TRIALS_PER_SITE)["p"],
+            "min_attainable_p": minimum_attainable_p(predictor, outcome, TRIALS_PER_SITE),
+        }
+
+    # --- what the cohort could have detected -------------------------------
+    power = {}
+    for agent_id in agent_ids:
+        sites = sites_of(agent_id)
+        outcome = [s["success_rate"] for s in sites]
+        ones = binary_group_sizes(_pairs(sites, "lh_llms_txt"))["ones"]
+        zeros = len(sites) - ones
+        se = gap_standard_error(outcome, ones, zeros)
+        threshold = power_threshold(family["critical_value"], se, 0.80)
+        ceiling = maximum_attainable_gap(ones, zeros, mean(outcome))
+        power[agent_id] = {
+            "reference_split": {"ones": ones, "zeros": zeros},
+            "overall_rate": mean(outcome),
+            "sd": standard_deviation(outcome),
+            "se_at_split": se,
+            "critical_value": family["critical_value"],
+            "threshold_80": threshold,
+            "max_attainable_gap": ceiling,
+            "detectable_at_80": ceiling >= threshold,
+            "sites_at_extremes": sum(1 for y in outcome if y in (0.0, 1.0)),
+        }
+
+    headline = agent_ids[0]
+    sizing = [
+        {
+            "gap": gap,
+            "prevalence": prevalence,
+            "power": target,
+            "n": sites_for_gap(
+                gap,
+                prevalence,
+                target,
+                family["critical_value"],
+                power[headline]["reference_split"]["ones"],
+                power[headline]["reference_split"]["zeros"],
+                power[headline]["sd"],
+            ),
+        }
+        for gap in SIZING_GAPS
+        for prevalence in (0.5, power[headline]["reference_split"]["ones"] / len(sites_of(headline)))
+        for target in SIZING_POWERS
+    ]
+
+    # --- the confound ------------------------------------------------------
+    stratified_members = [
+        {**member, "strata": [tiers[site_id] for site_id in member["site_ids"]]}
+        for member in members
+    ]
+    stratified = permutation_family(stratified_members, _gap_statistic, level=FAMILY_ALPHA)
+
+    confound = {
+        "llms_txt_sites": [
+            {"site_id": s["site_id"], "tier": tiers[s["site_id"]]}
+            for s in sites_of(headline)
+            if s["lh_llms_txt"] == 1
+        ],
+        "anchors_without_llms_txt": [
+            s["site_id"]
+            for s in sites_of(headline)
+            if tiers[s["site_id"]] == "anchor" and s["lh_llms_txt"] == 0
+        ],
+        "anchor_pseudo_audit": {},
+        "stratified": {
+            c["key"]: {"p_unadjusted": c["p_unadjusted"], "p_family_wise": c["p_family_wise"]}
+            for c in stratified["comparisons"]
+        },
+        "stratified_critical_value": stratified["critical_value"],
+        "within_anchor": {},
+        "identical_to_anchor": {},
+    }
+    for agent_id in agent_ids:
+        sites = sites_of(agent_id)
+        anchor_pairs = [
+            (1.0 if tiers[s["site_id"]] == "anchor" else 0.0, s["success_rate"]) for s in sites
+        ]
+        ci = bootstrap_ci(anchor_pairs, mean_gap)
+        confound["anchor_pseudo_audit"][agent_id] = {
+            "groups": binary_group_sizes(anchor_pairs),
+            "gap": mean_gap(anchor_pairs),
+            "ci95": {k: ci[k] for k in ("lo", "hi", "used")},
+        }
+        anchors = [s for s in sites if tiers[s["site_id"]] == "anchor"]
+        within = _pairs(anchors, "lh_llms_txt")
+        confound["within_anchor"][agent_id] = {
+            "groups": binary_group_sizes(within),
+            "gap": mean_gap(within),
+        }
+        confound["identical_to_anchor"][agent_id] = sorted(anchor_pairs) == sorted(
+            _pairs(sites, "lh_llms_txt")
+        )
+
+    # --- pooling the panel: computed, rejected, published as rejected ------
+    pooled_sites = []
+    for site in sites_of(agent_ids[0]):
+        site_id = site["site_id"]
+        trials = sum(meta_of(a, site_id)["trials"] for a in agent_ids)
+        successes = sum(meta_of(a, site_id)["successes"] for a in agent_ids)
+        pooled_sites.append({**site, "success_rate": successes / trials})
+    pooled_denominator = TRIALS_PER_SITE * len(agent_ids)
+
+    pooled = {}
+    for audit in SUB_AUDITS:
+        pairs = _pairs(pooled_sites, audit)
+        groups = binary_group_sizes(pairs)
+        # An exact p is legitimate at any split; a bootstrap interval is not.
+        ci = (
+            bootstrap_ci(pairs, mean_gap)
+            if min(groups["ones"], groups["zeros"]) >= MIN_GROUP
+            else None
+        )
+        pooled[audit] = {
+            "gap": mean_gap(pairs),
+            "ci95": {k: ci[k] for k in ("lo", "hi", "used")} if ci else None,
+            "p_exact": exact_gap_p(
+                [x for x, _ in pairs], [y for _, y in pairs], pooled_denominator
+            )["p"],
+        }
+
+    rate_of = {a: {s["site_id"]: s["success_rate"] for s in sites_of(a)} for a in agent_ids}
+    flipped = sorted(
+        (
+            {
+                "site_id": site_id,
+                "first": rate_of[agent_ids[0]][site_id],
+                "second": rate_of[agent_ids[1]][site_id],
+            }
+            for site_id in rate_of[agent_ids[0]]
+            if abs(rate_of[agent_ids[0]][site_id] - rate_of[agent_ids[1]][site_id]) >= 0.6
+        ),
+        key=lambda row: row["site_id"],
+    )
+
+    # --- the wrong unit of analysis ---------------------------------------
+    unit_of_analysis = {}
+    for audit in SUB_AUDITS:
+        passing = [s for s in pooled_sites if s[audit] == 1]
+        failing = [s for s in pooled_sites if s[audit] == 0]
+
+        def totals(group: list[dict]) -> tuple[int, int]:
+            successes = sum(
+                meta_of(a, s["site_id"])["successes"] for s in group for a in agent_ids
+            )
+            trials = sum(meta_of(a, s["site_id"])["trials"] for s in group for a in agent_ids)
+            return successes, trials
+
+        s1, n1 = totals(passing)
+        s0, n0 = totals(failing)
+        test = two_proportion_z(s1, n1, s0, n0)
+        unit_of_analysis[audit] = {
+            "successes_pass": s1,
+            "trials_pass": n1,
+            "successes_fail": s0,
+            "trials_fail": n0,
+            "trial_z": test["z"],
+            "trial_p": test["p"],
+            "site_p": pooled[audit]["p_exact"],
+            "ratio": pooled[audit]["p_exact"] / test["p"],
+        }
+
+    # --- costco: excluded (n=27) vs scored 0% (n=28) -----------------------
+    costco_lh = lighthouse["costco"]
+    pooled_28 = pooled_sites + [
+        {
+            "site_id": "costco",
+            "success_rate": 0.0,
+            **{key: costco_lh[key] for key in SUB_AUDITS},
+        }
+    ]
+    costco = {}
+    for audit in SUB_AUDITS:
+        p27 = _pairs(pooled_sites, audit)
+        p28 = _pairs(pooled_28, audit)
+        costco[audit] = {
+            "gap_27": mean_gap(p27),
+            "p_27": exact_gap_p([x for x, _ in p27], [y for _, y in p27], pooled_denominator)["p"],
+            "gap_28": mean_gap(p28),
+            "p_28": exact_gap_p([x for x, _ in p28], [y for _, y in p28], pooled_denominator)["p"],
+        }
+
+    # --- calibration -------------------------------------------------------
+    false_positive = {}
+    for agent_id in agent_ids:
+        outcome = [s["success_rate"] for s in sites_of(agent_id)]
+        false_positive[agent_id] = {
+            str(ones): simulate_false_positive_rate(
+                outcome,
+                ones,
+                CALIBRATION_REPLICATES,
+                DEFAULT_SEED,
+                CALIBRATION_ITERATIONS,
+                FAMILY_ALPHA,
+                TRIALS_PER_SITE,
+            )
+            for ones in CALIBRATION_SPLITS
+        }
+
+    base_rates = [s["success_rate"] for s in sites_of(headline)]
+    power_simulation = []
+    for size in POWER_DESIGN_SIZES:
+        ones = size // 2
+        zeros = size - ones
+        result = simulate_power(
+            base_rates,
+            ones,
+            zeros,
+            POWER_EFFECT,
+            POWER_TRIALS,
+            POWER_REPLICATES,
+            DEFAULT_SEED,
+            family["critical_value"],
+            power[headline]["reference_split"]["ones"],
+            power[headline]["reference_split"]["zeros"],
+        )
+        power_simulation.append({"n": size, "ones": ones, "zeros": zeros, **result})
+
+    # --- the estimator note (identical in v1, not identical in principle) ---
+    equivalence = {
+        agent_id: {
+            "mean_of_site_rates": mean([s["success_rate"] for s in sites_of(agent_id)]),
+            "pooled_trial_rate": agents[agent_id]["successes"] / agents[agent_id]["trials"],
+            "trials_per_site": sorted(
+                {meta_of(agent_id, s["site_id"])["trials"] for s in sites_of(agent_id)}
+            ),
+        }
+        for agent_id in agent_ids
+    }
+
+    return {
+        "min_group": MIN_GROUP,
+        "alpha": FAMILY_ALPHA,
+        "iterations": DEFAULT_ITERATIONS,
+        "seed": DEFAULT_SEED,
+        "trials_per_site": TRIALS_PER_SITE,
+        "family_audits": FAMILY_AUDITS,
+        # Cohort design bucket per site, so the confound is provable from this file alone.
+        "site_tiers": {site_id: tiers[site_id] for site_id in sorted(tiers)},
+        # Attempted, never reached, therefore no behavioral measurement. Carried so the
+        # exclusion-sensitivity analysis can be reproduced without re-reading the artifacts.
+        "excluded_sites": [
+            {
+                "site_id": site_id,
+                "tier": tiers[site_id],
+                **{key: lighthouse[site_id][key] for key in SUB_AUDITS},
+            }
+            for site_id in sorted(agents[headline]["unmeasured_sites"])
+        ],
+        # Fisher-Yates, pinned as exact integers: every p-value below depends on this stream.
+        "shuffle": {
+            "n": 27,
+            "seed": DEFAULT_SEED,
+            "first_3": _shuffles(27, DEFAULT_SEED, 3),
+            "n_6_first_2": _shuffles(6, DEFAULT_SEED, 2),
+        },
+        "normal_quantile": [
+            {"p": p, "value": normal_quantile(p)} for p in (0.5, 0.8, 0.9, 0.975, 0.99, 0.999)
+        ],
+        "erfc": [{"x": x, "value": erfc(x)} for x in (0.0, 0.5, 1.0, 2.0, 3.0, 3.854)],
+        "family": {
+            "size": family["size"],
+            "level": family["level"],
+            "iterations": family["iterations"],
+            "used": family["used"],
+            "critical_value": family["critical_value"],
+            "members": [c["key"] for c in family["comparisons"]],
+        },
+        "agents": per_agent,
+        "degenerate_webmcp": degenerate,
+        "power": power,
+        "sizing": sizing,
+        "confound": confound,
+        "unit_of_analysis": unit_of_analysis,
+        "costco_sensitivity": costco,
+        "pooled_panel_rejected": {
+            "audits": pooled,
+            "between_agent_spearman": spearman_rho(
+                [
+                    (rate_of[agent_ids[0]][s["site_id"]], rate_of[agent_ids[1]][s["site_id"]])
+                    for s in sites_of(agent_ids[0])
+                ]
+            ),
+            "flipped_sites": flipped,
+        },
+        "estimator_equivalence": equivalence,
+        "calibration": {
+            "false_positive": {
+                "splits": CALIBRATION_SPLITS,
+                "replicates": CALIBRATION_REPLICATES,
+                "iterations": CALIBRATION_ITERATIONS,
+                "level": FAMILY_ALPHA,
+                "agents": false_positive,
+            },
+            "power_simulation": {
+                "effect": POWER_EFFECT,
+                "trials": POWER_TRIALS,
+                "replicates": POWER_REPLICATES,
+                "seed": DEFAULT_SEED,
+                "base_rate_agent": headline,
+                "designs": power_simulation,
+            },
+        },
+    }
+
+
+def _shuffles(n: int, seed: int, count: int) -> list[list[int]]:
+    rnd = mulberry32(seed)
+    return [shuffle_indices(n, rnd) for _ in range(count)]
+
+
 def build_vectors() -> dict:
     agents = load_dataset()
     return {
@@ -390,6 +1442,7 @@ def build_vectors() -> dict:
         ],
         "edge_cases": edge_cases(),
         "v1": {agent_id: summarize(agent) for agent_id, agent in agents.items()},
+        "sub_audit_attribution": sub_audit_vectors(agents),
     }
 
 
