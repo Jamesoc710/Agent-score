@@ -21,18 +21,17 @@ import {
 // budget end them from outside the transcript — and the panel says "not recorded" rather than
 // pointing at whatever action happens to be last.
 
-// Categorical, not ordinal: these separate kinds of action, they do not rank them. The
-// action name is always printed beside the colour.
+// The action kinds are categorical, not ordinal: they separate kinds of action, they do not
+// rank them. The kind is always printed as a word, which is what carries it, so the five hues
+// that used to distinguish them were a legend with nothing to say. "done" keeps a heavier
+// weight because it is the step that produced the answer.
 const ACTION_STYLES: Record<string, string> = {
-  click: "chip-sky",
-  type: "chip-violet",
-  scroll: "chip-slate",
-  navigate: "chip-indigo",
-  done: "chip-emerald",
+  done: "chip-neutral font-semibold",
 };
+const ACTION_DEFAULT = "chip-neutral";
 
 function Chip({ tone, children }: { tone: "slate" | "amber"; children: React.ReactNode }) {
-  const styles = tone === "amber" ? "bg-mid-soft text-mid-ink" : "bg-surface-2 text-ink-body";
+  const styles = tone === "amber" ? "bg-mid-soft text-mid-ink" : "chip-neutral";
   return (
     <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] ${styles}`}>{children}</span>
   );
@@ -44,7 +43,7 @@ function AnswerCallout({ step }: { step: NormalizedStep }) {
   // carries a `matched` key at all.
   if (step.answer === "BLOCKED") {
     return (
-      <div className="mt-2 rounded-lg border border-bad/30 bg-bad-soft px-3 py-2">
+      <div className="mt-2 rounded border border-bad/30 bg-bad-soft px-3 py-2">
         <p className="text-xs font-medium text-bad-ink">
           The agent reported <code className="font-mono">BLOCKED</code>.
         </p>
@@ -65,7 +64,7 @@ function AnswerCallout({ step }: { step: NormalizedStep }) {
         : "border-line bg-surface-2";
 
   return (
-    <div className={`mt-2 rounded-lg border px-3 py-2 ${tone}`}>
+    <div className={`mt-2 rounded border px-3 py-2 ${tone}`}>
       <p className="text-xs text-ink-muted">Reported answer</p>
       <p className="mt-0.5 break-words font-mono text-xs text-ink">
         {step.answer ?? <span className="text-ink-muted">(empty)</span>}
@@ -144,9 +143,7 @@ function StepEntry({
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="text-xs font-semibold text-ink-strong">Step {step.displayStep}</span>
         <span
-          className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${
-            ACTION_STYLES[kind] ?? "chip-slate"
-          }`}
+          className={`chip text-[11px] font-medium ${ACTION_STYLES[kind] ?? ACTION_DEFAULT}`}
         >
           {kind}
         </span>
@@ -193,10 +190,10 @@ function Verdict({
   lastActionStep: number | null;
 }) {
   return (
-    <div className="rounded-lg border border-line bg-surface px-4 py-3">
+    <div className="rounded border border-line bg-surface px-4 py-3">
       <p className="text-xs text-ink-body">
         <span className="font-semibold text-ink">Recorded outcome:</span>{" "}
-        <code className="font-mono">{outcome.mode}</code> — {MODE_DEFINITIONS[outcome.mode]}.
+        <code className="font-mono">{outcome.mode}</code>: {MODE_DEFINITIONS[outcome.mode]}.
       </p>
 
       <p className="mt-1.5 text-xs leading-relaxed text-ink-body">
@@ -356,13 +353,13 @@ export default function TrialReplay({
   return (
     <details id={id} open={open} className="group">
       {/* -mx/-my keeps the visual position while giving the control a ~32px hit target. */}
-      <summary className="-mx-1.5 -my-1 inline-flex cursor-pointer list-none items-center gap-1.5 rounded px-1.5 py-1 text-xs font-medium text-accent transition-colors hover:text-accent-hover">
+      <summary className="-mx-1.5 -my-1 inline-flex cursor-pointer list-none items-center gap-1.5 rounded px-1.5 py-1 text-xs font-medium text-ink underline decoration-line underline-offset-2 transition-colors hover:decoration-ink-muted">
         <span className="inline-block transition-transform group-open:rotate-90" aria-hidden>
           ▸
         </span>
         {steps.length === 0
-          ? "Replay — no transcript recorded"
-          : `Replay — ${steps.length} recorded ${steps.length === 1 ? "entry" : "entries"}`}
+          ? "Replay: no transcript recorded"
+          : `Replay: ${steps.length} recorded ${steps.length === 1 ? "entry" : "entries"}`}
       </summary>
 
       <div className="mt-3 space-y-3">
@@ -371,14 +368,14 @@ export default function TrialReplay({
         {steps.length === 0 ? (
           // Never an empty timeline: that would read as "the agent did nothing", which is a
           // different claim from "nothing was stored".
-          <p className="rounded-lg border border-line bg-surface px-4 py-3 text-xs text-ink-muted">
+          <p className="rounded border border-line bg-surface px-4 py-3 text-xs text-ink-muted">
             <span className="font-medium text-ink">No transcript recorded.</span> This
             trial has no stored steps, so what the agent did cannot be shown. Its recorded
             outcome, step count and duration are in the row above.
           </p>
         ) : (
           <>
-            <ol className="space-y-1 rounded-lg border border-line bg-surface px-4 py-3">
+            <ol className="space-y-1 rounded border border-line bg-surface px-4 py-3">
               {steps.map((step) => (
                 <StepEntry
                   key={step.index}
@@ -393,7 +390,7 @@ export default function TrialReplay({
               The URL is recorded at the start of each step, before the action runs, and a click
               that matched nothing on the page is not recorded at all. So &ldquo;URL
               unchanged&rdquo; is an observation about this record, not evidence that a click
-              failed — an in-page update would look the same here. The effect of the final
+              failed; an in-page update would look the same here. The effect of the final
               action is never captured.
             </p>
           </>

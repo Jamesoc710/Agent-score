@@ -15,21 +15,21 @@ export default function ErrorState({
 }) {
   return (
     <div className="card card-pad max-w-2xl">
-      <h1 className="text-xl font-semibold text-ink">Could not load {what}.</h1>
+      <h1 className="font-serif text-2xl font-medium text-ink">Could not load {what}.</h1>
       <p className="mt-2 text-sm text-ink-body">
         The results database did not answer this request, so nothing is shown rather than an
-        empty page — no numbers here would have been real.
+        empty page; no numbers here would have been real.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <button
           onClick={reset}
-          className="rounded-lg bg-ink px-3.5 py-2 text-sm font-medium text-surface transition-colors hover:bg-ink-strong"
+          className="rounded bg-ink px-3.5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-strong"
         >
           Try again
         </button>
         <a
           href="/"
-          className="rounded px-1 py-2 text-sm text-ink-muted transition-colors hover:text-ink"
+          className="link-ink px-1 py-2 text-sm text-ink-muted"
         >
           Back to the leaderboard
         </a>

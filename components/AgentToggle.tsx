@@ -17,13 +17,13 @@ export default function AgentToggle({
   if (USING_FIXTURES) {
     return (
       <span className="inline-block rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 text-xs font-medium text-ink-muted">
-        Fixture data — single agent
+        Fixture data: single agent
       </span>
     );
   }
 
   return (
-    <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-line bg-surface p-1">
+    <div className="inline-flex flex-wrap items-center gap-0.5 rounded-lg border border-line bg-canvas p-0.5">
       <span className="px-2 text-xs font-medium text-ink-muted">Agent</span>
       {PUBLISHED_AGENTS.map((agent) => {
         const active = agent.id === selected;
@@ -35,10 +35,10 @@ export default function AgentToggle({
             aria-current={active ? "true" : undefined}
             // The selected agent is marked by weight and an outline as well as by fill, so the
             // control still reads as a two-state control without colour.
-            className={`rounded-md px-2.5 py-1.5 text-xs transition-colors ${
+            className={`rounded px-2.5 py-1.5 text-xs transition-colors ${
               active
-                ? "bg-accent-soft font-semibold text-accent ring-1 ring-inset ring-accent/30"
-                : "font-medium text-ink-muted hover:bg-surface-2 hover:text-ink"
+                ? "bg-surface-2 font-semibold text-ink ring-1 ring-inset ring-line"
+                : "font-medium text-ink-muted hover:text-ink"
             }`}
           >
             {agent.label}

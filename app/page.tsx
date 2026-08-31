@@ -3,6 +3,7 @@ import { getPublishedDataset, toCorrelationPoints } from "@/lib/queries";
 import { SiteLeaderboardEntry } from "@/lib/types";
 import { TierBadge, FlagBadge } from "@/components/SiteBadges";
 import AgentToggle from "@/components/AgentToggle";
+import IntervalBar from "@/components/IntervalBar";
 import { PUBLISHED_AGENTS, agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
 import { formatPercent, formatRunWindow } from "@/lib/format";
 import {
@@ -14,40 +15,30 @@ import {
   type Pair,
 } from "@/lib/stats";
 
-// The bar and the tone are both redundant encodings: the percentage sits beside them and is
-// what the reader takes the value from. Neither colour nor length carries anything alone.
+// One fill at every value. The bar and the percentage are the same measurement twice, and the
+// old three-tone version graded a site pass/warn/fail against thresholds this study never
+// registered: an editorial verdict wearing the clothes of a measurement.
 function SuccessBar({ rate }: { rate: number }) {
   const pct = Math.round(rate * 100);
-  const fill = pct >= 70 ? "bg-good-bar" : pct >= 40 ? "bg-mid-bar" : "bg-bad-bar";
-  const text = pct >= 70 ? "text-good" : pct >= 40 ? "text-mid" : "text-bad";
   return (
     <div className="flex items-center gap-2.5">
-      <div className="h-2 w-20 overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-line">
-        <div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} />
+      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-line-soft">
+        <div className="h-full rounded-full bg-good-bar" style={{ width: `${pct}%` }} />
       </div>
-      <span className={`text-sm font-semibold tabular-nums ${text}`}>{pct}%</span>
+      <span className="font-mono text-[13px] font-semibold tabular-nums text-ink">{pct}%</span>
     </div>
   );
 }
 
+// A bare number. Tinting it green or red would endorse a grade this site's own headline result
+// says the cohort cannot support.
 function LhScore({ score }: { score: number | null }) {
-  if (score === null) return <span className="text-sm text-ink-muted">—</span>;
-  const tone =
-    score >= 70
-      ? "bg-good-soft text-good-ink"
-      : score >= 40
-        ? "bg-mid-soft text-mid-ink"
-        : "bg-bad-soft text-bad-ink";
-  return (
-    <span className={`inline-block rounded px-2 py-0.5 text-sm font-semibold tabular-nums ${tone}`}>
-      {score}
-    </span>
-  );
+  if (score === null) return <span className="font-mono text-[13px] text-ink-muted">–</span>;
+  return <span className="font-mono text-[13px] tabular-nums text-ink">{score}</span>;
 }
 
 function FailureBadge({ mode }: { mode: string }) {
-  if (mode === "success")
-    return <span className="chip chip-emerald">✓ success</span>;
+  if (mode === "success") return <span className="chip chip-good">✓ success</span>;
   const labels: Record<string, string> = {
     blocked: "⛔ blocked",
     timeout: "⏱ timeout",
@@ -55,7 +46,7 @@ function FailureBadge({ mode }: { mode: string }) {
     navigation_stuck: "🔀 nav stuck",
     error: "💥 error",
   };
-  return <span className="chip chip-slate">{labels[mode] ?? mode}</span>;
+  return <span className="chip chip-neutral">{labels[mode] ?? mode}</span>;
 }
 
 // Two different absences, and conflating them would misreport both: a site the agent
@@ -64,7 +55,7 @@ function FailureBadge({ mode }: { mode: string }) {
 function NotMeasured({ href }: { href: string | null }) {
   if (!href) {
     return (
-      <span className="text-sm text-ink-muted" title="No trials recorded for this agent yet.">
+      <span className="text-[13px] text-ink-muted" title="No trials recorded for this agent yet.">
         not run
       </span>
     );
@@ -72,8 +63,8 @@ function NotMeasured({ href }: { href: string | null }) {
   return (
     <Link
       href={href}
-      title="Not measured: every recorded trial failed before the agent reached the site (connection-level rejection at navigation, 0 steps), so there is no success rate to report — see the trial log."
-      className="chip -my-1 inline-block py-1.5 transition-colors chip-slate hover:text-ink"
+      title="Not measured: every recorded trial failed before the agent reached the site (connection-level rejection at navigation, 0 steps), so there is no success rate to report; see the trial log."
+      className="chip -my-1 inline-block py-1.5 transition-colors chip-neutral hover:text-ink"
     >
       not measured ⓘ
     </Link>
@@ -89,7 +80,7 @@ function SubAudits({ entry }: { entry: SiteLeaderboardEntry }) {
   ] as const;
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 text-[11px]">
       {audits.map(({ key, label }) => {
         const val = entry[key];
         if (val === null) return null;
@@ -97,11 +88,9 @@ function SubAudits({ entry }: { entry: SiteLeaderboardEntry }) {
           <span
             key={key}
             title={label}
-            // Pass reads as filled and green, fail as outlined and neutral — but the ✓/✗
-            // and the audit name carry it on their own.
-            className={`chip ${
-              val === 1 ? "chip-emerald" : "chip-slate ring-1 ring-inset ring-line"
-            }`}
+            // The glyph and the audit name carry it. A pass sits in body ink and a fail in
+            // muted ink, which is a weight difference rather than a verdict colour.
+            className={`whitespace-nowrap ${val === 1 ? "text-ink-body" : "text-ink-muted"}`}
           >
             {val === 1 ? "✓" : "✗"} {label}
           </span>
@@ -146,12 +135,50 @@ export default async function LeaderboardPage({
   const otherAgents = panel.filter((p) => p.agent_id !== measuredAgentId && p.trial_count > 0);
   const switchable = (id: string) => PUBLISHED_AGENTS.some((a) => a.id === id);
 
+  const tiles = [
+    {
+      label: "Task success (per trial)",
+      value: formatPercent(summary.success_rate),
+      sub:
+        summary.trial_count > 0
+          ? `${summary.success_count} of ${summary.trial_count} measured trials`
+          : "no measured trials",
+      bar: false,
+    },
+    {
+      label: "Mean site success rate",
+      value: formatPercent(meanSiteRate),
+      sub:
+        measuredEntries.length > 0
+          ? `unweighted mean over ${measuredEntries.length} measured sites`
+          : "no measured sites",
+      bar: false,
+    },
+    {
+      label: "Sites measured",
+      value: `${summary.measured_site_count} / ${summary.site_count}`,
+      sub:
+        summary.excluded_trial_count > 0
+          ? `${summary.excluded_trial_count} trials never reached the site`
+          : "cohort sites with at least one measured trial",
+      bar: false,
+    },
+    {
+      label: "Static score vs success",
+      value: rhoCI ? `ρ = ${formatR(rhoCI.point)}` : "–",
+      sub: rhoCI
+        ? `95% CI ${formatInterval(rhoCI)}, n = ${pairs.length}`
+        : "not enough measured sites",
+      bar: true,
+    },
+  ];
+
   return (
     <div>
       {/* Hero — the measured result, with its denominators */}
-      <header className="mb-10">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-          <h1 className="page-title">Is the web ready for agents?</h1>
+      <header>
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+          <h1 className="page-title max-w-2xl">Is the web ready for agents?</h1>
           <AgentToggle selected={agentId} basePath="/" />
         </div>
 
@@ -164,7 +191,7 @@ export default async function LeaderboardPage({
           </p>
         ) : (
           <div className="max-w-3xl space-y-3 text-ink-body">
-            <p className="leading-relaxed">
+            <p className="text-[17px] leading-relaxed">
               <span className="font-semibold text-ink">
                 {agentLabel(measuredAgentId)} completed the task on{" "}
                 {formatPercent(summary.success_rate)} of trials
@@ -183,7 +210,7 @@ export default async function LeaderboardPage({
                   {formatInterval(rhoCI)}, n&nbsp;=&nbsp;{pairs.length} sites.{" "}
                   <Link
                     href={withAgent("/correlation", agentId)}
-                    className="font-medium text-accent hover:underline"
+                    className="link-ink font-medium text-ink"
                   >
                     See the correlation →
                   </Link>
@@ -191,7 +218,7 @@ export default async function LeaderboardPage({
               ) : (
                 <Link
                   href={withAgent("/correlation", agentId)}
-                  className="font-medium text-accent hover:underline"
+                  className="link-ink font-medium text-ink"
                 >
                   See the correlation →
                 </Link>
@@ -205,10 +232,7 @@ export default async function LeaderboardPage({
                     scored {formatPercent(other.success_rate)} ({other.success_count}/
                     {other.trial_count}).{" "}
                     {switchable(other.agent_id) && (
-                      <Link
-                        href={withAgent("/", other.agent_id)}
-                        className="text-accent hover:underline"
-                      >
+                      <Link href={withAgent("/", other.agent_id)} className="link-ink">
                         Switch to it →
                       </Link>
                     )}
@@ -228,43 +252,30 @@ export default async function LeaderboardPage({
       </header>
 
       {/* Stats strip — every value carries the denominator it was computed over */}
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        {[
-          {
-            label: "Task success (per trial)",
-            value: formatPercent(summary.success_rate),
-            sub:
-              summary.trial_count > 0
-                ? `${summary.success_count} of ${summary.trial_count} measured trials`
-                : "no measured trials",
-          },
-          {
-            label: "Mean site success rate",
-            value: formatPercent(meanSiteRate),
-            sub:
-              measuredEntries.length > 0
-                ? `unweighted mean over ${measuredEntries.length} measured sites`
-                : "no measured sites",
-          },
-          {
-            label: "Sites measured",
-            value: `${summary.measured_site_count} / ${summary.site_count}`,
-            sub:
-              summary.excluded_trial_count > 0
-                ? `${summary.excluded_trial_count} trials never reached the site`
-                : "cohort sites with at least one measured trial",
-          },
-          {
-            label: "Static score vs success",
-            value: rhoCI ? `ρ = ${formatR(rhoCI.point)}` : "—",
-            sub: rhoCI
-              ? `95% CI ${formatInterval(rhoCI)}, n = ${pairs.length}`
-              : "not enough measured sites",
-          },
-        ].map(({ label, value, sub }) => (
-          <div key={label} className="card px-4 py-4 sm:px-5">
-            <p className="text-2xl font-bold tabular-nums tracking-tight text-ink">{value}</p>
-            <p className="mt-1 text-sm font-medium text-ink-body">{label}</p>
+      <div className="mt-12 grid grid-cols-2 border-y border-line lg:grid-cols-4">
+        {tiles.map(({ label, value, sub, bar }, i) => (
+          <div
+            key={label}
+            className={`px-4 py-5 sm:px-5 ${
+              i % 2 === 1
+                ? "border-l border-line-soft"
+                : i === 2
+                  ? "lg:border-l lg:border-line-soft"
+                  : ""
+            } ${i >= 2 ? "border-t border-line-soft lg:border-t-0" : ""}`}
+          >
+            <p className="stat-value">{value}</p>
+            {/* The interval, drawn: at a glance it straddles zero, which is the result. */}
+            {bar && rhoCI && (
+              <IntervalBar
+                domain={{ min: -1, max: 1 }}
+                interval={{ lo: rhoCI.lo, hi: rhoCI.hi }}
+                point={rhoCI.point}
+                zero
+                className="mt-2.5 max-w-[10rem]"
+              />
+            )}
+            <p className="mt-2 text-[13px] font-medium text-ink-body">{label}</p>
             <p className="mt-1 text-xs leading-snug text-ink-muted">{sub}</p>
           </div>
         ))}
@@ -273,18 +284,18 @@ export default async function LeaderboardPage({
       {/* Table */}
       {/* Scrolls rather than clips: overflow-hidden silently cut the sub-audit column off
           the right edge once real site names widened the table. */}
-      <div className="card overflow-x-auto">
+      <div className="mt-12 overflow-x-auto border-y border-line">
         <table className="w-full min-w-[56rem] text-sm">
           <thead>
             <tr className="border-b border-line bg-surface-2 text-left">
-              <th scope="col" className="w-10 whitespace-nowrap px-4 py-3 font-semibold text-ink-body">#</th>
-              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Site</th>
-              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Tier</th>
-              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Agent Success</th>
-              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Top Failure</th>
-              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Avg Steps</th>
-              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Lighthouse</th>
-              <th scope="col" className="whitespace-nowrap px-4 py-3 font-semibold text-ink-body">Sub-audits</th>
+              <th scope="col" className="col-head w-10 whitespace-nowrap px-4 py-2.5">#</th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Site</th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Tier</th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Agent Success</th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Top Failure</th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5 text-right">Avg Steps</th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5 text-right">Lighthouse</th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Sub-audits</th>
             </tr>
           </thead>
           <tbody>
@@ -306,15 +317,19 @@ export default async function LeaderboardPage({
                     i === entries.length - 1 ? "border-b-0" : ""
                   }`}
                 >
-                  <td className="px-4 py-3 font-mono tabular-nums text-ink-muted">{entry.rank}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3.5 font-mono text-[13px] tabular-nums text-ink-muted">
+                    {entry.rank}
+                  </td>
+                  <td className="px-4 py-3.5">
                     <Link
                       href={siteHref}
-                      className="-my-1 inline-block py-1 font-medium text-ink transition-colors hover:text-accent"
+                      className="-my-1 inline-block rounded py-1 font-medium text-ink underline decoration-transparent underline-offset-2 transition-colors hover:decoration-ink-muted"
                     >
                       {entry.name}
                     </Link>
-                    <div className="max-w-xs truncate text-xs text-ink-muted">{entry.start_url}</div>
+                    <div className="max-w-xs truncate font-mono text-[11px] text-ink-muted">
+                      {entry.start_url}
+                    </div>
                     {/* The design flag explains expected outliers in place: without it,
                         "Amazon 0%" reads as a broken benchmark, not a designed blocker. */}
                     {entry.flag && (
@@ -323,41 +338,43 @@ export default async function LeaderboardPage({
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3.5">
                     <TierBadge tier={entry.tier} />
                   </td>
-                  <td className="px-4 py-3">
-                    {/* 0 trials is "not measured", not "0% success" — a red bar on an
-                        unrun site asserts a result that does not exist. */}
+                  <td className="px-4 py-3.5">
+                    {/* 0 trials is "not measured", not "0% success": a bar on an unrun site
+                        asserts a result that does not exist. */}
                     {entry.trial_count === 0 ? (
                       <NotMeasured href={notMeasuredHref} />
                     ) : (
                       <>
                         <SuccessBar rate={entry.success_rate} />
-                        <div className="mt-1 text-xs text-ink-muted">{entry.trial_count} trials</div>
+                        <div className="mt-1 text-[11px] text-ink-muted">
+                          {entry.trial_count} trials
+                        </div>
                       </>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3.5">
                     {/* No trials yet is not a failure mode — computeEntry reports "error" for
                         "no data", which would read as 28 crashed sites before a batch runs. */}
                     {entry.trial_count === 0 ? (
-                      <span className="text-sm text-ink-muted">—</span>
+                      <span className="text-[13px] text-ink-muted">–</span>
                     ) : (
                       <FailureBadge mode={entry.top_failure_mode} />
                     )}
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-ink-body">
+                  <td className="px-4 py-3.5 text-right font-mono text-[13px] tabular-nums text-ink-body">
                     {entry.trial_count === 0 ? (
-                      <span className="text-sm text-ink-muted">—</span>
+                      <span className="text-ink-muted">–</span>
                     ) : (
                       entry.mean_steps
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3.5 text-right">
                     <LhScore score={entry.lh_total} />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3.5">
                     <SubAudits entry={entry} />
                   </td>
                 </tr>
@@ -367,7 +384,7 @@ export default async function LeaderboardPage({
         </table>
       </div>
 
-      <p className="mx-auto mt-5 max-w-3xl text-center text-xs leading-relaxed text-ink-muted">
+      <p className="mx-auto mt-6 max-w-3xl text-center text-xs leading-relaxed text-ink-muted">
         Scoring is pre-registered exact-match, decided before any agent runs (batch{" "}
         <code className="font-mono">{summary.batch_label}</code>, agent{" "}
         <code className="font-mono">{measuredAgentId}</code>
@@ -376,7 +393,7 @@ export default async function LeaderboardPage({
           href="https://developer.chrome.com/docs/lighthouse"
           target="_blank"
           rel="noreferrer"
-          className="underline decoration-line underline-offset-2 transition-colors hover:text-ink"
+          className="link-ink"
         >
           Lighthouse 13.3 Agentic Browsing category
         </a>

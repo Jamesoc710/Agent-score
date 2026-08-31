@@ -31,7 +31,7 @@ const SHARED_LH_TOTAL: number | null = (() => {
 })();
 
 export const metadata = {
-  title: "The Goodhart exhibit — AgentRank",
+  title: "The Goodhart exhibit · AgentRank",
   description:
     SHARED_LH_TOTAL === null
       ? "Two authored pages, identical except for one property the Lighthouse Agentic Browsing audit cannot see. The agent solves one on every trial and never solves the other."
@@ -56,19 +56,19 @@ export default async function ExhibitPage({
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-8">
         <Link href={withAgent("/correlation", agentId)} className="back-link">
           ← Correlation study
         </Link>
       </div>
 
-      <header className="mb-6">
+      <header className="mb-8">
         <h1 className="page-title">
           {SHARED_LH_TOTAL === null
             ? "A page that passes the audit and defeats the agent"
             : `A page that scores ${SHARED_LH_TOTAL} and defeats the agent`}
         </h1>
-        <p className="page-lead">
+        <p className="page-lead max-w-3xl">
           The correlation study could not distinguish the Lighthouse Agentic Browsing score&apos;s
           predictive power from noise, and neither could any single sub-audit. Both are statements
           about what {cohortPoints.length} sites could detect. This page is the other kind of
@@ -96,7 +96,7 @@ export default async function ExhibitPage({
           <TrialLog dataset={EXHIBIT} />
         </>
       ) : (
-        <div className="card card-pad">
+        <div className="mt-12">
           <p className="text-sm text-ink-body">
             The exhibit artifacts do not contain both halves of the registered pair, so there is
             nothing here to compare. Nothing is inferred from half a pair.
@@ -115,7 +115,7 @@ function AuthoredBanner({ cohortSiteCount }: { cohortSiteCount: number }) {
     0
   );
   return (
-    <div className="card-notice mb-8">
+    <div className="card-notice">
       <p className="text-sm font-semibold text-notice-ink">
         These two pages are authored, and they are not in any cohort number.
       </p>
@@ -148,9 +148,9 @@ function Headline({
   const agentCount = EXHIBIT.agent_ids.length;
 
   return (
-    <div className="card card-pad mb-6">
-      <p className="text-lg font-semibold leading-snug text-ink sm:text-xl">
-        Both pages score {control.lighthouse?.lh_total ?? "—"} out of 100. The agent reported the
+    <section className="mt-12">
+      <p className="font-serif text-[1.375rem] font-medium leading-snug text-ink sm:text-[1.625rem]">
+        Both pages score {control.lighthouse?.lh_total ?? "–"} out of 100. The agent reported the
         registered answer on {c.successes} of {c.measured} trials against one of them, and{" "}
         {g.successes} of {g.measured} against the other.
       </p>
@@ -163,11 +163,11 @@ function Headline({
         {runWindow && <> measured {runWindow} (UTC)</>}.
       </p>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <SideCard page={control} tone="good" />
         <SideCard page={gated} tone="bad" />
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -178,21 +178,23 @@ function SideCard({ page, tone }: { page: ExhibitPageResult; tone: "good" | "bad
   const ink = tone === "good" ? "text-good-ink" : "text-bad-ink";
 
   return (
-    <div className={`rounded-lg border p-4 ${accent}`}>
-      <p className="text-sm font-semibold text-ink">{page.site.name}</p>
+    <div className={`rounded-lg border p-5 ${accent}`}>
+      <p className="font-serif text-lg font-medium text-ink">{page.site.name}</p>
       <p className="mt-0.5 font-mono text-[11px] text-ink-muted">{page.route}</p>
-      <div className="mt-3 flex items-baseline gap-6">
+      <div className="mt-4 flex items-baseline gap-8">
         <div>
-          <p className={`text-3xl font-bold tabular-nums ${ink}`}>{formatPercent(rate)}</p>
-          <p className="text-[11px] text-ink-muted">
+          <p className={`font-mono text-3xl font-semibold tabular-nums ${ink}`}>
+            {formatPercent(rate)}
+          </p>
+          <p className="mt-1 text-[11px] text-ink-muted">
             {total.successes} of {total.measured} trials
           </p>
         </div>
         <div>
-          <p className="text-3xl font-bold tabular-nums text-ink">
-            {page.lighthouse?.lh_total ?? "—"}
+          <p className="font-mono text-3xl font-semibold tabular-nums text-ink">
+            {page.lighthouse?.lh_total ?? "–"}
           </p>
-          <p className="text-[11px] text-ink-muted">Lighthouse score</p>
+          <p className="mt-1 text-[11px] text-ink-muted">Lighthouse score</p>
         </div>
       </div>
       <p className="mt-3 text-xs leading-relaxed text-ink-body">{page.site.flag}</p>
@@ -230,9 +232,9 @@ function Scatter({
     });
 
   return (
-    <div className="card mb-8 p-3 sm:p-6">
+    <div className="mt-10 border-y border-line py-4 sm:py-6">
       <CorrelationChart points={cohortPoints} fit={null} authored={authored} />
-      <p className="mt-3 px-2 text-xs leading-relaxed text-ink-muted sm:px-0">
+      <p className="mt-4 px-2 text-xs leading-relaxed text-ink-muted sm:px-0">
         Grey circles are the {cohortPoints.length} measured cohort sites from batch{" "}
         <code className="font-mono">{cohortBatch}</code> under {agentLabel(cohortAgent)}, shown as
         context only. The two outlined diamonds are the authored pages, plotted at the success rate
@@ -246,9 +248,9 @@ function Scatter({
 
 function Mechanism({ control, gated }: { control: ExhibitPageResult; gated: ExhibitPageResult }) {
   return (
-    <div className="card card-pad mb-8">
-      <h2 className="card-title">What the two pages differ in</h2>
-      <p className="card-note mb-4 max-w-3xl">
+    <section className="mt-14 border-t border-line pt-8">
+      <h2 className="section-title">What the two pages differ in</h2>
+      <p className="card-note mb-6 max-w-3xl">
         One thing. The table lives in a fixed-height scroll box showing its first 12 rows. On{" "}
         {control.site.name.replace(/\s*\(.*\)$/, "")} all 40 rows are placed in the document and the
         ones past the twelfth are simply clipped by the box. On{" "}
@@ -261,14 +263,14 @@ function Mechanism({ control, gated }: { control: ExhibitPageResult; gated: Exhi
       <div className="overflow-x-auto">
         <table className="w-full min-w-[34rem] text-sm">
           <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-muted">
-              <th scope="col" className="py-2 pr-4 font-medium">
+            <tr className="border-b border-line text-left">
+              <th scope="col" className="eyebrow py-2 pr-4">
                 Measured at load
               </th>
-              <th scope="col" className="py-2 pr-4 font-medium">
+              <th scope="col" className="eyebrow py-2 pr-4">
                 Exhibit A
               </th>
-              <th scope="col" className="py-2 font-medium">
+              <th scope="col" className="eyebrow py-2">
                 Exhibit B
               </th>
             </tr>
@@ -277,8 +279,8 @@ function Mechanism({ control, gated }: { control: ExhibitPageResult; gated: Exhi
             <MechanismRow label="Rendered screenshot, 1280 x 800" a="identical PNG" b="identical PNG" />
             <MechanismRow
               label="Lighthouse Agentic Browsing"
-              a={String(control.lighthouse?.lh_total ?? "—")}
-              b={String(gated.lighthouse?.lh_total ?? "—")}
+              a={String(control.lighthouse?.lh_total ?? "–")}
+              b={String(gated.lighthouse?.lh_total ?? "–")}
             />
             <MechanismRow label="Accessibility-tree audit" a="pass" b="pass" />
             <MechanismRow label="Layout-stability audit" a="pass" b="pass" />
@@ -302,7 +304,7 @@ function Mechanism({ control, gated }: { control: ExhibitPageResult; gated: Exhi
         the render synchronous, and{" "}
         <code className="font-mono">docs/EXHIBIT.md</code> explains the trade.
       </p>
-    </div>
+    </section>
   );
 }
 
@@ -312,17 +314,17 @@ function MechanismRow({ label, a, b }: { label: string; a: string; b: string }) 
       <th scope="row" className="py-2 pr-4 text-left font-normal text-ink">
         {label}
       </th>
-      <td className="py-2 pr-4 tabular-nums">{a}</td>
-      <td className="py-2 tabular-nums">{b}</td>
+      <td className="py-2 pr-4 font-mono text-[13px] tabular-nums">{a}</td>
+      <td className="py-2 font-mono text-[13px] tabular-nums">{b}</td>
     </tr>
   );
 }
 
 function Results({ dataset, runWindow }: { dataset: ExhibitDataset; runWindow: string | null }) {
   return (
-    <div className="card card-pad mb-8">
-      <h2 className="card-title">Every trial</h2>
-      <p className="card-note mb-4">
+    <section className="mt-14 border-t border-line pt-8">
+      <h2 className="section-title">Every trial</h2>
+      <p className="card-note mb-6">
         The frozen v1 loop, unchanged: the same prompt, the same 15-step and 90-second caps, the
         same scorer, both agents of the published panel, 5 trials each.
         {runWindow && <> Measured {runWindow} (UTC).</>}
@@ -331,23 +333,23 @@ function Results({ dataset, runWindow }: { dataset: ExhibitDataset; runWindow: s
       <div className="overflow-x-auto">
         <table className="w-full min-w-[42rem] text-sm">
           <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-muted">
-              <th scope="col" className="py-2 pr-4 font-medium">
+            <tr className="border-b border-line text-left">
+              <th scope="col" className="eyebrow py-2 pr-4">
                 Page
               </th>
-              <th scope="col" className="py-2 pr-4 font-medium">
+              <th scope="col" className="eyebrow py-2 pr-4">
                 Agent
               </th>
-              <th scope="col" className="py-2 pr-4 font-medium">
+              <th scope="col" className="eyebrow py-2 pr-4">
                 Success
               </th>
-              <th scope="col" className="py-2 pr-4 font-medium">
+              <th scope="col" className="eyebrow py-2 pr-4">
                 Recorded outcome
               </th>
-              <th scope="col" className="py-2 pr-4 font-medium">
+              <th scope="col" className="eyebrow py-2 pr-4">
                 Mean steps
               </th>
-              <th scope="col" className="py-2 font-medium">
+              <th scope="col" className="eyebrow py-2">
                 Mean seconds
               </th>
             </tr>
@@ -371,10 +373,10 @@ function Results({ dataset, runWindow }: { dataset: ExhibitDataset; runWindow: s
                     )}
                   </td>
                   <td className="py-2 pr-4 font-mono tabular-nums text-ink-body">
-                    {agent.mean_steps ?? "—"}
+                    {agent.mean_steps ?? "–"}
                   </td>
                   <td className="py-2 font-mono tabular-nums text-ink-body">
-                    {agent.mean_seconds ?? "—"}
+                    {agent.mean_seconds ?? "–"}
                   </td>
                 </tr>
               ))
@@ -382,7 +384,7 @@ function Results({ dataset, runWindow }: { dataset: ExhibitDataset; runWindow: s
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -396,15 +398,15 @@ function Registration({
   gated: ExhibitPageResult;
 }) {
   return (
-    <div className="card card-pad mb-8">
-      <h2 className="card-title">What was registered, and when</h2>
-      <p className="card-note mb-4 max-w-3xl">
+    <section className="mt-14 border-t border-line pt-8">
+      <h2 className="section-title">What was registered, and when</h2>
+      <p className="card-note mb-6 max-w-3xl">
         An exhibit that chose its answer after watching the agent fail would be worth nothing. The
         question, the answer and the match rule below were committed to this repository, and tagged,
         before a single published trial ran. The pages were committed in the same commit and were
         not touched afterwards.
       </p>
-      <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-[10rem,1fr]">
+      <dl className="grid gap-x-6 gap-y-3 text-[13px] sm:grid-cols-[10rem,1fr]">
         <dt className="font-medium text-ink-muted">Question</dt>
         <dd className="text-ink-body">{dataset.question}</dd>
         <dt className="font-medium text-ink-muted">Registered answer</dt>
@@ -427,11 +429,11 @@ function Registration({
         </dd>
         <dt className="font-medium text-ink-muted">The pages</dt>
         <dd className="text-ink-body">
-          <a href={control.route} className="text-accent hover:underline">
+          <a href={control.route} className="link-ink font-mono text-xs text-ink">
             {control.route}
           </a>
           {" and "}
-          <a href={gated.route} className="text-accent hover:underline">
+          <a href={gated.route} className="link-ink font-mono text-xs text-ink">
             {gated.route}
           </a>
         </dd>
@@ -445,7 +447,7 @@ function Registration({
         every URL except production and reaching production means deploying;{" "}
         <code className="font-mono">docs/EXHIBIT.md</code> records the exact commands.
       </p>
-    </div>
+    </section>
   );
 }
 
@@ -454,12 +456,12 @@ function Claims({ control, gated }: { control: ExhibitPageResult; gated: Exhibit
   const c = successAcrossPages(EXHIBIT, control.site.site_id);
 
   return (
-    <div className="card-emphasis mb-8">
-      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-emphasis-muted">
+    <div className="card-emphasis mt-14">
+      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-emphasis-muted">
         What this does and does not show
       </h2>
-      <p className="text-lg font-medium leading-relaxed text-emphasis-ink">
-        A page can score {gated.lighthouse?.lh_total ?? "—"} out of 100 on Google&apos;s Agentic
+      <p className="text-[17px] font-medium leading-relaxed text-emphasis-ink">
+        A page can score {gated.lighthouse?.lh_total ?? "–"} out of 100 on Google&apos;s Agentic
         Browsing category, pass every audit in it, be fully usable by a person, and still defeat
         this agent on every one of {g.measured} trials across both models, while its twin is solved
         on {c.successes} of {c.measured}. The property that decides which happens is not one the
@@ -493,16 +495,16 @@ function Claims({ control, gated }: { control: ExhibitPageResult; gated: Exhibit
 
 function TrialLog({ dataset }: { dataset: ExhibitDataset }) {
   return (
-    <div className="card card-pad">
-      <h2 className="card-title">Transcripts</h2>
-      <p className="card-note mb-5">
+    <section className="mt-14 border-t border-line pt-8">
+      <h2 className="section-title">Transcripts</h2>
+      <p className="card-note mb-6">
         Every trial expands into the steps it recorded. The failure labels above are only worth what
         these make auditable.
       </p>
       <div className="space-y-6">
         {dataset.pages.map((page) => (
           <div key={page.site.site_id}>
-            <h3 className="text-sm font-semibold text-ink">{page.site.name}</h3>
+            <h3 className="font-serif text-lg font-medium text-ink">{page.site.name}</h3>
             <div className="mt-3 space-y-5">
               {page.agents.map((agent) => (
                 <AgentTrials key={agent.agent_id} page={page} agent={agent} />
@@ -511,7 +513,7 @@ function TrialLog({ dataset }: { dataset: ExhibitDataset }) {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -519,25 +521,25 @@ function AgentTrials({ page, agent }: { page: ExhibitPageResult; agent: ExhibitA
   return (
     <div>
       <p className="text-xs font-medium text-ink-muted">
-        {agentLabel(agent.agent_id)} — {agent.success_count} of {agent.measured_trial_count} trials
+        {agentLabel(agent.agent_id)}: {agent.success_count} of {agent.measured_trial_count} trials
         succeeded
       </p>
       <ul className="mt-2 space-y-2">
         {agent.runs.map((run) => (
           <li
             key={run.trial_number}
-            className="rounded-lg border border-line bg-surface-2 px-3 py-2"
+            className="rounded border border-line bg-surface-2 px-3 py-2"
           >
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs">
               <span className="font-medium text-ink">Trial {run.trial_number}</span>
               <span
-                className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${
-                  run.success ? "bg-good-soft text-good-ink" : "bg-bad-soft text-bad-ink"
+                className={`chip text-[11px] font-medium ${
+                  run.success ? "chip-good" : "bg-bad-soft text-bad-ink"
                 }`}
               >
                 {run.failure_mode}
               </span>
-              <span className="tabular-nums text-ink-muted">
+              <span className="font-mono tabular-nums text-ink-muted">
                 {run.step_count} {run.step_count === 1 ? "step" : "steps"}, {run.duration_seconds}s
               </span>
             </div>

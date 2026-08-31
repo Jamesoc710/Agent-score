@@ -14,10 +14,10 @@ function SubAuditRow({ label, value }: { label: string; value: number | null }) 
   if (value === null) return null;
   return (
     <div className="flex items-center justify-between gap-3 border-b border-line-soft py-2.5 last:border-0">
-      <span className="text-sm text-ink-body">{label}</span>
+      <span className="text-[13px] text-ink-body">{label}</span>
       {/* Glyph and word both say it; the tone is the third, redundant channel. */}
       <span
-        className={`whitespace-nowrap text-sm font-medium ${
+        className={`whitespace-nowrap text-[13px] font-medium ${
           value === 1 ? "text-good" : "text-ink-muted"
         }`}
       >
@@ -42,7 +42,7 @@ function TrialRow({ run, excluded, href }: { run: Run; excluded: boolean; href: 
         {/* Links to this trial's replay, open, so a single transcript can be shared. */}
         <Link
           href={href}
-          className="-my-1 inline-block whitespace-nowrap py-1 font-medium transition-colors hover:text-accent"
+          className="-my-1 inline-block whitespace-nowrap rounded py-1 font-medium text-ink underline decoration-transparent underline-offset-2 transition-colors hover:decoration-ink-muted"
         >
           Trial {run.trial_number}
         </Link>
@@ -55,7 +55,7 @@ function TrialRow({ run, excluded, href }: { run: Run; excluded: boolean; href: 
             className="whitespace-nowrap font-medium text-ink-muted"
             title="Excluded from the success rate: the agent never reached the site (0 steps), so this trial measures nothing about it."
           >
-            — excluded
+            excluded
           </span>
         ) : (
           <span
@@ -68,10 +68,10 @@ function TrialRow({ run, excluded, href }: { run: Run; excluded: boolean; href: 
       <td className="whitespace-nowrap px-2 py-2 text-ink-body sm:px-4">
         {failureLabels[run.failure_mode]}
       </td>
-      <td className="whitespace-nowrap px-2 py-2 tabular-nums text-ink-body sm:px-4">
+      <td className="whitespace-nowrap px-2 py-2 font-mono tabular-nums text-ink-body sm:px-4">
         {run.step_count} steps
       </td>
-      <td className="whitespace-nowrap px-2 py-2 tabular-nums text-ink-body sm:px-4">
+      <td className="whitespace-nowrap px-2 py-2 font-mono tabular-nums text-ink-body sm:px-4">
         {run.duration_seconds}s
       </td>
     </tr>
@@ -107,7 +107,7 @@ export default async function SiteDetailPage({
   const meanSteps =
     runs.length > 0
       ? (runs.reduce((s, r) => s + r.step_count, 0) / runs.length).toFixed(1)
-      : "—";
+      : "–";
 
   const runWindow = formatRunWindow(
     allRuns.length > 0
@@ -132,19 +132,14 @@ export default async function SiteDetailPage({
   });
 
   // No trials = no measurement. "0%" here would assert a result nobody produced —
-  // the recurring bug class this project cannot afford (see buildout plan).
-  const rateColor =
-    runs.length === 0
-      ? "text-ink-muted"
-      : successRate >= 70
-        ? "text-good"
-        : successRate >= 40
-          ? "text-mid"
-          : "text-bad";
+  // the recurring bug class this project cannot afford (see buildout plan). A measured rate
+  // prints in ink at every value: the label and the trial log carry the judgment, and a
+  // threshold hue would be an editorial grade this study never registered.
+  const rateColor = runs.length === 0 ? "text-ink-muted" : "text-ink";
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <Link href={withAgent("/", agentId)} className="back-link">
           ← Leaderboard
         </Link>
@@ -153,27 +148,27 @@ export default async function SiteDetailPage({
 
       {/* Stacks below `sm`: a 5xl percentage and a long site name in one unwrapped flex row
           collided at 375px. */}
-      <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+      <header className="flex flex-col gap-6 border-b border-line pb-8 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
         <div className="min-w-0">
           <h1 className="page-title">{site.name}</h1>
           <a
             href={site.start_url}
             target="_blank"
             rel="noreferrer"
-            className="-mx-1 mt-0.5 inline-block break-all rounded px-1 py-1 text-sm text-accent hover:underline"
+            className="link-ink -mx-1 mt-1.5 inline-block break-all px-1 py-1 font-mono text-[13px] text-ink-body"
           >
             {site.start_url} ↗
           </a>
-          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <TierBadge tier={site.tier} />
             <FlagBadge flag={site.flag} />
           </div>
         </div>
         <div className="shrink-0 sm:text-right">
-          <div className={`text-4xl font-bold tabular-nums tracking-tight sm:text-5xl ${rateColor}`}>
-            {runs.length > 0 ? `${successRate}%` : "—"}
+          <div className={`font-mono text-[2.75rem] font-semibold leading-none tabular-nums ${rateColor}`}>
+            {runs.length > 0 ? `${successRate}%` : "–"}
           </div>
-          <div className="mt-1 text-sm font-medium text-ink-body">
+          <div className="mt-2 text-sm font-medium text-ink-body">
             {runs.length > 0 ? "Agent success rate" : "Not measured"}
           </div>
           <div className="mt-0.5 text-xs text-ink-muted">
@@ -186,7 +181,7 @@ export default async function SiteDetailPage({
                 <>
                   All {excluded} recorded trials failed before the agent reached the site
                   (connection-level rejection at navigation, 0 steps), so this site has no
-                  behavioral measurement — not a 0% success rate. Every attempt is in the trial
+                  behavioral measurement, not a 0% success rate. Every attempt is in the trial
                   log below.
                 </>
               ) : (
@@ -197,21 +192,13 @@ export default async function SiteDetailPage({
         </div>
       </header>
 
-      <div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
-        {/* Lighthouse scores */}
-        <div className="card card-pad">
-          <h2 className="card-title mb-4 flex items-center justify-between gap-3">
+      <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
+        {/* Lighthouse scores. A bare number: the same reason the leaderboard column is bare. */}
+        <div className="md:border-r md:border-line md:pr-12">
+          <h2 className="card-title mb-4 flex items-baseline justify-between gap-3">
             Lighthouse Agentic Browsing
             {lighthouse ? (
-              <span
-                className={`text-lg font-bold tabular-nums ${
-                  lighthouse.lh_total >= 70
-                    ? "text-good"
-                    : lighthouse.lh_total >= 40
-                      ? "text-mid"
-                      : "text-bad"
-                }`}
-              >
+              <span className="font-mono text-xl font-semibold tabular-nums text-ink">
                 {lighthouse.lh_total}
               </span>
             ) : (
@@ -231,26 +218,24 @@ export default async function SiteDetailPage({
         </div>
 
         {/* Behavioral summary */}
-        <div className="card card-pad">
+        <div>
           <h2 className="card-title mb-4">Behavioral Summary</h2>
           {runs.length > 0 ? (
-            <div className="space-y-3">
-              <div className="flex justify-between gap-3 text-sm">
+            <div>
+              <div className="flex justify-between gap-3 border-b border-line-soft py-2.5 text-[13px]">
                 <span className="text-ink-body">Successes</span>
-                <span className="font-medium tabular-nums text-ink">
+                <span className="font-mono font-medium tabular-nums text-ink">
                   {successes} / {runs.length}
                 </span>
               </div>
-              <div className="flex justify-between gap-3 text-sm">
+              <div className="flex justify-between gap-3 border-b border-line-soft py-2.5 text-[13px]">
                 <span className="text-ink-body">Mean steps</span>
-                <span className="font-medium tabular-nums text-ink">{meanSteps}</span>
+                <span className="font-mono font-medium tabular-nums text-ink">{meanSteps}</span>
               </div>
-              <div className="mt-4 border-t border-line-soft pt-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">
-                  Failure breakdown
-                </p>
+              <div className="mt-5">
+                <p className="eyebrow mb-2">Failure breakdown</p>
                 {Object.entries(failureCounts).map(([mode, count]) => (
-                  <div key={mode} className="flex justify-between gap-3 py-0.5 text-sm">
+                  <div key={mode} className="flex justify-between gap-3 py-1 text-[13px]">
                     <span className="capitalize text-ink-body">{mode.replace(/_/g, " ")}</span>
                     <span className="font-mono tabular-nums text-ink">{count}×</span>
                   </div>
@@ -268,17 +253,19 @@ export default async function SiteDetailPage({
       </div>
 
       {/* The task the agent was given — previously invisible on the site page */}
-      <div className="card card-pad mb-8">
-        <h2 className="card-title mb-2">The task</h2>
-        <p className="text-sm leading-relaxed text-ink-body">&ldquo;{site.question}&rdquo;</p>
-        <p className="mt-3 text-xs leading-relaxed text-ink-muted">
+      <div className="mt-12 border-t border-line pt-8">
+        <h2 className="card-title mb-3">The task</h2>
+        <p className="max-w-3xl font-serif text-[1.1875rem] italic leading-relaxed text-ink">
+          &ldquo;{site.question}&rdquo;
+        </p>
+        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-ink-muted">
           Every site gets the same task shape: start at the URL above, navigate to the answer,
           report it. Only the question varies. The agent never sees the scoring key below.
         </p>
       </div>
 
       {/* Pre-registered answer */}
-      <div className="card-notice mb-8">
+      <div className="card-notice mt-8">
         <h2 className="mb-2 text-base font-semibold text-notice-ink">Pre-registered scoring key</h2>
         <p className="text-sm text-notice-body">
           <span className="font-medium">Expected answer substring:</span>{" "}
@@ -303,9 +290,9 @@ export default async function SiteDetailPage({
 
       {/* Trial log — every recorded row, including excluded never-reached errors */}
       {allRuns.length > 0 && (
-        <div className="card overflow-hidden">
-          <div className="border-b border-line-soft px-5 py-4 sm:px-6">
-            <h2 className="card-title">Trial log</h2>
+        <div className="mt-12 border-t border-line pt-8">
+          <div className="pb-5">
+            <h2 className="section-title">Trial log</h2>
             <p className="card-note max-w-3xl">
               Every recorded trial for {agentLabel(measuredAgentId)}, including attempts excluded from the
               success rate because they never reached the site. Expand a trial to replay the
@@ -315,23 +302,23 @@ export default async function SiteDetailPage({
           </div>
           {/* Five columns of run metadata do not fit 375px; they shrink to text-xs with tighter
               cells first and only scroll if that is still not enough. */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto border-y border-line">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-line-soft bg-surface-2">
-                  <th scope="col" className="px-2 py-2 text-left text-xs font-semibold text-ink-body sm:px-4">
+                <tr className="border-b border-line bg-surface-2">
+                  <th scope="col" className="col-head px-2 py-2.5 text-left sm:px-4">
                     Trial
                   </th>
-                  <th scope="col" className="px-2 py-2 text-left text-xs font-semibold text-ink-body sm:px-4">
+                  <th scope="col" className="col-head px-2 py-2.5 text-left sm:px-4">
                     Result
                   </th>
-                  <th scope="col" className="px-2 py-2 text-left text-xs font-semibold text-ink-body sm:px-4">
+                  <th scope="col" className="col-head px-2 py-2.5 text-left sm:px-4">
                     Failure Mode
                   </th>
-                  <th scope="col" className="px-2 py-2 text-left text-xs font-semibold text-ink-body sm:px-4">
+                  <th scope="col" className="col-head px-2 py-2.5 text-left sm:px-4">
                     Steps
                   </th>
-                  <th scope="col" className="px-2 py-2 text-left text-xs font-semibold text-ink-body sm:px-4">
+                  <th scope="col" className="col-head px-2 py-2.5 text-left sm:px-4">
                     Duration
                   </th>
                 </tr>

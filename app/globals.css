@@ -14,9 +14,16 @@
  * Values are space-separated RGB channels so Tailwind's `<alpha-value>` slot works
  * (`bg-surface-2/60` is used on the trial log).
  *
+ * The family is warm: paper by day, warm charcoal by night, with a single green reserved for
+ * data. `accent` resolves to ink, so every interactive element is greyscale and carries an
+ * underline instead of a hue; the one accent left is the green on graphics and focus rings.
+ * Traffic-light encodings were removed deliberately, not for taste: this site's own finding is
+ * that the static score does not predict the behavioral one, and tinting a score green or red
+ * endorses a grade the data cannot support.
+ *
  * Every foreground/background pair below is measured: all body and caption text clears WCAG AA
  * (4.5:1) in both themes, on every surface it can land on including a hovered table row. The
- * light theme's old `text-slate-400` fine print was 2.56:1 and is now `ink-muted` at 5.39:1;
+ * light theme's old `text-slate-400` fine print was 2.56:1 and is now `ink-muted` at 5.28:1;
  * hierarchy is carried by size and weight instead of by a contrast level that failed.
  */
 
@@ -24,146 +31,131 @@
   color-scheme: light;
 
   /* Surfaces */
-  --c-canvas: 248 250 252;
+  --c-canvas: 250 249 246;
   --c-surface: 255 255 255;
-  --c-surface-2: 241 245 249;
-  --c-line: 226 232 240;
-  --c-line-soft: 241 245 249;
+  --c-surface-2: 243 241 236;
+  --c-line: 226 223 215;
+  --c-line-soft: 237 235 229;
 
   /* Text */
-  --c-ink: 15 23 42;
-  --c-ink-strong: 51 65 85;
-  --c-ink-body: 71 85 105;
-  /* Darker than slate-500 so caption text still clears 4.5:1 on a hovered table row
-     (surface-2), not only on the card. */
-  --c-ink-muted: 95 107 127;
+  --c-ink: 28 27 23;
+  --c-ink-strong: 62 60 53;
+  --c-ink-body: 84 81 72;
+  /* Dark enough that caption text still clears 4.5:1 on a hovered table row (surface-2),
+     not only on the canvas. */
+  --c-ink-muted: 104 100 90;
 
-  /* Interactive */
-  --c-accent: 3 105 161;
-  --c-accent-hover: 7 89 133;
-  --c-accent-soft: 240 249 255;
-  --c-focus: 2 132 199;
+  /* Interactive. Ink, not a hue: links are greyscale and underlined. */
+  --c-accent: 28 27 23;
+  --c-accent-hover: 62 60 53;
+  --c-accent-soft: 243 241 236;
+  /* Lighter than the text green: the ring has to clear 3:1 on the dark finding panel and
+     the code well as well as on paper. */
+  --c-focus: 42 138 66;
 
   /* Outcome tones. Never the only channel carrying a meaning: every place these appear, a
      number, a glyph or a word says the same thing. */
-  --c-good: 4 120 87;
-  --c-good-soft: 236 253 245;
-  --c-good-ink: 6 95 70;
-  --c-mid: 180 83 9;
-  --c-mid-soft: 255 251 235;
-  --c-mid-ink: 146 64 14;
-  --c-bad: 185 28 28;
-  --c-bad-soft: 254 242 242;
-  --c-bad-ink: 185 28 28;
+  --c-good: 20 108 46;
+  --c-good-soft: 232 243 233;
+  --c-good-ink: 17 90 40;
+  --c-mid: 146 88 10;
+  --c-mid-soft: 250 243 228;
+  --c-mid-ink: 120 72 10;
+  --c-bad: 172 44 36;
+  --c-bad-soft: 248 235 232;
+  --c-bad-ink: 152 38 30;
 
   /* Bar fills — graphics, read against the track rather than as text. */
-  --c-bar-good: 16 185 129;
-  --c-bar-mid: 245 158 11;
-  --c-bar-bad: 239 68 68;
+  --c-bar-good: 48 155 58;
+  --c-bar-mid: 217 152 32;
+  --c-bar-bad: 205 82 70;
 
   /* The "finding" cards. Deliberate emphasis, so they must read as a different kind of
      surface from an ordinary card in BOTH themes. Light: inverted, a dark panel on a pale
      page. Dark: inverting again would produce a flashbang, so it lifts above the page
-     instead and takes a cool accent border that no other card has. */
-  --c-emphasis: 15 23 42;
-  --c-emphasis-line: 30 41 59;
-  --c-emphasis-ink: 255 255 255;
-  --c-emphasis-body: 203 213 225;
-  --c-emphasis-muted: 148 163 184;
-  --c-emphasis-link: 125 211 252;
+     instead and takes a green-tinted border that no other panel has. */
+  --c-emphasis: 32 31 27;
+  --c-emphasis-line: 58 56 49;
+  --c-emphasis-ink: 250 249 246;
+  --c-emphasis-body: 209 206 197;
+  --c-emphasis-muted: 160 156 145;
+  --c-emphasis-link: 133 214 140;
 
   /* Notice cards: the exploratory banner and the pre-registered scoring key. */
-  --c-notice: 255 251 235;
-  --c-notice-line: 253 230 138;
-  --c-notice-ink: 120 53 15;
-  --c-notice-body: 146 64 14;
-  --c-notice-soft: 254 243 199;
+  --c-notice: 250 243 228;
+  --c-notice-line: 233 213 163;
+  --c-notice-ink: 110 66 10;
+  --c-notice-body: 128 78 14;
+  --c-notice-soft: 246 233 205;
 
   /* Raw-transcript wells. */
-  --c-code: 15 23 42;
-  --c-code-ink: 241 245 249;
+  --c-code: 28 27 23;
+  --c-code-ink: 237 235 229;
 
-  /* Hue chips: cohort tiers and transcript action kinds. */
-  --c-chip-slate-bg: 241 245 249;
-  --c-chip-slate-fg: 71 85 105;
-  --c-chip-sky-bg: 240 249 255;
-  --c-chip-sky-fg: 3 105 161;
-  --c-chip-indigo-bg: 238 242 255;
-  --c-chip-indigo-fg: 67 56 202;
-  --c-chip-violet-bg: 245 243 255;
-  --c-chip-violet-fg: 109 40 217;
-  --c-chip-teal-bg: 240 253 250;
-  --c-chip-teal-fg: 15 118 110;
-  --c-chip-rose-bg: 255 241 242;
-  --c-chip-rose-fg: 190 18 60;
-  --c-chip-emerald-bg: 236 253 245;
-  --c-chip-emerald-fg: 6 95 70;
+  /* Chips. Two styles, not seven hues: the label always spells the category out, so a
+     categorical palette was decoration that the tables could not afford. */
+  --c-chip-neutral-bg: 243 241 236;
+  --c-chip-neutral-fg: 84 81 72;
+  --c-chip-neutral-ring: 237 235 229;
+  --c-chip-good-bg: 232 243 233;
+  --c-chip-good-fg: 17 90 40;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
 
-    --c-canvas: 8 13 24;
-    --c-surface: 20 28 44;
-    --c-surface-2: 29 39 57;
-    --c-line: 49 64 90;
-    --c-line-soft: 35 46 66;
+    --c-canvas: 24 23 20;
+    --c-surface: 31 30 26;
+    --c-surface-2: 42 41 35;
+    --c-line: 60 58 50;
+    --c-line-soft: 47 45 39;
 
-    --c-ink: 241 245 249;
-    --c-ink-strong: 226 232 240;
-    --c-ink-body: 203 213 225;
-    --c-ink-muted: 154 168 189;
+    --c-ink: 240 238 231;
+    --c-ink-strong: 217 214 205;
+    --c-ink-body: 197 193 183;
+    --c-ink-muted: 160 156 145;
 
-    --c-accent: 56 189 248;
-    --c-accent-hover: 125 211 252;
-    --c-accent-soft: 12 39 64;
-    --c-focus: 56 189 248;
+    --c-accent: 240 238 231;
+    --c-accent-hover: 255 255 255;
+    --c-accent-soft: 42 41 35;
+    --c-focus: 98 200 106;
 
-    --c-good: 52 211 153;
-    --c-good-soft: 13 47 36;
-    --c-good-ink: 110 231 183;
-    --c-mid: 251 191 36;
-    --c-mid-soft: 58 42 10;
-    --c-mid-ink: 252 211 77;
-    --c-bad: 248 113 113;
-    --c-bad-soft: 58 20 23;
-    --c-bad-ink: 252 165 165;
+    --c-good: 110 212 118;
+    --c-good-soft: 24 48 27;
+    --c-good-ink: 146 226 152;
+    --c-mid: 232 186 90;
+    --c-mid-soft: 56 44 16;
+    --c-mid-ink: 240 205 125;
+    --c-bad: 240 138 128;
+    --c-bad-soft: 56 26 22;
+    --c-bad-ink: 247 168 160;
 
-    --c-bar-good: 52 211 153;
-    --c-bar-mid: 251 191 36;
-    --c-bar-bad: 248 113 113;
+    --c-bar-good: 72 178 82;
+    --c-bar-mid: 217 152 32;
+    --c-bar-bad: 205 82 70;
 
-    --c-emphasis: 34 49 78;
-    --c-emphasis-line: 64 88 126;
-    --c-emphasis-ink: 255 255 255;
-    --c-emphasis-body: 203 213 225;
-    --c-emphasis-muted: 154 168 189;
-    --c-emphasis-link: 125 211 252;
+    --c-emphasis: 44 42 36;
+    --c-emphasis-line: 86 96 66;
+    --c-emphasis-ink: 250 249 246;
+    --c-emphasis-body: 209 206 197;
+    --c-emphasis-muted: 164 160 149;
+    --c-emphasis-link: 133 214 140;
 
-    --c-notice: 42 32 8;
-    --c-notice-line: 91 68 19;
-    --c-notice-ink: 252 211 77;
-    --c-notice-body: 253 230 138;
-    --c-notice-soft: 61 46 12;
+    --c-notice: 48 38 12;
+    --c-notice-line: 104 82 26;
+    --c-notice-ink: 240 205 125;
+    --c-notice-body: 238 216 160;
+    --c-notice-soft: 64 51 18;
 
-    --c-code: 5 9 18;
-    --c-code-ink: 226 232 240;
+    --c-code: 18 17 14;
+    --c-code-ink: 224 221 212;
 
-    --c-chip-slate-bg: 35 46 66;
-    --c-chip-slate-fg: 203 213 225;
-    --c-chip-sky-bg: 12 39 64;
-    --c-chip-sky-fg: 125 211 252;
-    --c-chip-indigo-bg: 27 34 71;
-    --c-chip-indigo-fg: 165 180 252;
-    --c-chip-violet-bg: 36 31 61;
-    --c-chip-violet-fg: 196 181 253;
-    --c-chip-teal-bg: 11 47 44;
-    --c-chip-teal-fg: 94 234 212;
-    --c-chip-rose-bg: 58 20 32;
-    --c-chip-rose-fg: 253 164 175;
-    --c-chip-emerald-bg: 13 47 36;
-    --c-chip-emerald-fg: 110 231 183;
+    --c-chip-neutral-bg: 42 41 35;
+    --c-chip-neutral-fg: 197 193 183;
+    --c-chip-neutral-ring: 60 58 50;
+    --c-chip-good-bg: 24 48 27;
+    --c-chip-good-fg: 146 226 152;
   }
 }
 
@@ -172,6 +164,8 @@
     @apply bg-canvas text-ink-body antialiased;
     font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
       "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
   }
 
   /* Headings set their own measure; balancing stops a two-word orphan on the third line. */
@@ -198,81 +192,85 @@
 
 @layer components {
   /*
-   * Hue chips. One shape, seven hues, used by the cohort tier badges and by the transcript
-   * action kinds — the two places that need a categorical (not ordinal) colour.
+   * Chips. One shape, two styles: neutral for every category (tiers, failure modes,
+   * transcript action kinds, verdicts) and good for a pass. The old seven-hue family was
+   * categorical and honest but noisy at table density, and the word inside the chip was
+   * always the channel carrying the meaning.
    */
   .chip {
     @apply inline-block whitespace-nowrap rounded px-1.5 py-0.5 text-xs;
   }
-  .chip-slate {
-    background-color: rgb(var(--c-chip-slate-bg));
-    color: rgb(var(--c-chip-slate-fg));
+  .chip-neutral {
+    background-color: rgb(var(--c-chip-neutral-bg));
+    color: rgb(var(--c-chip-neutral-fg));
+    box-shadow: inset 0 0 0 1px rgb(var(--c-chip-neutral-ring));
   }
-  .chip-sky {
-    background-color: rgb(var(--c-chip-sky-bg));
-    color: rgb(var(--c-chip-sky-fg));
-  }
-  .chip-indigo {
-    background-color: rgb(var(--c-chip-indigo-bg));
-    color: rgb(var(--c-chip-indigo-fg));
-  }
-  .chip-violet {
-    background-color: rgb(var(--c-chip-violet-bg));
-    color: rgb(var(--c-chip-violet-fg));
-  }
-  .chip-teal {
-    background-color: rgb(var(--c-chip-teal-bg));
-    color: rgb(var(--c-chip-teal-fg));
-  }
-  .chip-rose {
-    background-color: rgb(var(--c-chip-rose-bg));
-    color: rgb(var(--c-chip-rose-fg));
-  }
-  .chip-emerald {
-    background-color: rgb(var(--c-chip-emerald-bg));
-    color: rgb(var(--c-chip-emerald-fg));
+  .chip-good {
+    background-color: rgb(var(--c-chip-good-bg));
+    color: rgb(var(--c-chip-good-fg));
   }
 
   /*
-   * Card and section rhythm. The four routes were written weeks apart and had drifted to
-   * three different card paddings and two heading scales; these are the one definition.
+   * Section rhythm. Hairlines are the default separator; a boxed surface is reserved for the
+   * four semantic panels (emphasis, notice, code wells, the Method panel), so a box on this
+   * site means "this is a different kind of thing", not "this is a paragraph".
    */
   .card {
-    @apply rounded-xl border border-line bg-surface;
+    @apply rounded-lg border border-line bg-surface;
   }
   .card-pad {
     @apply p-5 sm:p-6;
   }
   .card-title {
-    @apply text-base font-semibold text-ink;
+    @apply font-serif text-lg font-medium leading-snug text-ink;
+  }
+  .section-title {
+    @apply font-serif text-[1.4375rem] font-medium leading-tight text-ink;
   }
   .card-note {
     @apply mt-1 text-xs leading-relaxed text-ink-muted;
   }
   .page-title {
-    @apply text-2xl font-bold tracking-tight text-ink sm:text-3xl;
+    @apply font-serif text-[2rem] font-medium leading-[1.15] text-ink sm:text-[2.5rem];
   }
   .page-lead {
-    @apply mt-2 max-w-2xl text-ink-body;
+    @apply mt-3 max-w-2xl text-base leading-relaxed text-ink-body;
+  }
+  /* Uppercase, for the places that already were: section eyebrows and the audit tables. */
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted;
+  }
+  /* Sentence case, for column heads that were never uppercased. Keeping the case means a
+     rendered-text diff against the previous design contains only the copy edits it should. */
+  .col-head {
+    @apply text-xs font-semibold text-ink-muted;
+  }
+  .stat-value {
+    @apply font-mono text-[1.875rem] font-semibold leading-[1.1] tabular-nums text-ink;
   }
   .back-link {
     @apply -mx-1 inline-block rounded px-1 py-1 text-sm text-ink-muted transition-colors hover:text-ink;
   }
+  /* Links carry an underline rather than a hue, so the interactive channel survives in
+     greyscale and does not compete with the one green the data uses. */
+  .link-ink {
+    @apply rounded underline decoration-line underline-offset-2 transition-colors hover:text-ink hover:decoration-ink-muted;
+  }
 
-  /* The deliberate-emphasis card. See --c-emphasis above for why the treatment inverts. */
+  /* The deliberate-emphasis panel. See --c-emphasis above for why the treatment inverts. */
   .card-emphasis {
-    @apply rounded-xl border p-5 sm:p-6;
+    @apply rounded-lg border p-5 sm:p-6;
     background-color: rgb(var(--c-emphasis));
     border-color: rgb(var(--c-emphasis-line));
     color: rgb(var(--c-emphasis-body));
   }
   .card-notice {
-    @apply rounded-xl border border-notice-line bg-notice p-5;
+    @apply rounded-lg border border-notice-line bg-notice p-5;
   }
 
   /* Raw transcript / harness error wells. */
   .code-well {
-    @apply overflow-x-auto whitespace-pre-wrap break-words rounded-lg border border-line px-3 py-2 font-mono text-[11px] leading-relaxed;
+    @apply overflow-x-auto whitespace-pre-wrap break-words rounded border border-line px-3 py-2 font-mono text-[11px] leading-relaxed;
     background-color: rgb(var(--c-code));
     color: rgb(var(--c-code-ink));
   }
@@ -307,20 +305,15 @@
   stroke: rgb(var(--c-ink-muted));
 }
 
+/*
+ * One dot colour. The three-tone version encoded the success rate a second time, in a hue,
+ * on top of the y position that already carries it, and on a chart whose published result is
+ * "no relationship distinguishable from noise", a coloured gradient is a pattern the data does
+ * not have. A monochrome cloud is the honest picture.
+ */
 .chart .chart-dot {
-  stroke: rgb(var(--c-surface));
-}
-
-.chart .chart-dot-good {
-  fill: rgb(var(--c-bar-good));
-}
-
-.chart .chart-dot-mid {
-  fill: rgb(var(--c-bar-mid));
-}
-
-.chart .chart-dot-bad {
-  fill: rgb(var(--c-bar-bad));
+  fill: rgb(var(--c-ink-body));
+  stroke: rgb(var(--c-canvas));
 }
 
 .chart .chart-dot-label {
@@ -341,8 +334,8 @@
 }
 
 .chart .chart-mark-authored {
-  fill: rgb(var(--c-surface));
-  stroke: rgb(var(--c-accent));
+  fill: rgb(var(--c-canvas));
+  stroke: rgb(var(--c-ink));
 }
 
 .chart .chart-mark-authored-label {

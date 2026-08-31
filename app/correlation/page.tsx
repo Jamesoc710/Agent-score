@@ -18,7 +18,12 @@ import { agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
 import { formatP, formatPoints, formatRunWindow } from "@/lib/format";
 import CorrelationChart from "@/components/CorrelationChart";
 import AgentToggle from "@/components/AgentToggle";
+import IntervalBar, { IntervalTicks } from "@/components/IntervalBar";
 import { EXHIBIT } from "@/lib/exhibit-data";
+
+// Every gap bar on this site shares one scale, so widths are comparable between figures. The
+// widest published interval is [-44.5, +50.3]; ±80 points contains everything with margin.
+const GAP_DOMAIN = { min: -80, max: 80 };
 
 // Rendered per request: results change when a batch is imported, not when the app is built,
 // and a build should not need database credentials.
@@ -84,16 +89,16 @@ export default async function CorrelationPage({
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <Link href={withAgent("/", agentId)} className="back-link">
           ← Leaderboard
         </Link>
         <AgentToggle selected={agentId} basePath="/correlation" />
       </div>
 
-      <header className="mb-8">
-        <h1 className="page-title">Does Google&apos;s rubric predict agent success?</h1>
-        <p className="page-lead">
+      <header>
+        <h1 className="page-title max-w-3xl">Does Google&apos;s rubric predict agent success?</h1>
+        <p className="page-lead max-w-3xl">
           Each point is one site. The x-axis is Google&apos;s Lighthouse Agentic Browsing score; the
           y-axis is the measured success rate of {agentLabel(measuredAgentId)} completing a real task,
           5 trials per site. The dashed line is a least-squares fit.
@@ -101,7 +106,7 @@ export default async function CorrelationPage({
       </header>
 
       {/* The headline statistic, stated with its uncertainty and its n */}
-      <div className="card card-pad mb-6">
+      <div className="mt-10 border-y border-line py-7">
         {rho === null || rhoCI === null ? (
           <div>
             <p className="text-lg font-medium text-ink">No correlation to report yet.</p>
@@ -111,15 +116,27 @@ export default async function CorrelationPage({
             </p>
           </div>
         ) : (
-          <div className="grid gap-5 md:grid-cols-[auto,1fr] md:items-center md:gap-8">
-            <div className="md:border-r md:border-line md:pr-8">
-              <p className="text-4xl font-bold tabular-nums tracking-tight text-ink">
+          <div className="grid gap-7 md:grid-cols-[minmax(0,20rem),1fr] md:gap-10">
+            <div className="md:border-r md:border-line md:pr-10">
+              <p className="font-mono text-[2.375rem] font-semibold leading-none tabular-nums text-ink">
                 ρ = {formatR(rho)}
               </p>
-              <p className="mt-1 text-sm tabular-nums text-ink-body">
+              {/* The interval, drawn on a fixed [-1, +1] scale: it visibly straddles the zero
+                  rule, which is the whole finding. */}
+              <div className="mt-4 max-w-[18rem]">
+                <IntervalBar
+                  domain={{ min: -1, max: 1 }}
+                  interval={{ lo: rhoCI.lo, hi: rhoCI.hi }}
+                  point={rho}
+                  zero
+                  height="md"
+                />
+                <IntervalTicks labels={["-1", "0", "+1"]} />
+              </div>
+              <p className="mt-4 font-mono text-[13px] tabular-nums text-ink-body">
                 95% CI {formatInterval(rhoCI)}
               </p>
-              <p className="mt-1 text-xs tabular-nums text-ink-muted">n = {n} sites</p>
+              <p className="mt-1 font-mono text-xs tabular-nums text-ink-muted">n = {n} sites</p>
             </div>
             <div className="space-y-2 text-sm leading-relaxed text-ink-body">
               <p>
@@ -132,7 +149,7 @@ export default async function CorrelationPage({
                   <>
                     Spearman rank correlation between the static score and behavioral success is{" "}
                     {formatR(rho)}, and the 95% bootstrap interval {formatInterval(rhoCI)} spans
-                    zero — at {n} sites this experiment cannot distinguish the rubric&apos;s
+                    zero: at {n} sites this experiment cannot distinguish the rubric&apos;s
                     predictive power from none at all. That is the result, not a
                     placeholder for one.
                   </>
@@ -144,11 +161,11 @@ export default async function CorrelationPage({
               </p>
               <p className="text-xs leading-relaxed text-ink-muted">
                 Spearman ρ, 10,000-iteration percentile bootstrap resampling sites, fixed seed.
-                Pearson r = {r === null ? "—" : formatR(r)} (the fitted line).{" "}
+                Pearson r = {r === null ? "–" : formatR(r)} (the fitted line).{" "}
                 {runWindow && <>Measured {runWindow} (UTC).</>} Sites whose every trial never
                 reached the server are excluded from n, not counted as 0%
                 {summary.unmeasured_site_ids.length > 0 && (
-                  <> — {summary.unmeasured_site_ids.join(", ")} in this batch</>
+                  <> ({summary.unmeasured_site_ids.join(", ")} in this batch)</>
                 )}
                 .
               </p>
@@ -157,22 +174,23 @@ export default async function CorrelationPage({
         )}
       </div>
 
-      {/* The scatter chart */}
-      <div className="card mb-8 p-3 sm:p-6">
+      {/* The scatter chart, unframed: it sits on the page between hairlines rather than in a
+          box, so the plot is the object rather than the card around it. */}
+      <div className="border-b border-line py-4 sm:py-6">
         <CorrelationChart points={points} fit={fit} />
       </div>
 
-      <div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
+      <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
         {/* Sub-audit summary — the full family lives on its own page */}
-        <div className="card card-pad">
-          <h2 className="card-title">
+        <div className="md:border-r md:border-line md:pr-12">
+          <h2 className="section-title">
             {subAudits.family === null
               ? "Which sub-audit is doing the work?"
               : distinguishable === 0
               ? "No single sub-audit is distinguishable from noise either"
               : `${distinguishable} of ${subAudits.family.size} sub-audit comparisons clears the bar`}
           </h2>
-          <p className="card-note mb-4">
+          <p className="card-note mb-6 mt-2">
             Each audit splits the cohort into the sites that pass it and the sites that do not. The
             gap below is the difference in mean success rate between those two groups, for{" "}
             {agentLabel(measuredAgentId)}
@@ -190,36 +208,53 @@ export default async function CorrelationPage({
               Not enough data yet ({n} {n === 1 ? "site" : "sites"} with both lanes measured).
             </p>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-4">
               {auditRows.map((audit) => (
-                <div key={audit.key} className="flex items-baseline justify-between gap-3 text-sm">
-                  <span
-                    className={
-                      audit.estimate === null ? "text-ink-muted" : "font-medium text-ink-strong"
-                    }
-                  >
-                    {audit.label}
-                    <span className="text-xs font-normal text-ink-muted">
-                      {" "}
-                      ({audit.groups.ones} pass / {audit.groups.zeros} fail)
-                    </span>
-                  </span>
-                  {audit.estimate === null ? (
+                <div key={audit.key} className="border-t border-line-soft pt-3 text-sm">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                     <span
-                      className="whitespace-nowrap text-xs text-ink-muted"
-                      title={`Fewer than ${MIN_GROUP} sites on one side of the split — an estimate here would describe those sites, not the audit.`}
+                      className={
+                        audit.estimate === null ? "text-ink-muted" : "font-medium text-ink-strong"
+                      }
                     >
-                      {audit.minimumAttainableP !== null && audit.minimumAttainableP > 0.05
-                        ? "unfalsifiable at this split"
-                        : "not reportable"}
-                    </span>
-                  ) : (
-                    <span className="whitespace-nowrap text-xs text-ink-muted">
-                      <span className="font-mono font-semibold tabular-nums text-ink-strong">
-                        {formatPoints(audit.estimate.gap)} pts
+                      {audit.label}
+                      <span className="text-xs font-normal text-ink-muted">
+                        {" "}
+                        ({audit.groups.ones} pass / {audit.groups.zeros} fail)
                       </span>
-                      {"  ·  "}p = {formatP(audit.pFamilyWise!)}
                     </span>
+                    {audit.estimate === null && (
+                      <span
+                        className="whitespace-nowrap text-xs text-ink-muted"
+                        title={`Fewer than ${MIN_GROUP} sites on one side of the split; an estimate here would describe those sites, not the audit.`}
+                      >
+                        {audit.minimumAttainableP !== null && audit.minimumAttainableP > 0.05
+                          ? "unfalsifiable at this split"
+                          : "not reportable"}
+                      </span>
+                    )}
+                  </div>
+                  {/* No estimate renders no track: an empty bar would read as a zero-width
+                      interval, which is a claim this split cannot make. */}
+                  {audit.estimate !== null && (
+                    <>
+                      <IntervalBar
+                        domain={GAP_DOMAIN}
+                        interval={{
+                          lo: audit.estimate.ci.lo * 100,
+                          hi: audit.estimate.ci.hi * 100,
+                        }}
+                        point={audit.estimate.gap * 100}
+                        zero
+                        className="mt-2.5"
+                      />
+                      <p className="mt-2 whitespace-nowrap text-xs text-ink-muted">
+                        <span className="font-mono font-semibold tabular-nums text-ink-strong">
+                          {formatPoints(audit.estimate.gap)} pts
+                        </span>
+                        {"  ·  "}p = {formatP(audit.pFamilyWise!)}
+                      </p>
+                    </>
                   )}
                 </div>
               ))}
@@ -228,7 +263,7 @@ export default async function CorrelationPage({
 
           <Link
             href={withAgent("/correlation/audits", agentId)}
-            className="-mx-1 mt-4 inline-block rounded px-1 py-1.5 text-sm font-medium text-accent hover:underline"
+            className="link-ink -mx-1 mt-6 inline-block px-1 py-1.5 text-sm font-medium text-ink"
           >
             Full breakdown, both agents, with the power analysis →
           </Link>
@@ -236,17 +271,17 @@ export default async function CorrelationPage({
 
         {/* Surprising site callout */}
         {surprising.gap > 1 && surprising.site && (
-          <div className="card card-pad">
-            <h2 className="card-title">The most interesting data point</h2>
-            <p className="mb-4 mt-1 text-sm leading-relaxed text-ink-body">
-              This site has the biggest gap between its Lighthouse rank and its behavioral rank — the
+          <div>
+            <h2 className="section-title">The most interesting data point</h2>
+            <p className="mb-5 mt-2 text-sm leading-relaxed text-ink-body">
+              This site has the biggest gap between its Lighthouse rank and its behavioral rank: the
               case where the static rubric gets it wrong.
             </p>
             <Link
               href={withAgent(`/site/${surprising.site.site_id}`, agentId)}
-              className="block rounded-lg border border-line p-4 transition-colors hover:border-accent/40 hover:bg-accent-soft"
+              className="block rounded-lg border border-line p-5 transition-colors hover:border-ink-muted hover:bg-surface-2"
             >
-              <p className="mb-1 font-semibold text-ink">{surprising.site.name}</p>
+              <p className="mb-2 font-serif text-lg font-medium text-ink">{surprising.site.name}</p>
               <div className="space-y-1 text-sm text-ink-body">
                 <p>
                   Lighthouse rank:{" "}
@@ -260,7 +295,9 @@ export default async function CorrelationPage({
                   </span>{" "}
                   ({Math.round(surprising.site.success_rate * 100)}% success)
                 </p>
-                <p className="mt-2 font-medium text-accent">View site detail →</p>
+                <p className="mt-3 font-medium text-ink underline decoration-line underline-offset-2">
+                  View site detail →
+                </p>
               </div>
             </Link>
           </div>
@@ -268,16 +305,16 @@ export default async function CorrelationPage({
       </div>
 
       {/* One-liner finding */}
-      <div className="card-emphasis">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-emphasis-muted">
+      <div className="card-emphasis mt-14">
+        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-emphasis-muted">
           The finding
         </h2>
-        <p className="text-lg font-medium leading-relaxed text-emphasis-ink">
+        <p className="text-[17px] font-medium leading-relaxed text-emphasis-ink">
           {rho === null || rhoCI === null ? (
             <>
               No finding yet. {n === 0 ? "No site" : `Only ${n} ${n === 1 ? "site" : "sites"}`} in
               this batch {n === 1 ? "has" : "have"} both a Lighthouse score and measured agent
-              trials, so there is nothing to correlate — this page states the result once the lanes
+              trials, so there is nothing to correlate; this page states the result once the lanes
               have run, and claims nothing before then.
             </>
           ) : relationshipVerdict(rhoCI) === "none" ? (
@@ -301,7 +338,7 @@ export default async function CorrelationPage({
             {distinguishable === 0 ? "not distinguishable from noise" : "reported in full"}, and at{" "}
             {n} sites an audit needed a{" "}
             {Math.round(subAudits.family.criticalValue * 100)}-point success-rate gap to clear the
-            bar — more than this cohort can physically produce on the narrowest split.{" "}
+            bar, more than this cohort can physically produce on the narrowest split.{" "}
             <Link
               href={withAgent("/correlation/audits", agentId)}
               className="text-emphasis-link underline underline-offset-2"
@@ -316,9 +353,9 @@ export default async function CorrelationPage({
       {/* The constructive counterpart. A null says what could not be detected; a counterexample
           says what can be built. The two authored pages behind it are not cohort data and enter
           no number on this page — the link says so, and so does the page it leads to. */}
-      <div className="card card-pad mt-6">
-        <h2 className="card-title">And here is a page where they come apart by construction</h2>
-        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-body">
+      <div className="mt-14 border-t border-line pt-8">
+        <h2 className="section-title">And here is a page where they come apart by construction</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-body">
           Everything above is about what {n} sites could and could not detect. The other way to
           probe a rubric is to build a counterexample: two authored pages, identical down to the
           rendered pixels, both scoring {exhibitScore ?? "the same"} on the Agentic Browsing
@@ -332,7 +369,7 @@ export default async function CorrelationPage({
         </p>
         <Link
           href={withAgent("/correlation/exhibit", agentId)}
-          className="-mx-1 mt-4 inline-block rounded px-1 py-1.5 text-sm font-medium text-accent hover:underline"
+          className="link-ink -mx-1 mt-4 inline-block px-1 py-1.5 text-sm font-medium text-ink"
         >
           The Goodhart exhibit →
         </Link>
