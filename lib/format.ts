@@ -25,9 +25,9 @@ export function formatRunWindow(window: DatasetSummary["run_window"]): string | 
   return first === last ? first : `${first} – ${last}`;
 }
 
-/** Percent with no false precision, or an em dash when there is nothing to report. */
+/** Percent with no false precision, or an en dash when there is nothing to report. */
 export function formatPercent(rate: number | null): string {
-  return rate === null ? "—" : `${Math.round(rate * 100)}%`;
+  return rate === null ? "–" : `${Math.round(rate * 100)}%`;
 }
 
 /**
