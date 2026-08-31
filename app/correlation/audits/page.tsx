@@ -11,6 +11,11 @@ import {
 import { MIN_GROUP, formatInterval, formatR } from "@/lib/stats";
 import { agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
 import { formatP, formatPoints, formatPointsInterval, formatSmallP } from "@/lib/format";
+import IntervalBar, { PowerScale } from "@/components/IntervalBar";
+
+// The shared gap scale, in percentage points. Every gap bar on this site uses it, so a
+// width here is comparable to a width on /correlation.
+const GAP_DOMAIN = { min: -80, max: 80 };
 
 // Rendered per request, like every other page: results change when a batch is imported.
 export const dynamic = "force-dynamic";
@@ -29,15 +34,15 @@ export default async function SubAuditPage({
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-8">
         <Link href={withAgent("/correlation", agentId)} className="back-link">
           ← Correlation study
         </Link>
       </div>
 
-      <header className="mb-6">
-        <h1 className="page-title">Which sub-audit is doing the work?</h1>
-        <p className="page-lead">
+      <header className="mb-8">
+        <h1 className="page-title max-w-3xl">Which sub-audit is doing the work?</h1>
+        <p className="page-lead max-w-3xl">
           Google&apos;s Agentic Browsing score is built from individual pass/fail audits. Each one
           splits the cohort in two, so each one can be asked the same question the composite score
           was asked: do the sites that pass it complete more tasks?
@@ -45,6 +50,20 @@ export default async function SubAuditPage({
       </header>
 
       <ExploratoryBanner />
+
+      {/* The spine of a long page. Plain anchors into sections that already exist, no sticky
+          positioning and no JavaScript; it never precedes the banner. */}
+      <nav
+        aria-label="On this page"
+        className="mt-8 flex flex-wrap gap-x-5 gap-y-1 border-y border-line py-3 text-[13px] text-ink-muted"
+      >
+        <a href="#headline" className="link-ink">Headline</a>
+        <a href="#comparisons" className="link-ink">Every comparison</a>
+        <a href="#power" className="link-ink">Power</a>
+        <a href="#statistics" className="link-ink">Full statistics</a>
+        <a href="#caveats" className="link-ink">Caveats</a>
+        <a href="#method" className="link-ink">Method</a>
+      </nav>
 
       {analysis.family === null ? (
         <NotEnoughData analysis={analysis} />
@@ -67,7 +86,7 @@ export default async function SubAuditPage({
 
 function ExploratoryBanner() {
   return (
-    <div className="card-notice mb-8">
+    <div className="card-notice">
       <p className="text-sm font-semibold text-notice-ink">
         This analysis was not pre-registered.
       </p>
@@ -95,8 +114,8 @@ function Headline({ analysis }: { analysis: SubAuditAnalysis }) {
     .sort((a, b) => Math.abs(b.row.estimate!.gap) - Math.abs(a.row.estimate!.gap))[0];
 
   return (
-    <div className="card card-pad mb-6">
-      <p className="text-lg font-semibold leading-snug text-ink sm:text-xl">
+    <section id="headline" className="mt-12">
+      <p className="font-serif text-[1.375rem] font-medium leading-snug text-ink sm:text-[1.625rem]">
         {cleared.length === 0
           ? "No individual sub-audit is distinguishable from noise either."
           : `${cleared.length} of ${family.size} comparisons clears the family-wise level.`}
@@ -104,8 +123,8 @@ function Headline({ analysis }: { analysis: SubAuditAnalysis }) {
       <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-body">
         {cleared.length === 0 ? (
           <>
-            All {family.size} comparisons — {AUDITS.length - 1} audits with a usable split, on{" "}
-            {analysis.agents.length} agents, over the same {analysis.siteCount} sites — have a
+            All {family.size} comparisons ({AUDITS.length - 1} audits with a usable split, on{" "}
+            {analysis.agents.length} agents, over the same {analysis.siteCount} sites) have a
             family-wise p above {family.level.toFixed(2)}. The largest gap measured is{" "}
             <span className="font-semibold text-ink">
               {formatPoints(largest.row.estimate!.gap)} points
@@ -138,7 +157,17 @@ function Headline({ analysis }: { analysis: SubAuditAnalysis }) {
           </span>
           , because the passing group cannot score above 100%.
         </p>
-        <p className="mt-4 text-base font-semibold leading-snug text-emphasis-ink">
+
+        {/* The same three numbers as the paragraph above, drawn to scale. The track stops at
+            what this cohort can physically produce, so the 80%-power threshold stands past the
+            end of it — which is the argument the sentence below makes in words. */}
+        <PowerScale
+          criticalValue={family.criticalValue * 100}
+          maxAttainableGap={reference.maxAttainableGap * 100}
+          threshold80={reference.threshold80 * 100}
+        />
+
+        <p className="mt-5 text-base font-semibold leading-snug text-emphasis-ink">
           {reference.detectableAt80
             ? "An audit of that shape was detectable here."
             : "An llms.txt-shaped audit could not have been detected here at 80% power, no matter how well it worked."}
@@ -148,56 +177,85 @@ function Headline({ analysis }: { analysis: SubAuditAnalysis }) {
           cannot reach the effect it is looking for has not measured an absence.
         </p>
       </div>
-    </div>
+    </section>
   );
 }
 
 function ResultsTable({ analysis }: { analysis: SubAuditAnalysis }) {
+  const critical = analysis.family!.criticalValue * 100;
+
   return (
-    <div className="card card-pad mb-6">
-      <h2 className="card-title">Every comparison, including the flat ones</h2>
-      <p className="card-note mb-5 max-w-3xl">
+    <section id="comparisons" className="mt-14 border-t border-line pt-8">
+      <h2 className="section-title">Every comparison, including the flat ones</h2>
+      <p className="card-note mb-6 max-w-3xl">
         Gap = mean site success rate among sites that pass the audit, minus the mean among sites
         that fail it, in percentage points. Ordered by Lighthouse audit id and never by effect
         size: sorting these rows by result would turn a ranking into a finding.
       </p>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
+        <table className="w-full text-sm min-w-[820px]">
           <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-muted">
-              <th className="py-2 pr-3 font-medium">Audit</th>
-              <th className="py-2 px-3 font-medium">Split</th>
-              <th className="py-2 px-3 font-medium text-right">Gap (pts)</th>
-              <th className="py-2 px-3 font-medium">95% CI</th>
-              <th className="py-2 px-3 font-medium text-right">
+            <tr className="border-b border-line text-left align-bottom">
+              <th className="eyebrow py-2 pr-3">Audit</th>
+              <th className="eyebrow py-2 px-3">Split</th>
+              <th className="eyebrow py-2 px-3 text-right">Gap (pts)</th>
+              <th className="eyebrow py-2 px-3">95% CI</th>
+              <th className="eyebrow min-w-[180px] py-2 px-3">
+                Gap &amp; 95% CI
+                {/* The scale, printed once. Every bar below shares it, so a width in one row
+                    means the same thing as a width in another. */}
+                <span className="mt-1.5 block font-mono text-[10px] font-normal normal-case tracking-normal">
+                  <span className="flex justify-between tabular-nums">
+                    <span>-80</span>
+                    <span>-40</span>
+                    <span>0</span>
+                    <span>+40</span>
+                    <span>+80</span>
+                  </span>
+                </span>
+              </th>
+              <th className="eyebrow py-2 px-3 text-right">
                 Family-wise p<span className="normal-case"> (m = {analysis.family!.size})</span>
               </th>
-              <th className="py-2 pl-3 font-medium">Verdict</th>
+              <th className="eyebrow py-2 pl-3">Verdict</th>
             </tr>
           </thead>
           {analysis.agents.map((agent) => (
             <tbody key={agent.agent_id}>
               <tr>
-                <td
-                  colSpan={6}
-                  className="pb-2 pt-6 text-xs font-semibold uppercase tracking-wider text-ink-strong"
-                >
+                <td colSpan={7} className="eyebrow pb-2 pt-6 text-ink-strong">
                   {agentLabel(agent.agent_id)} · {agent.siteCount} sites
                 </td>
               </tr>
               {agent.rows.map((row) => (
-                <ResultRow key={row.key} row={row} siteCount={agent.siteCount} />
+                <ResultRow
+                  key={row.key}
+                  row={row}
+                  siteCount={agent.siteCount}
+                  critical={critical}
+                />
               ))}
             </tbody>
           ))}
         </table>
       </div>
-    </div>
+      <p className="mt-3 text-xs text-ink-muted">
+        Dashed rules: ±{Math.round(critical)} pt family-wise critical value
+      </p>
+    </section>
   );
 }
 
-function ResultRow({ row, siteCount }: { row: AuditRow; siteCount: number }) {
+function ResultRow({
+  row,
+  siteCount,
+  critical,
+}: {
+  row: AuditRow;
+  siteCount: number;
+  critical: number;
+}) {
   const unfalsifiable = row.minimumAttainableP !== null && row.minimumAttainableP > ALPHA;
 
   return (
@@ -210,11 +268,13 @@ function ResultRow({ row, siteCount }: { row: AuditRow; siteCount: number }) {
         {row.groups.ones} pass / {row.groups.zeros} fail
       </td>
       {row.estimate === null ? (
-        <td colSpan={4} className="px-3 py-2.5 leading-relaxed text-ink-body">
+        /* The plot column is inside this colSpan, so a row with no estimate renders no track
+           at all. An empty track would read as a zero-width interval, which is a claim. */
+        <td colSpan={5} className="px-3 py-2.5 leading-relaxed text-ink-body">
           <span className="font-semibold text-ink">
             {unfalsifiable ? "Unfalsifiable" : "Not reportable"}
-          </span>{" "}
-          — {row.groups.ones} of {siteCount} sites{" "}
+          </span>
+          : {row.groups.ones} of {siteCount} sites{" "}
           {row.groups.ones === 1 ? "passes" : "pass"}
           {unfalsifiable && (
             <>
@@ -238,13 +298,20 @@ function ResultRow({ row, siteCount }: { row: AuditRow; siteCount: number }) {
           <td className="whitespace-nowrap px-3 py-2.5 font-mono tabular-nums text-ink-muted">
             {formatPointsInterval(row.estimate.ci)}
           </td>
+          <td className="px-3 py-2.5">
+            <IntervalBar
+              domain={GAP_DOMAIN}
+              interval={{ lo: row.estimate.ci.lo * 100, hi: row.estimate.ci.hi * 100 }}
+              point={row.estimate.gap * 100}
+              zero
+              refLines={[-critical, critical]}
+            />
+          </td>
           <td className="px-3 py-2.5 text-right font-mono tabular-nums text-ink">
             {formatP(row.pFamilyWise!)}
           </td>
           <td className="py-2.5 pl-3">
-            <span className="inline-block whitespace-nowrap rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-body">
-              not distinguishable from noise
-            </span>
+            <span className="chip chip-neutral">not distinguishable from noise</span>
           </td>
         </>
       )}
@@ -258,10 +325,10 @@ function PowerCard({ analysis }: { analysis: SubAuditAnalysis }) {
   const naturalPrevalence = sizing.find((r) => r.prevalence !== 0.5)!.prevalence;
 
   return (
-    <div className="card card-pad mb-6">
-      <h2 className="card-title">What this cohort could have detected</h2>
-      <p className="card-note mb-5 max-w-3xl">
-        The family-wise critical value is a 50%-power threshold — the gap at which a study of this
+    <section id="power" className="mt-14 border-t border-line pt-8">
+      <h2 className="section-title">What this cohort could have detected</h2>
+      <p className="card-note mb-6 max-w-3xl">
+        The family-wise critical value is a 50%-power threshold: the gap at which a study of this
         shape clears the bar half the time. It is not a minimum detectable effect, and reporting it
         as one understates a follow-up&apos;s sample size by a factor of 1.85.
       </p>
@@ -269,12 +336,12 @@ function PowerCard({ analysis }: { analysis: SubAuditAnalysis }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-[560px]">
           <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-muted">
-              <th className="py-2 pr-3 font-medium">Agent</th>
-              <th className="py-2 px-3 font-medium text-right">Critical value</th>
-              <th className="py-2 px-3 font-medium text-right">Gap for 80% power</th>
-              <th className="py-2 px-3 font-medium text-right">Largest gap possible</th>
-              <th className="py-2 pl-3 font-medium">Detectable?</th>
+            <tr className="border-b border-line text-left">
+              <th className="eyebrow py-2 pr-3">Agent</th>
+              <th className="eyebrow py-2 px-3 text-right">Critical value</th>
+              <th className="eyebrow py-2 px-3 text-right">Gap for 80% power</th>
+              <th className="eyebrow py-2 px-3 text-right">Largest gap possible</th>
+              <th className="eyebrow py-2 pl-3">Detectable?</th>
             </tr>
           </thead>
           <tbody>
@@ -291,7 +358,7 @@ function PowerCard({ analysis }: { analysis: SubAuditAnalysis }) {
                   {formatPoints(report.maxAttainableGap)}
                 </td>
                 <td className="py-2.5 pl-3 text-ink-body">
-                  {report.detectableAt80 ? "yes" : "no — the ceiling is below the threshold"}
+                  {report.detectableAt80 ? "yes" : "no: the ceiling is below the threshold"}
                 </td>
               </tr>
             ))}
@@ -308,15 +375,15 @@ function PowerCard({ analysis }: { analysis: SubAuditAnalysis }) {
         that ceiling exactly.
       </p>
 
-      <h3 className="mb-2 mt-8 text-sm font-semibold text-ink">Sizing a study that could</h3>
+      <h3 className="mb-3 mt-10 font-serif text-lg font-medium text-ink">Sizing a study that could</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
           <thead>
-            <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-muted">
-              <th className="py-2 pr-3 font-medium">True gap</th>
-              <th className="py-2 px-3 font-medium">Audit prevalence</th>
-              <th className="py-2 px-3 font-medium text-right">Sites at 50% power</th>
-              <th className="py-2 pl-3 font-medium text-right">Sites at 80% power</th>
+            <tr className="border-b border-line text-left">
+              <th className="eyebrow py-2 pr-3">True gap</th>
+              <th className="eyebrow py-2 px-3">Audit prevalence</th>
+              <th className="eyebrow py-2 px-3 text-right">Sites at 50% power</th>
+              <th className="eyebrow py-2 pl-3 text-right">Sites at 80% power</th>
             </tr>
           </thead>
           <tbody>
@@ -336,7 +403,7 @@ function PowerCard({ analysis }: { analysis: SubAuditAnalysis }) {
                     <td className="px-3 py-2.5 text-ink-body">
                       {prevalence === 0.5
                         ? "balanced (50%)"
-                        : `${Math.round(prevalence * 100)}% — v1's llms.txt rate`}
+                        : `${Math.round(prevalence * 100)}% (v1's llms.txt rate)`}
                     </td>
                     <td className="px-3 py-2.5 text-right font-mono tabular-nums text-ink-muted">
                       {Math.ceil(at50.sites)}
@@ -353,10 +420,10 @@ function PowerCard({ analysis }: { analysis: SubAuditAnalysis }) {
       </div>
       <p className="mt-4 max-w-3xl text-xs leading-relaxed text-ink-muted">
         And 80% power is still a floor. Simulating with this cohort&apos;s own outcome distribution
-        — site rates drawn from the measured {analysis.siteCount}, the audit adding{" "}
+        (site rates drawn from the measured {analysis.siteCount}, the audit adding{" "}
         {Math.round(CALIBRATION.power.effect * 100)} points to a site&apos;s success probability
         capped at 100%, {CALIBRATION.power.trials} trials a site,{" "}
-        {CALIBRATION.power.replicates.toLocaleString()} replicates — gives{" "}
+        {CALIBRATION.power.replicates.toLocaleString()} replicates) gives{" "}
         {CALIBRATION.power.designs
           .map((d) => `${Math.round(d.power * 100)}% power at n = ${d.sites}`)
           .join(" and ")}
@@ -365,7 +432,7 @@ function PowerCard({ analysis }: { analysis: SubAuditAnalysis }) {
         gap averages {formatPoints(CALIBRATION.power.designs[0].meanGap)} points, not{" "}
         {Math.round(CALIBRATION.power.effect * 100)}.
       </p>
-    </div>
+    </section>
   );
 }
 
@@ -373,42 +440,39 @@ function FullStatistics({ analysis }: { analysis: SubAuditAnalysis }) {
   const family = analysis.family!;
 
   return (
-    <details className="card group mb-6">
-      <summary className="card-title flex cursor-pointer select-none flex-wrap items-baseline gap-x-2 rounded-xl p-5 transition-colors hover:bg-surface-2 sm:p-6">
+    <details id="statistics" className="group mt-14 border-y border-line">
+      <summary className="flex cursor-pointer select-none flex-wrap items-baseline gap-x-2 py-5 font-serif text-lg font-medium text-ink transition-colors hover:text-ink-strong">
         <span className="inline-block transition-transform group-open:rotate-90" aria-hidden>
           ▸
         </span>
         Full statistics
-        <span className="text-xs font-normal text-ink-muted group-open:hidden">
+        <span className="font-sans text-xs font-normal text-ink-muted group-open:hidden">
           simultaneous intervals, uncorrected p-values, calibration
         </span>
       </summary>
 
-      <div className="space-y-8 px-5 pb-6 sm:px-6">
+      <div className="space-y-10 pb-8">
         <div>
-          <h3 className="mb-2 text-sm font-semibold text-ink">Per comparison</h3>
+          <h3 className="mb-3 font-serif text-lg font-medium text-ink">Per comparison</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-xs min-w-[760px]">
               <thead>
-                <tr className="border-b border-line text-left uppercase tracking-wide text-ink-muted">
-                  <th className="py-2 pr-3 font-medium">Comparison</th>
-                  <th className="py-2 px-3 font-medium text-right">r</th>
-                  <th className="py-2 px-3 font-medium">
+                <tr className="border-b border-line text-left">
+                  <th className="eyebrow py-2 pr-3">Comparison</th>
+                  <th className="eyebrow py-2 px-3 text-right">r</th>
+                  <th className="eyebrow py-2 px-3">
                     Simultaneous CI ({((1 - ALPHA / family.size) * 100).toFixed(2)}%)
                   </th>
-                  <th className="py-2 px-3 font-medium text-right">p, uncorrected (exact)</th>
-                  <th className="py-2 px-3 font-medium text-right">p, uncorrected (10k perms)</th>
-                  <th className="py-2 px-3 font-medium text-right">p, Bonferroni</th>
-                  <th className="py-2 pl-3 font-medium text-right">p, family-wise</th>
+                  <th className="eyebrow py-2 px-3 text-right">p, uncorrected (exact)</th>
+                  <th className="eyebrow py-2 px-3 text-right">p, uncorrected (10k perms)</th>
+                  <th className="eyebrow py-2 px-3 text-right">p, Bonferroni</th>
+                  <th className="eyebrow py-2 pl-3 text-right">p, family-wise</th>
                 </tr>
               </thead>
               {analysis.agents.map((agent) => (
                 <tbody key={agent.agent_id}>
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="pb-1 pt-5 text-xs font-semibold uppercase tracking-wider text-ink-strong"
-                    >
+                    <td colSpan={7} className="eyebrow pb-1 pt-5 text-ink-strong">
                       {agentLabel(agent.agent_id)}
                     </td>
                   </tr>
@@ -416,22 +480,22 @@ function FullStatistics({ analysis }: { analysis: SubAuditAnalysis }) {
                     <tr key={row.key} className="border-b border-line-soft last:border-0">
                       <td className="py-2 pr-3 text-ink">{row.label}</td>
                       <td className="px-3 py-2 text-right font-mono tabular-nums text-ink-body">
-                        {row.estimate?.r != null ? formatR(row.estimate.r) : "—"}
+                        {row.estimate?.r != null ? formatR(row.estimate.r) : "–"}
                       </td>
                       <td className="whitespace-nowrap px-3 py-2 font-mono tabular-nums text-ink-body">
-                        {row.estimate ? formatPointsInterval(row.estimate.simultaneous) : "—"}
+                        {row.estimate ? formatPointsInterval(row.estimate.simultaneous) : "–"}
                       </td>
                       <td className="px-3 py-2 text-right font-mono tabular-nums text-ink-body">
-                        {row.pExact === null ? "—" : formatP(row.pExact)}
+                        {row.pExact === null ? "–" : formatP(row.pExact)}
                       </td>
                       <td className="px-3 py-2 text-right font-mono tabular-nums text-ink-body">
-                        {row.pUnadjusted === null ? "—" : formatP(row.pUnadjusted)}
+                        {row.pUnadjusted === null ? "–" : formatP(row.pUnadjusted)}
                       </td>
                       <td className="px-3 py-2 text-right font-mono tabular-nums text-ink-body">
-                        {row.pBonferroni === null ? "—" : formatP(row.pBonferroni)}
+                        {row.pBonferroni === null ? "–" : formatP(row.pBonferroni)}
                       </td>
                       <td className="py-2 pl-3 text-right font-mono tabular-nums text-ink">
-                        {row.pFamilyWise === null ? "—" : formatP(row.pFamilyWise)}
+                        {row.pFamilyWise === null ? "–" : formatP(row.pFamilyWise)}
                       </td>
                     </tr>
                   ))}
@@ -441,15 +505,15 @@ function FullStatistics({ analysis }: { analysis: SubAuditAnalysis }) {
           </div>
           <p className="mt-3 max-w-3xl text-xs leading-relaxed text-ink-muted">
             The two <span className="font-medium">uncorrected</span> columns are the same quantity
-            computed two ways — by enumerating all C({analysis.siteCount}, k) splits, and by{" "}
-            {family.iterations.toLocaleString()} random permutations — and neither accounts for the
+            computed two ways (by enumerating all C({analysis.siteCount}, k) splits, and by{" "}
+            {family.iterations.toLocaleString()} random permutations), and neither accounts for the
             fact that {family.size} comparisons were looked at. They are shown so a reader who
             recomputes one of them can see it matched, not as results.
           </p>
         </div>
 
         <div>
-          <h3 className="mb-2 text-sm font-semibold text-ink">
+          <h3 className="mb-3 font-serif text-lg font-medium text-ink">
             How often each procedure fires when nothing is there
           </h3>
           <p className="mb-3 max-w-3xl text-xs leading-relaxed text-ink-muted">
@@ -462,11 +526,11 @@ function FullStatistics({ analysis }: { analysis: SubAuditAnalysis }) {
           <div className="overflow-x-auto">
             <table className="w-full text-xs min-w-[520px]">
               <thead>
-                <tr className="border-b border-line text-left uppercase tracking-wide text-ink-muted">
-                  <th className="py-2 pr-3 font-medium">Agent</th>
-                  <th className="py-2 px-3 font-medium">Split</th>
-                  <th className="py-2 px-3 font-medium text-right">Bootstrap CI excludes zero</th>
-                  <th className="py-2 pl-3 font-medium text-right">Permutation p ≤ 0.05</th>
+                <tr className="border-b border-line text-left">
+                  <th className="eyebrow py-2 pr-3">Agent</th>
+                  <th className="eyebrow py-2 px-3">Split</th>
+                  <th className="eyebrow py-2 px-3 text-right">Bootstrap CI excludes zero</th>
+                  <th className="eyebrow py-2 pl-3 text-right">Permutation p ≤ 0.05</th>
                 </tr>
               </thead>
               <tbody>
@@ -508,7 +572,7 @@ function FullStatistics({ analysis }: { analysis: SubAuditAnalysis }) {
         </div>
 
         <div>
-          <h3 className="mb-2 text-sm font-semibold text-ink">Reproducibility</h3>
+          <h3 className="mb-3 font-serif text-lg font-medium text-ink">Reproducibility</h3>
           <ul className="space-y-1.5 text-xs leading-relaxed text-ink-muted">
             <li>
               Seed <span className="font-mono">{family.seed}</span>, mulberry32, shared by every
@@ -562,15 +626,15 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
   const sensitivity = analysis.exclusionSensitivity?.find((r) => r.key === "lh_llms_txt");
 
   return (
-    <div className="card card-pad mb-6">
-      <h2 className="card-title mb-5">What would break this reading</h2>
-      <div className="max-w-3xl space-y-6 text-sm leading-relaxed text-ink-body">
+    <section id="caveats" className="mt-14 border-t border-line pt-8">
+      <h2 className="section-title mb-6">What would break this reading</h2>
+      <div className="max-w-3xl space-y-7 text-sm leading-relaxed text-ink-body">
         <Caveat title="llms.txt is confounded with the cohort design, almost perfectly">
           <p>
             The {confound.passingSites.length} sites that ship llms.txt are{" "}
             {confound.passingSites.map((s) => s.name).join(", ")}.{" "}
             {confound.passingSites.filter((s) => s.tier === "anchor").length} of them are
-            anchor-tier — the modern SaaS sites the cohort deliberately picked to score well on
+            anchor-tier: the modern SaaS sites the cohort deliberately picked to score well on
             both axes. There is exactly one anchor without the file (
             {confound.anchorsWithout.join(", ")}) and one non-anchor with it.
           </p>
@@ -598,8 +662,8 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
             Inside the anchor tier itself the gap is{" "}
             {confound.withinAnchor
               .map((w) => `${formatPoints(w.gap ?? 0)} (${agentLabel(w.agent_id)})`)
-              .join(" and ")}{" "}
-            — a {confound.withinAnchor[0].groups.ones}-vs-{confound.withinAnchor[0].groups.zeros}{" "}
+              .join(" and ")}
+            : a {confound.withinAnchor[0].groups.ones}-vs-{confound.withinAnchor[0].groups.zeros}{" "}
             split, so that is a description and not a test, by the same rule that refuses WebMCP.
             And for{" "}
             {confound.pseudoAudit
@@ -607,7 +671,7 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
               .map((p) => agentLabel(p.agent_id))
               .join(", ")}
             , the pseudo-audit <span className="font-mono text-xs">tier == anchor</span> and the
-            real audit are <em>numerically identical</em> — same gap, same interval — because the
+            real audit are <em>numerically identical</em> (same gap, same interval) because the
             two site sets differ only by a swap of two sites that both scored 100%. For that agent
             the cohort cannot tell the file from the tier, because they are the same variable.
           </p>
@@ -649,7 +713,7 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
             <span className="font-mono">z = {unit.trialZ.toFixed(2)}</span>,{" "}
             <span className="font-mono">p = {formatSmallP(unit.trialP)}</span>. The site-level exact
             permutation p on the same rows is{" "}
-            <span className="font-mono">{formatP(unit.siteP)}</span> — a factor of{" "}
+            <span className="font-mono">{formatP(unit.siteP)}</span>, a factor of{" "}
             {Math.round(unit.ratio).toLocaleString()}.
           </p>
           <p className="mt-2">
@@ -663,7 +727,7 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
             Averaging each site&apos;s two agent rates gives an llms.txt gap of{" "}
             <span className="font-mono">{formatPoints(pooledLlms.gap)}</span> points, 95% CI{" "}
             <span className="font-mono">{formatPointsInterval(pooledLlms.ci!)}</span>, exact
-            permutation p <span className="font-mono">{formatP(pooledLlms.pExact)}</span> — the only
+            permutation p <span className="font-mono">{formatP(pooledLlms.pExact)}</span>, the only
             sub-0.05 number anywhere in this analysis. It is stated here rather than published,
             because anyone who pools the frozen artifacts will find it.
           </p>
@@ -683,7 +747,7 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
             <p>
               {analysis.excludedSiteIds.join(", ")} is excluded from every estimate: every one of
               its trials was rejected at the connection and never reached the site, so it has no
-              behavioral measurement — and scoring that as 0% would be inventing one. Scoring it 0%
+              behavioral measurement, and scoring that as 0% would be inventing one. Scoring it 0%
               anyway, at n = {analysis.siteCount + analysis.excludedSiteIds.length}, moves the
               pooled llms.txt gap from{" "}
               <span className="font-mono">{formatPoints(sensitivity.excludedGap)}</span> to{" "}
@@ -705,14 +769,14 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
           </p>
         </Caveat>
       </div>
-    </div>
+    </section>
   );
 }
 
 function Caveat({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-l-2 border-line pl-4">
-      <h3 className="mb-1.5 font-semibold text-ink">{title}</h3>
+    <div className="border-t border-line-soft pt-5">
+      <h3 className="mb-2 text-base font-semibold text-ink">{title}</h3>
       {children}
     </div>
   );
@@ -720,8 +784,8 @@ function Caveat({ title, children }: { title: string; children: React.ReactNode 
 
 function NotEnoughData({ analysis }: { analysis: SubAuditAnalysis }) {
   return (
-    <div className="card card-pad mb-6">
-      <p className="text-lg font-medium text-ink">
+    <section className="mt-12">
+      <p className="font-serif text-[1.375rem] font-medium leading-snug text-ink">
         No sub-audit has enough sites on both sides of its split.
       </p>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-body">
@@ -743,7 +807,7 @@ function NotEnoughData({ analysis }: { analysis: SubAuditAnalysis }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </section>
   );
 }
 
@@ -751,7 +815,10 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
   const family = analysis.family;
 
   return (
-    <div className="space-y-3 rounded-xl border border-line bg-surface-2 p-5 text-xs leading-relaxed text-ink-body sm:p-6">
+    <section
+      id="method"
+      className="mt-14 space-y-3 rounded-lg border border-line bg-surface-2 p-5 text-xs leading-relaxed text-ink-body sm:p-6"
+    >
       <h2 className="text-sm font-semibold uppercase tracking-wider text-ink">Method</h2>
       <p className="max-w-3xl">
         <span className="font-semibold text-ink">Estimand:</span> the difference in mean site
@@ -759,7 +826,7 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
         points. The site is the unit of analysis, so the bootstrap resamples sites and the mean is
         a mean of site rates, not of trials.{" "}
         {analysis.trialsPerSite !== null
-          ? "In this batch every measured site carries the same number of trials, so the two happen to be identical to every digit shown — that stops being true the first time a batch has a partially excluded site."
+          ? "In this batch every measured site carries the same number of trials, so the two happen to be identical to every digit shown; that stops being true the first time a batch has a partially excluded site."
           : "Sites in this batch carry different numbers of trials, so the two differ: a mean of site rates weights every site equally, which is the intent."}
       </p>
       <p className="max-w-3xl">
@@ -772,7 +839,7 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
         {family && (
           <>
             The family is every audit with a usable split on every published agent: m ={" "}
-            {family.size}. A verdict on this page follows the family-wise p and nothing else —
+            {family.size}. A verdict on this page follows the family-wise p and nothing else:
             never the point estimate, never the marginal interval.
           </>
         )}
@@ -794,7 +861,7 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
       <p className="max-w-3xl">
         <span className="font-semibold text-ink">WebMCP adoption:</span>{" "}
         {analysis.cohort.passing.lh_webmcp} of {analysis.cohort.siteCount} sites in this batch pass{" "}
-        <span className="font-mono">webmcp-registered-tools</span> — counted over the whole cohort,
+        <span className="font-mono">webmcp-registered-tools</span>, counted over the whole cohort,
         including sites with no behavioral measurement, because adoption is a property of the site
         rather than of the trial.{" "}
         {analysis.cohort.passing.lh_webmcp > 0 ? (
@@ -806,7 +873,7 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
           </>
         ) : (
           <>
-            No site passes it here, which is not by itself evidence either way about adoption — the
+            No site passes it here, which is not by itself evidence either way about adoption: the
             methodology record flags an all-zero column in an earlier draft batch as possibly a
             broken audit id, and a batch this small cannot separate the two.
           </>
@@ -815,11 +882,11 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
       <p>
         <Link
           href={withAgent("/correlation", agentId)}
-          className="-mx-1 inline-block rounded px-1 py-1.5 font-medium text-accent hover:underline"
+          className="link-ink -mx-1 inline-block px-1 py-1.5 font-medium text-ink"
         >
           ← Back to the composite result
         </Link>
       </p>
-    </div>
+    </section>
   );
 }
