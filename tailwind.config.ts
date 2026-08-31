@@ -19,6 +19,12 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // The one added face: a display serif for headings, loaded and self-hosted by
+      // `next/font` in app/layout.tsx. Sans and mono stay the platform stacks — a benchmark
+      // page should not spend a network request on UI type.
+      fontFamily: {
+        serif: ["var(--font-serif)", "Georgia", "Times New Roman", "serif"],
+      },
       colors: {
         canvas: token("canvas"),
         surface: {
