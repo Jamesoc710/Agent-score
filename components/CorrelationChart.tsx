@@ -61,40 +61,99 @@ function CustomTooltip({
   );
 }
 
-function CustomDot(props: { cx?: number; cy?: number; payload?: CorrelationPoint; muted?: boolean }) {
-  const { cx, cy, payload, muted } = props;
+interface LabelRect {
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+}
+
+/**
+ * A deterministic label-collision pass for the scatter.
+ *
+ * 28 site names on a 28-point cloud overprint badly in the top-right cluster, where the
+ * high-Lighthouse sites pile up. This walks the points in a fixed order (by `site_id`,
+ * ascending — never by value, so which label survives is not a function of the result) and
+ * drops any label whose box would overlap one already placed. Every point keeps its tooltip,
+ * which is the complete channel; the labels are a convenience on top of it.
+ *
+ * Recharts calls the shape once per datum per render pass, in data order. Seeing the first
+ * site again means a new pass has started, so the accumulator clears itself and the layout
+ * recomputes correctly when the container is resized.
+ */
+function createLabelLayout(firstSiteId: string | undefined) {
+  const placed: LabelRect[] = [];
+  return function place(siteId: string, rect: LabelRect): boolean {
+    if (siteId === firstSiteId) placed.length = 0;
+    const overlaps = placed.some(
+      (r) => rect.x0 < r.x1 && rect.x1 > r.x0 && rect.y0 < r.y1 && rect.y1 > r.y0
+    );
+    if (overlaps) return false;
+    placed.push(rect);
+    return true;
+  };
+}
+
+/** Mean advance for a mixed-case name in the 11px UI face; reserves space, never positions. */
+const LABEL_CHAR_WIDTH = 5.6;
+const LABEL_HEIGHT = 13;
+/** Clearance from the dot to its label. */
+const LABEL_GAP = 9;
+
+function CustomDot(props: {
+  cx?: number;
+  cy?: number;
+  payload?: CorrelationPoint;
+  muted?: boolean;
+  place?: (siteId: string, rect: LabelRect) => boolean;
+}) {
+  const { cx, cy, payload, muted, place } = props;
   if (!cx || !cy || !payload) return null;
   // Backdrop mode: the cohort is context for an overlay, so it keeps its positions and loses
-  // its labels and its success-rate hue. 28 names plus two annotated ones is unreadable ink.
+  // its labels. 28 names plus two annotated ones is unreadable ink.
   if (muted) {
     return <circle cx={cx} cy={cy} r={4} className="chart-dot chart-dot-muted" strokeWidth={1} />;
   }
-  const rate = payload.success_rate;
-  // Redundant with the y position, which is the channel that actually carries the value.
-  const tone = rate >= 0.7 ? "good" : rate >= 0.4 ? "mid" : "bad";
   // Sites scoring near 100 sit against the right edge, where a label drawn rightwards is
   // clipped by the plot area. Flip it to the left of the dot instead of paying for the
   // clearance with a permanently wide right margin, which would cost plot width at 375px.
-  const flip = payload.lh_total > 62;
+  //
+  // A label blocked on its preferred side tries the other side before it is dropped: the
+  // cohort clusters into a handful of success rates, so most collisions are two names in the
+  // same row and the second one fits perfectly well pointing the other way.
+  const width = payload.name.length * LABEL_CHAR_WIDTH;
+  const preferFlip = payload.lh_total > 62;
+  const box = (flip: boolean) => ({
+    x0: flip ? cx - LABEL_GAP - width : cx + LABEL_GAP,
+    x1: flip ? cx - LABEL_GAP : cx + LABEL_GAP + width,
+    y0: cy + 4 - LABEL_HEIGHT + 3,
+    y1: cy + 4 + 3,
+  });
+  let flip = preferFlip;
+  let showLabel = true;
+  if (place) {
+    showLabel = place(payload.site_id, box(preferFlip));
+    if (!showLabel) {
+      // The retry must not re-clear the accumulator, so it is keyed off the same site id only
+      // on the first attempt; `place` clears on the first datum, which this is not.
+      flip = !preferFlip;
+      showLabel = place("", box(flip));
+    }
+  }
   return (
     <g>
-      <circle
-        cx={cx}
-        cy={cy}
-        r={6}
-        fillOpacity={0.85}
-        strokeWidth={1.5}
-        className={`chart-dot chart-dot-${tone}`}
-      />
-      <text
-        x={flip ? cx - 9 : cx + 9}
-        y={cy + 4}
-        fontSize={11}
-        textAnchor={flip ? "end" : "start"}
-        className="chart-dot-label"
-      >
-        {payload.name}
-      </text>
+      <circle cx={cx} cy={cy} r={6} fillOpacity={0.85} strokeWidth={1.5} className="chart-dot" />
+      {showLabel && (
+        <text
+          x={flip ? cx - LABEL_GAP : cx + LABEL_GAP}
+          y={cy + 4}
+          fontSize={11}
+          textAnchor={flip ? "end" : "start"}
+          className="chart-dot-label"
+        >
+          {payload.name}
+        </text>
+      )}
     </g>
   );
 }
@@ -137,7 +196,7 @@ export default function CorrelationChart({ points, fit, authored = [] }: Props) 
   if (points.length === 0 && !hasAuthored) {
     return (
       <div className="flex h-[320px] items-center justify-center px-4 text-center text-sm text-ink-muted sm:h-[420px]">
-        No correlation data yet — run Lane 1 (Lighthouse) and Lane 2 (agent) to populate the scatter.
+        No correlation data yet: run Lane 1 (Lighthouse) and Lane 2 (agent) to populate the scatter.
       </div>
     );
   }
@@ -154,12 +213,16 @@ export default function CorrelationChart({ points, fit, authored = [] }: Props) 
       ]
     : [];
 
-  const scatterData = points.map((p) => ({
-    ...p,
-    // Recharts ScatterChart needs x/y keys
-    lh_total: p.lh_total,
-    success_rate: p.success_rate,
-  }));
+  // Sorted by site id so the label-collision pass below walks the points in an order that
+  // does not depend on the measurement. Recharts reads x/y off these keys.
+  const scatterData = [...points]
+    .sort((a, b) => (a.site_id < b.site_id ? -1 : a.site_id > b.site_id ? 1 : 0))
+    .map((p) => ({
+      ...p,
+      lh_total: p.lh_total,
+      success_rate: p.success_rate,
+    }));
+  const place = createLabelLayout(scatterData[0]?.site_id);
 
   return (
     // Every colour below comes from the same CSS custom properties as the rest of the site,
@@ -214,8 +277,13 @@ export default function CorrelationChart({ points, fit, authored = [] }: Props) 
             line={{ strokeDasharray: "4 4", strokeWidth: 1.5, className: "chart-trend" }}
             shape={() => <g />}
           />
-          {/* Measured cohort points */}
-          <Scatter data={scatterData} shape={<CustomDot muted={hasAuthored} />} />
+          {/* Measured cohort points. Animation off: the label-collision pass reads the final
+              positions, and animating them would make labels flicker in and out. */}
+          <Scatter
+            data={scatterData}
+            isAnimationActive={false}
+            shape={<CustomDot muted={hasAuthored} place={place} />}
+          />
           {/* Authored overlay, kept a separate series so no statistic can pick it up */}
           {hasAuthored && (
             <Scatter
