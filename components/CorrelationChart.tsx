@@ -73,7 +73,7 @@ interface LabelRect {
  *
  * 28 site names on a 28-point cloud overprint badly in the top-right cluster, where the
  * high-Lighthouse sites pile up. This walks the points in a fixed order (by `site_id`,
- * ascending — never by value, so which label survives is not a function of the result) and
+ * ascending, never by value, so which label survives is not a function of the result) and
  * drops any label whose box would overlap one already placed. Every point keeps its tooltip,
  * which is the complete channel; the labels are a convenience on top of it.
  *

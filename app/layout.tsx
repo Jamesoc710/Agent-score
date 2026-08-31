@@ -10,7 +10,7 @@ import "./globals.css";
 // from the face's own metrics, so headings do not reflow when it swaps in and nothing is
 // fetched from a font CDN at runtime. That fallback is why the face is Literata and not
 // Newsreader: Next's metrics table keys Newsreader as "Newsreader 16pt", the override lookup
-// misses, and the build drops the size-adjust silently — a swap that visibly moves every h1.
+// misses, and the build drops the size-adjust silently: a swap that visibly moves every h1.
 // Literata is the same genre (a contemporary reading serif), is variable so all three weights
 // plus italic arrive in one 79 KB pair of files, and its metrics resolve.
 const serif = Literata({

@@ -2,13 +2,13 @@
 //
 // AgentRank publishes an interval on nearly every headline number and used to render all of
 // them as bracketed text. A reader should be able to *see* that our intervals are wide and
-// that they cross zero — that is the honest presentation of a study whose result is two nulls
+// that they cross zero: that is the honest presentation of a study whose result is two nulls
 // and a power bound.
 //
 // Plain nested divs, no SVG and no client JavaScript: these are server components, and the
 // position of every element is a percentage of a declared domain.
 //
-// THE LOAD-BEARING RULE: when `interval` is null the component renders NOTHING — not an empty
+// THE LOAD-BEARING RULE: when `interval` is null the component renders NOTHING, not an empty
 // track. An empty track reads as a zero-width interval, which is a claim; the absence of a
 // measurement has to render as the absence of a graphic, and the caller prints the words
 // ("unfalsifiable at this split", "not reportable") in the space instead.

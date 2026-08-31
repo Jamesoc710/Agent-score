@@ -160,7 +160,7 @@ function Headline({ analysis }: { analysis: SubAuditAnalysis }) {
 
         {/* The same three numbers as the paragraph above, drawn to scale. The track stops at
             what this cohort can physically produce, so the 80%-power threshold stands past the
-            end of it — which is the argument the sentence below makes in words. */}
+            end of it, which is the argument the sentence below makes in words. */}
         <PowerScale
           criticalValue={family.criticalValue * 100}
           maxAttainableGap={reference.maxAttainableGap * 100}

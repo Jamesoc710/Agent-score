@@ -6,7 +6,7 @@ import type { SiteTier } from "@/lib/types";
 //
 // The tier is categorical, not ordinal: it separates kinds of site, it does not rank them.
 // The label always spells the tier out, which is the channel that carries the meaning, so the
-// chips are one neutral style rather than six hues — six categorical colours in a table column
+// chips are one neutral style rather than six hues: six categorical colours in a table column
 // read as a legend the reader has to learn, and there was never anything to learn.
 
 const TIER_LABELS: Record<SiteTier, string> = {

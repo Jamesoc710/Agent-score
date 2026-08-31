@@ -17,7 +17,7 @@ import {
 
 // One fill at every value. The bar and the percentage are the same measurement twice, and the
 // old three-tone version graded a site pass/warn/fail against thresholds this study never
-// registered — an editorial verdict wearing the clothes of a measurement.
+// registered: an editorial verdict wearing the clothes of a measurement.
 function SuccessBar({ rate }: { rate: number }) {
   const pct = Math.round(rate * 100);
   return (
@@ -342,7 +342,7 @@ export default async function LeaderboardPage({
                     <TierBadge tier={entry.tier} />
                   </td>
                   <td className="px-4 py-3.5">
-                    {/* 0 trials is "not measured", not "0% success" — a bar on an unrun site
+                    {/* 0 trials is "not measured", not "0% success": a bar on an unrun site
                         asserts a result that does not exist. */}
                     {entry.trial_count === 0 ? (
                       <NotMeasured href={notMeasuredHref} />
