@@ -24,10 +24,14 @@ export const CONTACT_ADDRESS: string | null = null;
 export const RELEASE_TAG: string | null = null;
 
 /**
- * The dataset's reuse licence. None has been declared: the repository carries no LICENSE
- * file, so the pages say so and the JSON-LD omits `license` rather than asserting one.
+ * The dataset's reuse licence (data/LICENSE.md): CC BY 4.0 for the measurements AgentRank
+ * produces. Third-party content captured inside raw reports (a site's own screenshots and
+ * page text) is not ours to license and stays with its owners. The code is MIT (LICENSE).
  */
-export const LICENCE: { name: string; url: string } | null = null;
+export const LICENCE: { name: string; url: string } | null = {
+  name: "CC BY 4.0",
+  url: "https://creativecommons.org/licenses/by/4.0/",
+};
 
 /** The creator the citation block and the JSON-LD name, as the repository's commits do. */
 export const CREATOR = {

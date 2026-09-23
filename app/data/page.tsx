@@ -164,7 +164,10 @@ export default function DataPage() {
               <a href={LICENCE.url} className="link-ink">
                 {LICENCE.name}
               </a>
-              .
+              : the measurements, the transcripts&apos; recorded fields, the statistics and their
+              vectors. Third-party content captured inside the raw Lighthouse reports and
+              transcripts, such as a site&apos;s own screenshots and page text, is not covered and
+              remains its owners&apos;. The code is MIT-licensed.
             </>
           ) : (
             <>
