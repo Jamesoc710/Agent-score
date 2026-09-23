@@ -16,7 +16,7 @@ scanning is the product direction. Solo project (James), built with Claude in th
   in `public/exhibit/`, measured by the same lanes into batch `goodhart`, never imported and
   never part of a cohort statistic. Append-only, same as METHODOLOGY.
 - `docs/ROADMAP.md` — current phase and sequencing
-- `.claude/plans/buildout.md` — active working plan and state log; update it at session end
+- `.claude/plans/v2-plan.md` — the plan of record and state log; update it at session end
 
 ## Stack
 
@@ -64,5 +64,5 @@ scanning is the product direction. Solo project (James), built with Claude in th
   documented match rules and `scripts/cohort.json` is deleted. **The live debt as of
   2026-08-30 is different: v1 is published and its loop is frozen, so the cheap work is
   finished and the open questions all cost money or change the claim.** See
-  `docs/ROADMAP.md` for the state of each phase and `.claude/plans/buildout.md` for the
+  `docs/ROADMAP.md` for the state of each phase and `.claude/plans/v2-plan.md` for the
   session log.

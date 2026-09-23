@@ -9,9 +9,15 @@ data/cohort.csv  (canonical cohort: question, answer, match rule per site)
       |
       ├── scripts/seed-sites.ts  ->  sites table
       |
-      ├── Lane 1: scripts/lane1-lighthouse.ts
-      |     Lighthouse CLI, agentic-browsing category only
-      |     -> data/lighthouse-<batch>.json
+      ├── Lane 1: scripts/lane1-lighthouse.ts  (launched by scripts/run-batch.sh)
+      |     Lighthouse CLI, agentic-browsing category only, Chrome pinned to
+      |     Playwright's Chromium, three runs per site
+      |     -> data/lighthouse-<batch>.json          (the typed row, importable)
+      |     -> data/lighthouse-<batch>.panel.json    (the extended per-site panel)
+      |     -> data/lighthouse-<batch>.audits.json   (every audit of every run)
+      |     -> data/lighthouse-<batch>.llms-txt.json (the /llms.txt sidecar GET)
+      |     -> data/lhr/<batch>/<site>.<r>.json      (every raw report, retained)
+      |     -> data/manifest-<batch>.json, env-<batch>.txt, health-<batch>.json
       |
       └── Lane 2: scripts/lane2-agent.py
             Gemini + Playwright browser agent, N trials per site
@@ -26,13 +32,16 @@ data/cohort.csv  (canonical cohort: question, answer, match rule per site)
                   |
                   v
       Next.js app  (lib/queries.ts is the single data layer)
-        /                   leaderboard: success rate, LH score, top failure mode
+        /                   leaderboard: success rate, LH mean, top failure mode; no rank
         /site/[slug]        sub-audit breakdown, trial log, per-trial transcript replay,
                             answer key
         /correlation        scatter + rank correlation with bootstrap CI and n
         /correlation/audits per-sub-audit attribution, multiplicity-corrected
         /correlation/exhibit the authored Goodhart pair, off this path entirely: read
                             from committed artifacts, never in the database
+        /finding/goodhart   the pair as a finding card with its own OG image
+        /methodology, /data the record, the contact address, the dataset and its citation
+                            (/data/v1.json is the machine-readable edition)
 ```
 
 `AGENTRANK_COHORT_CSV` points both lanes at a different pre-registered row set without
@@ -57,9 +66,23 @@ frontend build against it independently.
 - **sites** — pre-registered config, written before any run, one column per `data/cohort.csv`
   column: `site_id`, `name`, `tier`, `start_url`, `question`, `answer_substring`, `match_rule`,
   `flag`, `answer_note`
-- **lighthouse_results** — one per (site, batch): `site_id`, `batch_label`, `lh_total` (0-100),
-  four sub-audit flags (`lh_accessibility_tree`, `lh_layout_stability`, `lh_llms_txt`,
-  `lh_webmcp`), `run_at`
+- **lighthouse_results** — one per (site, batch): `site_id`, `batch_label`, `lh_total`, four
+  sub-audit flags (`lh_accessibility_tree`, `lh_layout_stability`, `lh_llms_txt`, `lh_webmcp`),
+  `run_at`. `lh_total` is the category's arithmetic mean over the audits that applied, as
+  Lighthouse emits it; Chrome displays a fraction of applicable checks, not this, and no surface
+  calls it a score. Each flag has v1 semantics: 1 = passed (`score === 1`); 0 = did not pass or
+  did not apply. `lh_layout_stability` keeps the 1.00 rule in every batch so the column never
+  means two things. The dated batches from 2026-09-23 add, beside the typed row and outside
+  Supabase until a page needs a column (decision D7: the migration is written then, applied
+  ask-first): `lh_passed` of `lh_passable` (Chrome's fraction); `lh_cls_score` and
+  `lh_cls_value`, with `lh_cls_lighthouse_pass` at Lighthouse's 0.90 rule; `lh_llms_txt_status`
+  (pass / fail / absent / error) with the audit's branch and its printed reasons;
+  `lh_webmcp_applied` and `lh_webmcp_tool_count` (an applicability flag and a count, never
+  adoption); `lh_ard_schema_status` from 13.5.0 (absent / signalled, not loadable / fails
+  validation / warnings / passes); `lighthouse_version`, `chrome_version`, the median repeat
+  chosen and the min-max spread over repeats. Raw reports are retained under
+  `data/lhr/<batch>/`. Scanner columns live in `data/scanners-<date>.json`, fetched data, never
+  in Supabase.
 - **agent_runs** — one per trial: `site_id`, `agent_id`, `batch_label`, `trial_number`,
   `success`, `step_count`, `duration_seconds`, `failure_mode`, `transcript` (jsonb), `run_at`
 
@@ -105,12 +128,50 @@ over the newest batch per site, for ad-hoc inspection rather than for the app.
 - `data/lighthouse-results.json` is a pre-migration artifact from the draft cohort, kept as
   history and never imported. The published Lane 1 batch is `data/lighthouse-v1.json`; the
   published Lane 2 batch is `data/agent-runs-v1.jsonl` (280 trials, two agents).
+- **v1 retained no raw Lighthouse report**: `scripts/lane1-lighthouse.ts:106` at `174f603`
+  deleted the temporary file after extracting five numbers from it. That is why v1's per-site
+  audit set (which audits applied, what the denominator was) is a reconstruction from `lh_total`
+  arithmetic, checked on 2026-09-23 against retained reports
+  (`data/lhr/lh-v2-20260923/reconstruction.json`: 76 of 112 flags reproduce, every difference
+  evidenced except voodoo, named). No v1 value was edited; the file is byte-identical.
 - Lane 2 has `--resume`, which skips recorded trials and re-runs rows recorded as `error`.
 - **The v1 loop is frozen** (2026-08-09). Any change to it forks the dataset.
 - The authored Goodhart exhibit (2026-08-30) ran through that loop unchanged as batch
   `goodhart`: `data/exhibit-cohort.csv` (registered key), `data/lighthouse-goodhart.json`,
   `data/agent-runs-goodhart.jsonl` (20 trials) and the two pages in `public/exhibit/`. Nothing
   of it is in Supabase. See `docs/EXHIBIT.md`.
+
+## Lane 1 since the re-measurement of 2026-09-23
+
+Lane 1 is not the frozen loop, so re-running it forks nothing; what changed is that it is now
+disciplined. Four dated batches ran on 2026-09-23 from the residential vantage:
+`lh-v2-20260923` at 13.3.0 (the version v1 ran, so v1 could be reconstructed) and same-day
+companions `-13.4.1`, `-13.5.0` and `-desktop`. 13.5.0 is the pin from that date; a later version
+change is bridged by a same-day pair under a new dated label.
+
+- `scripts/run-batch.sh` is the launch path: one lock, the label rule (`lh-v2-<yyyymmdd>`
+  `[-<version>][-desktop]`, dated, never re-used; `smoke-*` for scratch), the environment record,
+  the manifest, Lane 1 under `caffeinate`, the health card, and the import command printed, never
+  run. It never imports and never holds the service key.
+- `scripts/batch-manifest.ts` and `scripts/lane1-env.ts` write `data/manifest-<batch>.json` (code
+  SHA, cohort SHA, Lighthouse and Chrome versions, the exact CLI arguments, the vantage as an
+  ASN and an HMAC of the address, timings, artifact digests) and `data/env-<batch>.txt`.
+  `scripts/health-card.py` writes `data/health-<batch>.json` (HC4 completeness, HC12 the
+  gzipped size of the retained reports against a 25 MB budget).
+- `scripts/lane1-lighthouse.ts` points Lighthouse at Playwright's Chromium through `CHROME_PATH`
+  and refuses any other build; `scripts/lighthouse-companions/<version>/` holds the pinned
+  installs for the version companions. Three runs per site; the published row is the median run.
+- `scripts/lane1-extract.ts` is the extraction module, with fixture reports and
+  `scripts/tests/lane1-extract.test.ts`; v1 had neither. `scripts/lane1-reconstruct.ts` and
+  `scripts/reconstruction.ts` produce and test `data/lhr/<batch>/reconstruction.json`.
+- `scripts/fetch-scanners.ts` fetches ora.ai and Cloudflare for the 28 sites on the same UTC day
+  as a dated batch into `data/scanners-<date>.json`, raw responses and refusals verbatim.
+- `scripts/import-guards.ts`: no manifest, no import (the three legacy labels excepted), and a
+  Lane 1 label that already holds rows is refused; `--reimport` accepts the identical artifact
+  only, proved by digest.
+
+Nothing from these batches has been imported; the published x-axis is still batch `v1`, and the
+dated panels are read from the committed files.
 
 ## Read-path modules added after the data landed
 
@@ -152,8 +213,9 @@ Keys come from `npx supabase projects api-keys --project-ref bfhxbvaosagfrkuhnuv
 
 ## Design invariants
 
-- The static lane shells out to the official Lighthouse CLI and parses its JSON. We
-  reimplement no audits; the x-axis stays Google's.
+- The static lane shells out to the official Lighthouse CLI and parses its JSON. We run the
+  official CLI unmodified and record what it returns, including where its own audits do not
+  apply; reading it correctly is our job, and the extraction is tested.
 - One agent, one prompt, one harness per dataset version. Any change to the agent loop forks
   the dataset (new `agent_id` or version tag), never silently amends it.
 - The frontend must degrade gracefully with partial data: sites missing one lane's results
