@@ -2032,5 +2032,2948 @@
         ]
       }
     }
+  },
+  "study_v2": {
+    "sites": {
+      "amazon": {
+        "start_url": "https://www.amazon.com",
+        "answer_domain": "amazon.com"
+      },
+      "apple": {
+        "start_url": "https://www.apple.com",
+        "answer_domain": "apple.com"
+      },
+      "bear": {
+        "start_url": "https://bear.app/",
+        "answer_domain": "bear.app"
+      },
+      "bestbuy": {
+        "start_url": "https://www.bestbuy.com",
+        "answer_domain": "bestbuy.com"
+      },
+      "ca_dmv": {
+        "start_url": "https://www.dmv.ca.gov",
+        "answer_domain": "ca.gov"
+      },
+      "cloudflare": {
+        "start_url": "https://www.cloudflare.com",
+        "answer_domain": "cloudflare.com"
+      },
+      "costco": {
+        "start_url": "https://www.costco.com",
+        "answer_domain": "costco.com"
+      },
+      "craigslist": {
+        "start_url": "https://www.craigslist.org",
+        "answer_domain": "craigslist.org"
+      },
+      "github": {
+        "start_url": "https://github.com",
+        "answer_domain": "github.com"
+      },
+      "ikea": {
+        "start_url": "https://www.ikea.com",
+        "answer_domain": "ikea.com"
+      },
+      "innout": {
+        "start_url": "https://www.in-n-out.com",
+        "answer_domain": "in-n-out.com"
+      },
+      "irs": {
+        "start_url": "https://www.irs.gov",
+        "answer_domain": "irs.gov"
+      },
+      "notion": {
+        "start_url": "https://www.notion.com",
+        "answer_domain": "notion.com"
+      },
+      "oregon_state": {
+        "start_url": "https://financialaid.oregonstate.edu",
+        "answer_domain": "oregonstate.edu"
+      },
+      "portland": {
+        "start_url": "https://www.portland.gov",
+        "answer_domain": "portland.gov"
+      },
+      "powells": {
+        "start_url": "https://www.powells.com",
+        "answer_domain": "powells.com"
+      },
+      "shopify": {
+        "start_url": "https://www.shopify.com",
+        "answer_domain": "shopify.com"
+      },
+      "spotify": {
+        "start_url": "https://www.spotify.com",
+        "answer_domain": "spotify.com"
+      },
+      "ssa": {
+        "start_url": "https://www.ssa.gov",
+        "answer_domain": "ssa.gov"
+      },
+      "stripe": {
+        "start_url": "https://stripe.com",
+        "answer_domain": "stripe.com"
+      },
+      "target": {
+        "start_url": "https://www.target.com",
+        "answer_domain": "target.com"
+      },
+      "ticketmaster": {
+        "start_url": "https://www.ticketmaster.com",
+        "answer_domain": "ticketmaster.com"
+      },
+      "trimet": {
+        "start_url": "https://support.trimet.org",
+        "answer_domain": "trimet.org"
+      },
+      "twilio": {
+        "start_url": "https://www.twilio.com",
+        "answer_domain": "twilio.com"
+      },
+      "tx_dmv": {
+        "start_url": "https://www.txdmv.gov",
+        "answer_domain": "txdmv.gov"
+      },
+      "usps": {
+        "start_url": "https://www.usps.com",
+        "answer_domain": "usps.com"
+      },
+      "voodoo": {
+        "start_url": "https://www.voodoodoughnut.com",
+        "answer_domain": "voodoodoughnut.com"
+      },
+      "zalando": {
+        "start_url": "https://www.zalando.com",
+        "answer_domain": "zalando.pt"
+      }
+    },
+    "exclusions": {
+      "rule_b": [
+        "trimet"
+      ],
+      "rule_b_by_agent": {
+        "gemini-3.5-flash-lite": [
+          "trimet"
+        ],
+        "gemini-3.6-flash": [
+          "trimet"
+        ]
+      },
+      "rule_d": {
+        "status": "pending instrument-v1",
+        "conditional": [
+          "oregon_state"
+        ]
+      }
+    },
+    "answered_trials": {
+      "pooled": {
+        "recorded": 280,
+        "answered": 172,
+        "matched": 146,
+        "corroborated_blocked": 0,
+        "self_reported_blocked": 26,
+        "wrong_answer": 0,
+        "matched_off_domain": 2,
+        "self_reported_split": {
+          "off_site": 3,
+          "blank_report": 4,
+          "on_site_report": 19,
+          "first_observation": 2
+        },
+        "not_answered": {
+          "count": 108,
+          "by_failure_mode": {
+            "error": 45,
+            "navigation_stuck": 6,
+            "timeout": 57
+          }
+        }
+      },
+      "by_agent": {
+        "gemini-3.5-flash-lite": {
+          "recorded": 140,
+          "answered": 88,
+          "matched": 69,
+          "corroborated_blocked": 0,
+          "self_reported_blocked": 19,
+          "wrong_answer": 0,
+          "matched_off_domain": 1,
+          "self_reported_split": {
+            "off_site": 2,
+            "blank_report": 3,
+            "on_site_report": 14,
+            "first_observation": 2
+          },
+          "not_answered": {
+            "count": 52,
+            "by_failure_mode": {
+              "error": 17,
+              "navigation_stuck": 6,
+              "timeout": 29
+            }
+          }
+        },
+        "gemini-3.6-flash": {
+          "recorded": 140,
+          "answered": 84,
+          "matched": 77,
+          "corroborated_blocked": 0,
+          "self_reported_blocked": 7,
+          "wrong_answer": 0,
+          "matched_off_domain": 1,
+          "self_reported_split": {
+            "off_site": 1,
+            "blank_report": 1,
+            "on_site_report": 5,
+            "first_observation": 0
+          },
+          "not_answered": {
+            "count": 56,
+            "by_failure_mode": {
+              "error": 28,
+              "timeout": 28
+            }
+          }
+        }
+      },
+      "self_reported_by_site": {
+        "amazon": {
+          "off_site": 0,
+          "blank_report": 2,
+          "on_site_report": 0,
+          "first_observation": 2
+        },
+        "irs": {
+          "off_site": 0,
+          "blank_report": 0,
+          "on_site_report": 5,
+          "first_observation": 0
+        },
+        "target": {
+          "off_site": 0,
+          "blank_report": 0,
+          "on_site_report": 5,
+          "first_observation": 0
+        },
+        "ticketmaster": {
+          "off_site": 3,
+          "blank_report": 2,
+          "on_site_report": 0,
+          "first_observation": 0
+        },
+        "zalando": {
+          "off_site": 0,
+          "blank_report": 0,
+          "on_site_report": 9,
+          "first_observation": 0
+        }
+      },
+      "v2_synthetic": {
+        "sites": {
+          "v2site": {
+            "start_url": "https://example.com/",
+            "answer_domain": "example.com"
+          }
+        },
+        "runs": [
+          {
+            "site_id": "v2site",
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": 1,
+            "success": true,
+            "step_count": 2,
+            "duration_seconds": 1,
+            "failure_mode": "success",
+            "transcript": [
+              {
+                "step": 0,
+                "url": "https://www.example.com/",
+                "action": {
+                  "action": "click",
+                  "selector": "Pricing"
+                }
+              },
+              {
+                "step": 1,
+                "url": "https://www.example.com/pricing",
+                "action": {
+                  "action": "done",
+                  "answer": "$12"
+                },
+                "matched": "$12"
+              }
+            ],
+            "run_at": "2026-09-23T00:00:00+00:00"
+          },
+          {
+            "site_id": "v2site",
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": 2,
+            "success": false,
+            "step_count": 2,
+            "duration_seconds": 1,
+            "failure_mode": "wrong_extraction",
+            "transcript": [
+              {
+                "step": 0,
+                "url": "https://www.example.com/",
+                "action": {
+                  "action": "click",
+                  "selector": "Pricing"
+                }
+              },
+              {
+                "step": 1,
+                "url": "https://www.google.com/search?q=example",
+                "action": {
+                  "action": "done",
+                  "answer": "$12"
+                },
+                "matched": "$12"
+              },
+              {
+                "end": {
+                  "reason": "off_domain_done"
+                }
+              }
+            ],
+            "run_at": "2026-09-23T00:00:00+00:00"
+          },
+          {
+            "site_id": "v2site",
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": 3,
+            "success": false,
+            "step_count": 2,
+            "duration_seconds": 1,
+            "failure_mode": "blocked",
+            "transcript": [
+              {
+                "step": 0,
+                "url": "https://www.example.com/",
+                "action": {
+                  "action": "click",
+                  "selector": "Pricing"
+                }
+              },
+              {
+                "step": 1,
+                "url": "https://www.example.com/login",
+                "action": {
+                  "action": "done",
+                  "answer": "BLOCKED",
+                  "reasoning": "A sign-in wall."
+                },
+                "matched": null
+              },
+              {
+                "end": {
+                  "reason": "block_corroborated:login_wall"
+                }
+              }
+            ],
+            "run_at": "2026-09-23T00:00:00+00:00"
+          },
+          {
+            "site_id": "v2site",
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": 4,
+            "success": false,
+            "step_count": 2,
+            "duration_seconds": 1,
+            "failure_mode": "wrong_extraction",
+            "transcript": [
+              {
+                "step": 0,
+                "url": "https://www.example.com/",
+                "action": {
+                  "action": "click",
+                  "selector": "Pricing"
+                }
+              },
+              {
+                "step": 1,
+                "url": "https://www.example.com/pricing",
+                "action": {
+                  "action": "done",
+                  "answer": "BLOCKED",
+                  "reasoning": "The page is blank."
+                },
+                "matched": null
+              },
+              {
+                "end": {
+                  "reason": "block_self_report_uncorroborated"
+                }
+              }
+            ],
+            "run_at": "2026-09-23T00:00:00+00:00"
+          },
+          {
+            "site_id": "v2site",
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": 5,
+            "success": false,
+            "step_count": 2,
+            "duration_seconds": 1,
+            "failure_mode": "wrong_extraction",
+            "transcript": [
+              {
+                "step": 0,
+                "url": "https://www.example.com/",
+                "action": {
+                  "action": "click",
+                  "selector": "Pricing"
+                }
+              },
+              {
+                "step": 1,
+                "url": "https://www.example.com/pricing",
+                "action": {
+                  "action": "done",
+                  "answer": "$99"
+                },
+                "matched": null
+              },
+              {
+                "end": {
+                  "reason": "answer_mismatch"
+                }
+              }
+            ],
+            "run_at": "2026-09-23T00:00:00+00:00"
+          },
+          {
+            "site_id": "v2site",
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": 6,
+            "success": false,
+            "step_count": 2,
+            "duration_seconds": 1,
+            "failure_mode": "timeout",
+            "transcript": [
+              {
+                "step": 0,
+                "url": "https://www.example.com/",
+                "action": {
+                  "action": "click",
+                  "selector": "Pricing"
+                }
+              },
+              {
+                "step": 1,
+                "url": "https://www.example.com/pricing",
+                "action": {
+                  "action": "scroll"
+                }
+              }
+            ],
+            "run_at": "2026-09-23T00:00:00+00:00"
+          },
+          {
+            "site_id": "v2site",
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": 7,
+            "success": false,
+            "step_count": 0,
+            "duration_seconds": 1,
+            "failure_mode": "blocked",
+            "transcript": [
+              {
+                "end": {
+                  "reason": "transport:ERR_CONNECTION_RESET"
+                }
+              }
+            ],
+            "run_at": "2026-09-23T00:00:00+00:00"
+          },
+          {
+            "site_id": "v2site",
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": 8,
+            "success": true,
+            "step_count": 2,
+            "duration_seconds": 1,
+            "failure_mode": "success",
+            "transcript": [
+              {
+                "step": 0,
+                "url": "https://shop.example-redirect.net/",
+                "action": {
+                  "action": "click",
+                  "selector": "Pricing"
+                }
+              },
+              {
+                "step": 1,
+                "url": "https://shop.example-redirect.net/pricing",
+                "action": {
+                  "action": "done",
+                  "answer": "$12"
+                },
+                "matched": "$12"
+              }
+            ],
+            "run_at": "2026-09-23T00:00:00+00:00"
+          }
+        ],
+        "per_run": [
+          {
+            "answer_class": "matched",
+            "off_domain": false,
+            "self_reported": null,
+            "first_observation": false
+          },
+          {
+            "answer_class": "matched",
+            "off_domain": true,
+            "self_reported": null,
+            "first_observation": false
+          },
+          {
+            "answer_class": "corroborated_blocked",
+            "off_domain": false,
+            "self_reported": null,
+            "first_observation": false
+          },
+          {
+            "answer_class": "self_reported_blocked",
+            "off_domain": false,
+            "self_reported": "blank_report",
+            "first_observation": false
+          },
+          {
+            "answer_class": "wrong_answer",
+            "off_domain": false,
+            "self_reported": null,
+            "first_observation": false
+          },
+          null,
+          null,
+          {
+            "answer_class": "matched",
+            "off_domain": false,
+            "self_reported": null,
+            "first_observation": false
+          }
+        ],
+        "result": {
+          "recorded": 8,
+          "answered": 6,
+          "matched": 3,
+          "corroborated_blocked": 1,
+          "self_reported_blocked": 1,
+          "wrong_answer": 1,
+          "matched_off_domain": 1,
+          "self_reported_split": {
+            "off_site": 0,
+            "blank_report": 1,
+            "on_site_report": 0,
+            "first_observation": 0
+          },
+          "not_answered": {
+            "count": 2,
+            "by_failure_mode": {
+              "blocked": 1,
+              "timeout": 1
+            }
+          }
+        },
+        "no_transcripts": null
+      }
+    },
+    "cells": {
+      "gemini-3.5-flash-lite": [
+        {
+          "site_id": "amazon",
+          "k": 0,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "apple",
+          "k": 3,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "bear",
+          "k": 5,
+          "n": 5,
+          "lh_total": 12
+        },
+        {
+          "site_id": "bestbuy",
+          "k": 0,
+          "n": 5,
+          "lh_total": 33
+        },
+        {
+          "site_id": "ca_dmv",
+          "k": 0,
+          "n": 5,
+          "lh_total": 67
+        },
+        {
+          "site_id": "cloudflare",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "costco",
+          "k": 0,
+          "n": 0,
+          "lh_total": 49
+        },
+        {
+          "site_id": "craigslist",
+          "k": 1,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "github",
+          "k": 5,
+          "n": 5,
+          "lh_total": 99
+        },
+        {
+          "site_id": "ikea",
+          "k": 5,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "innout",
+          "k": 2,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "irs",
+          "k": 0,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "notion",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "oregon_state",
+          "k": 0,
+          "n": 5,
+          "lh_total": 48
+        },
+        {
+          "site_id": "portland",
+          "k": 2,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "powells",
+          "k": 4,
+          "n": 5,
+          "lh_total": 3
+        },
+        {
+          "site_id": "shopify",
+          "k": 5,
+          "n": 5,
+          "lh_total": 59
+        },
+        {
+          "site_id": "spotify",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "ssa",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "stripe",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "target",
+          "k": 0,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "ticketmaster",
+          "k": 1,
+          "n": 5,
+          "lh_total": 5
+        },
+        {
+          "site_id": "trimet",
+          "k": 0,
+          "n": 5,
+          "lh_total": 98
+        },
+        {
+          "site_id": "twilio",
+          "k": 5,
+          "n": 5,
+          "lh_total": 33
+        },
+        {
+          "site_id": "tx_dmv",
+          "k": 0,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "usps",
+          "k": 5,
+          "n": 5,
+          "lh_total": 40
+        },
+        {
+          "site_id": "voodoo",
+          "k": 1,
+          "n": 5,
+          "lh_total": 14
+        },
+        {
+          "site_id": "zalando",
+          "k": 0,
+          "n": 5,
+          "lh_total": 67
+        }
+      ],
+      "gemini-3.6-flash": [
+        {
+          "site_id": "amazon",
+          "k": 5,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "apple",
+          "k": 5,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "bear",
+          "k": 5,
+          "n": 5,
+          "lh_total": 12
+        },
+        {
+          "site_id": "bestbuy",
+          "k": 0,
+          "n": 5,
+          "lh_total": 33
+        },
+        {
+          "site_id": "ca_dmv",
+          "k": 0,
+          "n": 5,
+          "lh_total": 67
+        },
+        {
+          "site_id": "cloudflare",
+          "k": 4,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "costco",
+          "k": 0,
+          "n": 0,
+          "lh_total": 49
+        },
+        {
+          "site_id": "craigslist",
+          "k": 5,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "github",
+          "k": 5,
+          "n": 5,
+          "lh_total": 99
+        },
+        {
+          "site_id": "ikea",
+          "k": 5,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "innout",
+          "k": 0,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "irs",
+          "k": 0,
+          "n": 5,
+          "lh_total": 50
+        },
+        {
+          "site_id": "notion",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "oregon_state",
+          "k": 0,
+          "n": 5,
+          "lh_total": 48
+        },
+        {
+          "site_id": "portland",
+          "k": 1,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "powells",
+          "k": 3,
+          "n": 5,
+          "lh_total": 3
+        },
+        {
+          "site_id": "shopify",
+          "k": 2,
+          "n": 5,
+          "lh_total": 59
+        },
+        {
+          "site_id": "spotify",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "ssa",
+          "k": 1,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "stripe",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "target",
+          "k": 5,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "ticketmaster",
+          "k": 1,
+          "n": 5,
+          "lh_total": 5
+        },
+        {
+          "site_id": "trimet",
+          "k": 0,
+          "n": 5,
+          "lh_total": 98
+        },
+        {
+          "site_id": "twilio",
+          "k": 5,
+          "n": 5,
+          "lh_total": 33
+        },
+        {
+          "site_id": "tx_dmv",
+          "k": 0,
+          "n": 5,
+          "lh_total": 100
+        },
+        {
+          "site_id": "usps",
+          "k": 5,
+          "n": 5,
+          "lh_total": 40
+        },
+        {
+          "site_id": "voodoo",
+          "k": 5,
+          "n": 5,
+          "lh_total": 14
+        },
+        {
+          "site_id": "zalando",
+          "k": 0,
+          "n": 5,
+          "lh_total": 67
+        }
+      ]
+    },
+    "group_split": {
+      "gemini-3.5-flash-lite": {
+        "published": {
+          "excluded": [],
+          "removed": [],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "bear",
+              "cloudflare",
+              "github",
+              "ikea",
+              "notion",
+              "shopify",
+              "spotify",
+              "ssa",
+              "stripe",
+              "twilio",
+              "usps"
+            ],
+            "count": 11,
+            "dropped_null_lh": 0,
+            "mean": 72.0909090909091,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "amazon",
+              "bestbuy",
+              "ca_dmv",
+              "irs",
+              "oregon_state",
+              "target",
+              "trimet",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 9,
+            "dropped_null_lh": 0,
+            "mean": 68.11111111111111,
+            "min": 33,
+            "max": 100
+          }
+        },
+        "rule_b": {
+          "excluded": [
+            "trimet"
+          ],
+          "removed": [
+            "trimet"
+          ],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "bear",
+              "cloudflare",
+              "github",
+              "ikea",
+              "notion",
+              "shopify",
+              "spotify",
+              "ssa",
+              "stripe",
+              "twilio",
+              "usps"
+            ],
+            "count": 11,
+            "dropped_null_lh": 0,
+            "mean": 72.0909090909091,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "amazon",
+              "bestbuy",
+              "ca_dmv",
+              "irs",
+              "oregon_state",
+              "target",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 8,
+            "dropped_null_lh": 0,
+            "mean": 64.375,
+            "min": 33,
+            "max": 100
+          }
+        },
+        "rule_b_and_d_conditional": {
+          "excluded": [
+            "oregon_state",
+            "trimet"
+          ],
+          "removed": [
+            "oregon_state",
+            "trimet"
+          ],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "bear",
+              "cloudflare",
+              "github",
+              "ikea",
+              "notion",
+              "shopify",
+              "spotify",
+              "ssa",
+              "stripe",
+              "twilio",
+              "usps"
+            ],
+            "count": 11,
+            "dropped_null_lh": 0,
+            "mean": 72.0909090909091,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "amazon",
+              "bestbuy",
+              "ca_dmv",
+              "irs",
+              "target",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 7,
+            "dropped_null_lh": 0,
+            "mean": 66.71428571428571,
+            "min": 33,
+            "max": 100
+          }
+        }
+      },
+      "gemini-3.6-flash": {
+        "published": {
+          "excluded": [],
+          "removed": [],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "amazon",
+              "apple",
+              "bear",
+              "craigslist",
+              "github",
+              "ikea",
+              "notion",
+              "spotify",
+              "stripe",
+              "target",
+              "twilio",
+              "usps",
+              "voodoo"
+            ],
+            "count": 13,
+            "dropped_null_lh": 0,
+            "mean": 61.38461538461539,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "bestbuy",
+              "ca_dmv",
+              "innout",
+              "irs",
+              "oregon_state",
+              "trimet",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 8,
+            "dropped_null_lh": 0,
+            "mean": 64.125,
+            "min": 33,
+            "max": 100
+          }
+        },
+        "rule_b": {
+          "excluded": [
+            "trimet"
+          ],
+          "removed": [
+            "trimet"
+          ],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "amazon",
+              "apple",
+              "bear",
+              "craigslist",
+              "github",
+              "ikea",
+              "notion",
+              "spotify",
+              "stripe",
+              "target",
+              "twilio",
+              "usps",
+              "voodoo"
+            ],
+            "count": 13,
+            "dropped_null_lh": 0,
+            "mean": 61.38461538461539,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "bestbuy",
+              "ca_dmv",
+              "innout",
+              "irs",
+              "oregon_state",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 7,
+            "dropped_null_lh": 0,
+            "mean": 59.285714285714285,
+            "min": 33,
+            "max": 100
+          }
+        },
+        "rule_b_and_d_conditional": {
+          "excluded": [
+            "oregon_state",
+            "trimet"
+          ],
+          "removed": [
+            "oregon_state",
+            "trimet"
+          ],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "amazon",
+              "apple",
+              "bear",
+              "craigslist",
+              "github",
+              "ikea",
+              "notion",
+              "spotify",
+              "stripe",
+              "target",
+              "twilio",
+              "usps",
+              "voodoo"
+            ],
+            "count": 13,
+            "dropped_null_lh": 0,
+            "mean": 61.38461538461539,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "bestbuy",
+              "ca_dmv",
+              "innout",
+              "irs",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 6,
+            "dropped_null_lh": 0,
+            "mean": 61.166666666666664,
+            "min": 33,
+            "max": 100
+          }
+        }
+      }
+    },
+    "sensitivity": {
+      "gemini-3.5-flash-lite": {
+        "rule_b": {
+          "excluded": [
+            "trimet"
+          ],
+          "removed": [
+            "trimet"
+          ],
+          "n": 26,
+          "rho": 0.1294136683411641,
+          "ci": {
+            "point": 0.1294136683411641,
+            "lo": -0.2597531027953476,
+            "hi": 0.507603458967646,
+            "used": 10000,
+            "iterations": 10000
+          },
+          "group_split": {
+            "excluded": [
+              "trimet"
+            ],
+            "removed": [
+              "trimet"
+            ],
+            "unmeasured": [
+              "costco"
+            ],
+            "all_succeeded": {
+              "sites": [
+                "bear",
+                "cloudflare",
+                "github",
+                "ikea",
+                "notion",
+                "shopify",
+                "spotify",
+                "ssa",
+                "stripe",
+                "twilio",
+                "usps"
+              ],
+              "count": 11,
+              "dropped_null_lh": 0,
+              "mean": 72.0909090909091,
+              "min": 12,
+              "max": 100
+            },
+            "all_failed": {
+              "sites": [
+                "amazon",
+                "bestbuy",
+                "ca_dmv",
+                "irs",
+                "oregon_state",
+                "target",
+                "tx_dmv",
+                "zalando"
+              ],
+              "count": 8,
+              "dropped_null_lh": 0,
+              "mean": 64.375,
+              "min": 33,
+              "max": 100
+            }
+          }
+        },
+        "rule_b_and_d_conditional": {
+          "excluded": [
+            "oregon_state",
+            "trimet"
+          ],
+          "removed": [
+            "oregon_state",
+            "trimet"
+          ],
+          "n": 25,
+          "rho": 0.11177538034052327,
+          "ci": {
+            "point": 0.11177538034052327,
+            "lo": -0.29176544112984776,
+            "hi": 0.4878582082998422,
+            "used": 10000,
+            "iterations": 10000
+          },
+          "group_split": {
+            "excluded": [
+              "oregon_state",
+              "trimet"
+            ],
+            "removed": [
+              "oregon_state",
+              "trimet"
+            ],
+            "unmeasured": [
+              "costco"
+            ],
+            "all_succeeded": {
+              "sites": [
+                "bear",
+                "cloudflare",
+                "github",
+                "ikea",
+                "notion",
+                "shopify",
+                "spotify",
+                "ssa",
+                "stripe",
+                "twilio",
+                "usps"
+              ],
+              "count": 11,
+              "dropped_null_lh": 0,
+              "mean": 72.0909090909091,
+              "min": 12,
+              "max": 100
+            },
+            "all_failed": {
+              "sites": [
+                "amazon",
+                "bestbuy",
+                "ca_dmv",
+                "irs",
+                "target",
+                "tx_dmv",
+                "zalando"
+              ],
+              "count": 7,
+              "dropped_null_lh": 0,
+              "mean": 66.71428571428571,
+              "min": 33,
+              "max": 100
+            }
+          }
+        }
+      },
+      "gemini-3.6-flash": {
+        "rule_b": {
+          "excluded": [
+            "trimet"
+          ],
+          "removed": [
+            "trimet"
+          ],
+          "n": 26,
+          "rho": -0.006041908335950799,
+          "ci": {
+            "point": -0.006041908335950799,
+            "lo": -0.3645376968319613,
+            "hi": 0.35577963464480716,
+            "used": 10000,
+            "iterations": 10000
+          },
+          "group_split": {
+            "excluded": [
+              "trimet"
+            ],
+            "removed": [
+              "trimet"
+            ],
+            "unmeasured": [
+              "costco"
+            ],
+            "all_succeeded": {
+              "sites": [
+                "amazon",
+                "apple",
+                "bear",
+                "craigslist",
+                "github",
+                "ikea",
+                "notion",
+                "spotify",
+                "stripe",
+                "target",
+                "twilio",
+                "usps",
+                "voodoo"
+              ],
+              "count": 13,
+              "dropped_null_lh": 0,
+              "mean": 61.38461538461539,
+              "min": 12,
+              "max": 100
+            },
+            "all_failed": {
+              "sites": [
+                "bestbuy",
+                "ca_dmv",
+                "innout",
+                "irs",
+                "oregon_state",
+                "tx_dmv",
+                "zalando"
+              ],
+              "count": 7,
+              "dropped_null_lh": 0,
+              "mean": 59.285714285714285,
+              "min": 33,
+              "max": 100
+            }
+          }
+        },
+        "rule_b_and_d_conditional": {
+          "excluded": [
+            "oregon_state",
+            "trimet"
+          ],
+          "removed": [
+            "oregon_state",
+            "trimet"
+          ],
+          "n": 25,
+          "rho": -0.046277561180966514,
+          "ci": {
+            "point": -0.046277561180966514,
+            "lo": -0.4126197766673839,
+            "hi": 0.3172230628564012,
+            "used": 10000,
+            "iterations": 10000
+          },
+          "group_split": {
+            "excluded": [
+              "oregon_state",
+              "trimet"
+            ],
+            "removed": [
+              "oregon_state",
+              "trimet"
+            ],
+            "unmeasured": [
+              "costco"
+            ],
+            "all_succeeded": {
+              "sites": [
+                "amazon",
+                "apple",
+                "bear",
+                "craigslist",
+                "github",
+                "ikea",
+                "notion",
+                "spotify",
+                "stripe",
+                "target",
+                "twilio",
+                "usps",
+                "voodoo"
+              ],
+              "count": 13,
+              "dropped_null_lh": 0,
+              "mean": 61.38461538461539,
+              "min": 12,
+              "max": 100
+            },
+            "all_failed": {
+              "sites": [
+                "bestbuy",
+                "ca_dmv",
+                "innout",
+                "irs",
+                "tx_dmv",
+                "zalando"
+              ],
+              "count": 6,
+              "dropped_null_lh": 0,
+              "mean": 61.166666666666664,
+              "min": 33,
+              "max": 100
+            }
+          }
+        }
+      }
+    },
+    "bootstrap_rows": {
+      "v1_model_gap": {
+        "arms": [
+          "gemini-3.5-flash-lite",
+          "gemini-3.6-flash"
+        ],
+        "n": 27,
+        "sites_moved": 11,
+        "ci": {
+          "point": 0.05925925925925926,
+          "lo": -0.0888888888888889,
+          "hi": 0.2222222222222222,
+          "used": 10000,
+          "iterations": 10000
+        }
+      },
+      "synthetic": {
+        "rows": [
+          {
+            "site_id": "b",
+            "k1": 1,
+            "n1": 5,
+            "k2": 4,
+            "n2": 5
+          },
+          {
+            "site_id": "a",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "c",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          }
+        ],
+        "ci": {
+          "point": 0.20000000000000004,
+          "lo": 0.0,
+          "hi": 0.6000000000000001,
+          "used": 10000,
+          "iterations": 10000
+        }
+      }
+    },
+    "rerandomization": {
+      "v1_model_gap": {
+        "cells": [
+          {
+            "site_id": "amazon",
+            "k1": 0,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "apple",
+            "k1": 3,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "bear",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "bestbuy",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          },
+          {
+            "site_id": "ca_dmv",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          },
+          {
+            "site_id": "cloudflare",
+            "k1": 5,
+            "n1": 5,
+            "k2": 4,
+            "n2": 5
+          },
+          {
+            "site_id": "craigslist",
+            "k1": 1,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "github",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "ikea",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "innout",
+            "k1": 2,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          },
+          {
+            "site_id": "irs",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          },
+          {
+            "site_id": "notion",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "oregon_state",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          },
+          {
+            "site_id": "portland",
+            "k1": 2,
+            "n1": 5,
+            "k2": 1,
+            "n2": 5
+          },
+          {
+            "site_id": "powells",
+            "k1": 4,
+            "n1": 5,
+            "k2": 3,
+            "n2": 5
+          },
+          {
+            "site_id": "shopify",
+            "k1": 5,
+            "n1": 5,
+            "k2": 2,
+            "n2": 5
+          },
+          {
+            "site_id": "spotify",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "ssa",
+            "k1": 5,
+            "n1": 5,
+            "k2": 1,
+            "n2": 5
+          },
+          {
+            "site_id": "stripe",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "target",
+            "k1": 0,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "ticketmaster",
+            "k1": 1,
+            "n1": 5,
+            "k2": 1,
+            "n2": 5
+          },
+          {
+            "site_id": "trimet",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          },
+          {
+            "site_id": "twilio",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "tx_dmv",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          },
+          {
+            "site_id": "usps",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "voodoo",
+            "k1": 1,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          },
+          {
+            "site_id": "zalando",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          }
+        ],
+        "sum": {
+          "statistic": 8,
+          "scale": 5,
+          "p": 0.1750051942506175,
+          "min_attainable_p": 1.3498010690659705e-15,
+          "informative": 12,
+          "support_min": -38,
+          "support_max": 38,
+          "pmf": {
+            "-38": 6.749005345329853e-16,
+            "-36": 6.985220532416395e-14,
+            "-34": 3.2474526470390906e-12,
+            "-32": 9.080896363478175e-11,
+            "-30": 1.7264969711406894e-09,
+            "-28": 2.3903659696040057e-08,
+            "-26": 2.5186171595796833e-07,
+            "-24": 2.0823861044621354e-06,
+            "-22": 1.3816357048596468e-05,
+            "-20": 7.482229206561542e-05,
+            "-18": 0.00033511514693668627,
+            "-16": 0.0012542797246216683,
+            "-14": 0.003955723739640293,
+            "-12": 0.010581889805547676,
+            "-10": 0.02413795307776085,
+            "-8": 0.04714663700958335,
+            "-6": 0.07910750839333534,
+            "-4": 0.11430015670852184,
+            "-2": 0.14244962969381716,
+            "0": 0.15328021615803375,
+            "2": 0.14244962969381716,
+            "4": 0.11430015670852182,
+            "6": 0.07910750839333534,
+            "8": 0.04714663700958335,
+            "10": 0.024137953077760843,
+            "12": 0.010581889805547674,
+            "14": 0.003955723739640292,
+            "16": 0.0012542797246216676,
+            "18": 0.00033511514693668605,
+            "20": 7.48222920656154e-05,
+            "22": 1.3816357048596465e-05,
+            "24": 2.0823861044621354e-06,
+            "26": 2.5186171595796833e-07,
+            "28": 2.3903659696040057e-08,
+            "30": 1.7264969711406892e-09,
+            "32": 9.080896363478177e-11,
+            "34": 3.2474526470390914e-12,
+            "36": 6.985220532416395e-14,
+            "38": 6.749005345329853e-16
+          }
+        },
+        "dispersion": {
+          "statistic": 118,
+          "scale": 5,
+          "p": 4.565739910545578e-09,
+          "min_attainable_p": 2.7643925894471076e-12,
+          "informative": 12,
+          "support_min": 6,
+          "support_max": 138,
+          "pmf": {
+            "6": 0.006749005345329853,
+            "10": 0.036444628864781205,
+            "14": 0.08922185066526064,
+            "18": 0.13776069710887295,
+            "22": 0.16069719177497643,
+            "26": 0.1572565488499273,
+            "30": 0.13361005882149507,
+            "34": 0.10082771021730366,
+            "38": 0.07016691144341669,
+            "42": 0.045611910809428266,
+            "46": 0.02770094149162842,
+            "50": 0.016030048524077793,
+            "54": 0.008852717554506583,
+            "58": 0.0046321163781168975,
+            "62": 0.0023429320534430176,
+            "66": 0.00114278828818824,
+            "70": 0.0005318382237651418,
+            "74": 0.00024116004832296106,
+            "78": 0.00010554755961550666,
+            "82": 4.40928716823228e-05,
+            "86": 1.801754961021329e-05,
+            "90": 7.1160540504388235e-06,
+            "94": 2.6722875636983216e-06,
+            "98": 9.798583904649217e-07,
+            "102": 3.4810289730356123e-07,
+            "106": 1.1519526275665569e-07,
+            "110": 3.7611936829309444e-08,
+            "114": 1.1880409089491043e-08,
+            "118": 3.320510629902287e-09,
+            "122": 9.33846371622601e-10,
+            "126": 2.4382806511607685e-10,
+            "130": 5.442397910473991e-11,
+            "134": 1.0366472210426653e-11,
+            "138": 2.7643925894471076e-12
+          }
+        }
+      },
+      "two_site": {
+        "cells": [
+          {
+            "site_id": "a",
+            "k1": 0,
+            "n1": 2,
+            "k2": 2,
+            "n2": 2
+          },
+          {
+            "site_id": "b",
+            "k1": 1,
+            "n1": 2,
+            "k2": 1,
+            "n2": 2
+          }
+        ],
+        "sum": {
+          "statistic": 2,
+          "scale": 2,
+          "p": 0.5,
+          "min_attainable_p": 0.05555555555555555,
+          "informative": 2,
+          "support_min": -4,
+          "support_max": 4,
+          "pmf": {
+            "-4": 0.027777777777777776,
+            "-2": 0.2222222222222222,
+            "0": 0.5,
+            "2": 0.2222222222222222,
+            "4": 0.027777777777777776
+          }
+        },
+        "dispersion": {
+          "statistic": 4,
+          "scale": 2,
+          "p": 0.5555555555555556,
+          "min_attainable_p": 0.1111111111111111,
+          "informative": 2,
+          "support_min": 0,
+          "support_max": 8,
+          "pmf": {
+            "0": 0.4444444444444444,
+            "4": 0.4444444444444444,
+            "8": 0.1111111111111111
+          }
+        }
+      },
+      "five_v_seven": {
+        "cells": [
+          {
+            "site_id": "x",
+            "k1": 5,
+            "n1": 5,
+            "k2": 0,
+            "n2": 7
+          },
+          {
+            "site_id": "y",
+            "k1": 2,
+            "n1": 5,
+            "k2": 3,
+            "n2": 7
+          },
+          {
+            "site_id": "z",
+            "k1": 0,
+            "n1": 5,
+            "k2": 7,
+            "n2": 7
+          }
+        ],
+        "sum": {
+          "statistic": 1,
+          "scale": 1,
+          "p": 1.0,
+          "min_attainable_p": 4.227111952088996e-08,
+          "informative": 3,
+          "support_min": -95,
+          "support_max": 85,
+          "pmf": {
+            "-95": 4.227111952088996e-08,
+            "-83": 3.3112376958030467e-06,
+            "-71": 9.489866332439794e-05,
+            "-59": 0.001280180854690152,
+            "-47": 0.009527980791874464,
+            "-35": 0.042571612832101244,
+            "-23": 0.11966171920652809,
+            "-11": 0.2175700862408134,
+            "1": 0.25951909983095417,
+            "13": 0.20362822560043348,
+            "25": 0.10428326047885755,
+            "37": 0.034142171881425216,
+            "49": 0.006875186234475146,
+            "61": 0.0007954720175172808,
+            "73": 4.58641646801656e-05,
+            "85": 8.876935099386892e-07
+          }
+        },
+        "dispersion": {
+          "statistic": 2451,
+          "scale": 1,
+          "p": 7.441729946130009e-06,
+          "min_attainable_p": 2.0129104533757125e-09,
+          "informative": 3,
+          "support_min": 3,
+          "support_max": 3675,
+          "pmf": {
+            "3": 0.08630353568848366,
+            "123": 0.15534636423927056,
+            "171": 0.1294553035327255,
+            "243": 0.09320781854356235,
+            "291": 0.15534636423927056,
+            "339": 0.06472765176636275,
+            "363": 0.018641563708712467,
+            "411": 0.04660390927178117,
+            "459": 0.03883659105981764,
+            "507": 0.010787941961060457,
+            "531": 0.025891060706545094,
+            "627": 0.015534636423927058,
+            "651": 0.031069272847854115,
+            "699": 0.025891060706545094,
+            "747": 0.01864156370871247,
+            "771": 0.009320781854356234,
+            "795": 0.01553463642392706,
+            "819": 0.015534636423927058,
+            "867": 0.012065234289250012,
+            "915": 0.009320781854356235,
+            "963": 0.0038836591059817644,
+            "1059": 0.0025891060706545095,
+            "1155": 0.0031069272847854116,
+            "1179": 0.0015534636423927056,
+            "1227": 0.0020342976269428293,
+            "1251": 0.0009320781854356237,
+            "1275": 0.001864156370871247,
+            "1323": 0.0015534636423927058,
+            "1347": 0.0008876935099386891,
+            "1371": 0.0005592469112613741,
+            "1395": 0.0007397445916155743,
+            "1419": 0.00046603909271781185,
+            "1467": 0.0002663080529816067,
+            "1515": 0.00044384675496934455,
+            "1563": 0.00018493614790389358,
+            "1587": 8.630353568848365e-05,
+            "1683": 0.00015534636423927058,
+            "1755": 0.00014794891832311486,
+            "1779": 9.320781854356235e-05,
+            "1851": 8.876935099386891e-05,
+            "1875": 0.00010741091470258138,
+            "1923": 7.397445916155743e-05,
+            "1971": 5.3261610596321345e-05,
+            "2019": 4.438467549693446e-05,
+            "2283": 7.397445916155743e-06,
+            "2379": 8.87693509938689e-06,
+            "2451": 2.113555976044498e-06,
+            "2475": 2.6630805298160675e-06,
+            "2571": 1.2681335856266989e-06,
+            "2619": 1.056777988022249e-06,
+            "2979": 2.1135559760444983e-07,
+            "3075": 1.268133585626699e-07,
+            "3675": 2.0129104533757125e-09
+          }
+        }
+      },
+      "all_boundary": {
+        "cells": [
+          {
+            "site_id": "p",
+            "k1": 0,
+            "n1": 5,
+            "k2": 0,
+            "n2": 5
+          },
+          {
+            "site_id": "q",
+            "k1": 5,
+            "n1": 5,
+            "k2": 5,
+            "n2": 5
+          }
+        ],
+        "sum": null,
+        "dispersion": null
+      }
+    }
+  },
+  "x_axis_decomposition": {
+    "rounding_slack": 0.005,
+    "rows": [
+      {
+        "site_id": "amazon",
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "apple",
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "bear",
+        "lh_total": 12,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "bestbuy",
+        "lh_total": 33,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "ca_dmv",
+        "lh_total": 67,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "cloudflare",
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "costco",
+        "lh_total": 49,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "craigslist",
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "github",
+        "lh_total": 99,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "ikea",
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "innout",
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "irs",
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "notion",
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "oregon_state",
+        "lh_total": 48,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "portland",
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "powells",
+        "lh_total": 3,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "shopify",
+        "lh_total": 59,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "spotify",
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "ssa",
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "stripe",
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "target",
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      {
+        "site_id": "ticketmaster",
+        "lh_total": 5,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "trimet",
+        "lh_total": 98,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "twilio",
+        "lh_total": 33,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "tx_dmv",
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "usps",
+        "lh_total": 40,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "voodoo",
+        "lh_total": 14,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      {
+        "site_id": "zalando",
+        "lh_total": 67,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      }
+    ],
+    "implied_cls": {
+      "amazon": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "apple": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "bear": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.24,
+            "lo": 0.22999999999999998,
+            "hi": 0.25
+          },
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.36,
+            "lo": 0.345,
+            "hi": 0.375
+          }
+        ],
+        "values": [
+          0.24,
+          0.36
+        ],
+        "resolved": false,
+        "cls": null
+      },
+      "bestbuy": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.66,
+            "lo": 0.65,
+            "hi": 0.67
+          },
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.99,
+            "lo": 0.9750000000000001,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          0.66,
+          0.99
+        ],
+        "resolved": false,
+        "cls": null
+      },
+      "ca_dmv": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.3400000000000001,
+            "lo": 0.33000000000000007,
+            "hi": 0.3500000000000001
+          },
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.9950000000000001,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          0.3400000000000001,
+          1.0
+        ],
+        "resolved": false,
+        "cls": null
+      },
+      "cloudflare": {
+        "candidates": [
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.9849999999999999,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "costco": {
+        "candidates": [
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.47,
+            "lo": 0.45500000000000007,
+            "hi": 0.4849999999999999
+          }
+        ],
+        "values": [
+          0.47
+        ],
+        "resolved": true,
+        "cls": 0.47
+      },
+      "craigslist": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "github": {
+        "candidates": [
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.9699999999999998,
+            "lo": 0.9550000000000001,
+            "hi": 0.9849999999999999
+          }
+        ],
+        "values": [
+          0.9699999999999998
+        ],
+        "resolved": true,
+        "cls": 0.9699999999999998
+      },
+      "ikea": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "innout": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "irs": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "notion": {
+        "candidates": [
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.9849999999999999,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "oregon_state": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.96,
+            "lo": 0.95,
+            "hi": 0.97
+          }
+        ],
+        "values": [
+          0.96
+        ],
+        "resolved": true,
+        "cls": 0.96
+      },
+      "portland": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "powells": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.06,
+            "lo": 0.049999999999999996,
+            "hi": 0.06999999999999999
+          },
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.09,
+            "lo": 0.075,
+            "hi": 0.10499999999999998
+          }
+        ],
+        "values": [
+          0.06,
+          0.09
+        ],
+        "resolved": false,
+        "cls": null
+      },
+      "shopify": {
+        "candidates": [
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.77,
+            "lo": 0.7549999999999999,
+            "hi": 0.7849999999999999
+          }
+        ],
+        "values": [
+          0.77
+        ],
+        "resolved": true,
+        "cls": 0.77
+      },
+      "spotify": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "ssa": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "stripe": {
+        "candidates": [
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.9849999999999999,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "target": {
+        "candidates": [
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.9849999999999999,
+            "hi": 1.0
+          },
+          {
+            "denominator": 4,
+            "schema": 1,
+            "cls": 1.0,
+            "lo": 0.98,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "ticketmaster": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.1,
+            "lo": 0.09000000000000001,
+            "hi": 0.11
+          },
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.15000000000000002,
+            "lo": 0.135,
+            "hi": 0.165
+          }
+        ],
+        "values": [
+          0.1,
+          0.15000000000000002
+        ],
+        "resolved": false,
+        "cls": null
+      },
+      "trimet": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.96,
+            "lo": 0.95,
+            "hi": 0.97
+          }
+        ],
+        "values": [
+          0.96
+        ],
+        "resolved": true,
+        "cls": 0.96
+      },
+      "twilio": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.66,
+            "lo": 0.65,
+            "hi": 0.67
+          },
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.99,
+            "lo": 0.9750000000000001,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          0.66,
+          0.99
+        ],
+        "resolved": false,
+        "cls": null
+      },
+      "tx_dmv": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.99,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          1.0
+        ],
+        "resolved": true,
+        "cls": 1.0
+      },
+      "usps": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.8,
+            "lo": 0.79,
+            "hi": 0.81
+          }
+        ],
+        "values": [
+          0.8
+        ],
+        "resolved": true,
+        "cls": 0.8
+      },
+      "voodoo": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.28,
+            "lo": 0.27,
+            "hi": 0.29000000000000004
+          },
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 0.42000000000000004,
+            "lo": 0.405,
+            "hi": 0.43500000000000005
+          }
+        ],
+        "values": [
+          0.28,
+          0.42000000000000004
+        ],
+        "resolved": false,
+        "cls": null
+      },
+      "zalando": {
+        "candidates": [
+          {
+            "denominator": 2,
+            "schema": null,
+            "cls": 0.3400000000000001,
+            "lo": 0.33000000000000007,
+            "hi": 0.3500000000000001
+          },
+          {
+            "denominator": 3,
+            "schema": null,
+            "cls": 1.0,
+            "lo": 0.9950000000000001,
+            "hi": 1.0
+          }
+        ],
+        "values": [
+          0.3400000000000001,
+          1.0
+        ],
+        "resolved": false,
+        "cls": null
+      }
+    },
+    "resolved": [
+      "amazon",
+      "apple",
+      "cloudflare",
+      "costco",
+      "craigslist",
+      "github",
+      "ikea",
+      "innout",
+      "irs",
+      "notion",
+      "oregon_state",
+      "portland",
+      "shopify",
+      "spotify",
+      "ssa",
+      "stripe",
+      "target",
+      "trimet",
+      "tx_dmv",
+      "usps"
+    ],
+    "ambiguous": [
+      {
+        "site_id": "bear",
+        "values": [
+          0.24,
+          0.36
+        ]
+      },
+      {
+        "site_id": "bestbuy",
+        "values": [
+          0.66,
+          0.99
+        ]
+      },
+      {
+        "site_id": "ca_dmv",
+        "values": [
+          0.3400000000000001,
+          1.0
+        ]
+      },
+      {
+        "site_id": "powells",
+        "values": [
+          0.06,
+          0.09
+        ]
+      },
+      {
+        "site_id": "ticketmaster",
+        "values": [
+          0.1,
+          0.15000000000000002
+        ]
+      },
+      {
+        "site_id": "twilio",
+        "values": [
+          0.66,
+          0.99
+        ]
+      },
+      {
+        "site_id": "voodoo",
+        "values": [
+          0.28,
+          0.42000000000000004
+        ]
+      },
+      {
+        "site_id": "zalando",
+        "values": [
+          0.3400000000000001,
+          1.0
+        ]
+      }
+    ],
+    "inconsistent": [],
+    "identical_input": {
+      "sites": [
+        "amazon",
+        "apple",
+        "bear",
+        "bestbuy",
+        "craigslist",
+        "ikea",
+        "innout",
+        "irs",
+        "oregon_state",
+        "powells",
+        "ticketmaster",
+        "twilio",
+        "usps",
+        "voodoo"
+      ],
+      "span": {
+        "min": 3,
+        "max": 50
+      }
+    },
+    "assignments": 256,
+    "rho_lh_total_cls": {
+      "min": 0.6142349001144886,
+      "median": 0.6981735872151875,
+      "max": 0.7696623241713529,
+      "n": 28
+    },
+    "measured": {
+      "excluded": [
+        "costco"
+      ],
+      "assignments": 256,
+      "rho_lh_total_cls": {
+        "min": 0.5973016896545265,
+        "median": 0.6792533379924931,
+        "max": 0.7483969339956121,
+        "n": 27
+      }
+    },
+    "alternative_rule": {
+      "threshold": 0.9,
+      "agents": {
+        "gemini-3.5-flash-lite": {
+          "threshold": 0.9,
+          "n": 27,
+          "assignments": 256,
+          "splits": [
+            [
+              17,
+              10
+            ],
+            [
+              18,
+              9
+            ],
+            [
+              19,
+              8
+            ],
+            [
+              20,
+              7
+            ],
+            [
+              21,
+              6
+            ]
+          ],
+          "gap": {
+            "min": -0.31285714285714283,
+            "median": -0.10999999999999993,
+            "max": 0.06666666666666676
+          },
+          "rho_cls_rate": {
+            "min": -0.14177516685679278,
+            "median": 0.003900136923962564,
+            "max": 0.15550776369674252
+          }
+        },
+        "gemini-3.6-flash": {
+          "threshold": 0.9,
+          "n": 27,
+          "assignments": 256,
+          "splits": [
+            [
+              17,
+              10
+            ],
+            [
+              18,
+              9
+            ],
+            [
+              19,
+              8
+            ],
+            [
+              20,
+              7
+            ],
+            [
+              21,
+              6
+            ]
+          ],
+          "gap": {
+            "min": -0.23285714285714287,
+            "median": -0.02555555555555561,
+            "max": 0.15555555555555556
+          },
+          "rho_cls_rate": {
+            "min": -0.054856162930037033,
+            "median": 0.09030311693144066,
+            "max": 0.25323419474530084
+          }
+        }
+      }
+    }
   }
 }

@@ -208,6 +208,67 @@ export function percentile(sorted: number[], q: number): number {
 }
 
 /**
+ * Percentile bootstrap over arbitrary records, resampled with replacement and ordered by a
+ * caller-supplied key before any draw is made.
+ *
+ * A new function rather than a generalisation of bootstrapCI: bootstrapCI is typed Pair[],
+ * orders by (x, y), and its output is pinned in the vector file, so it cannot change shape. This
+ * one exists for statistics over site rows that carry more than two numbers (a paired delta
+ * needs both arms' counts), and its canonical order is the site id, compared bytewise, because
+ * that is the only key such rows share. The key must be unique: two rows under one key would
+ * make the draw sequence depend on their arrival order, which is the thing the sort prevents.
+ *
+ * Same PRNG, same seed, same percentile method as bootstrapCI, so the interval it prints is the
+ * same kind of interval the page already prints. Null when the statistic is not computable on
+ * the full set or on any resample.
+ */
+export function bootstrapRows<T>(
+  rows: T[],
+  key: (row: T) => string,
+  statistic: (rows: T[]) => number | null,
+  options: { iterations?: number; seed?: number; level?: number } = {}
+): BootstrapResult | null {
+  const iterations = options.iterations ?? DEFAULT_ITERATIONS;
+  const seed = options.seed ?? DEFAULT_SEED;
+  const level = options.level ?? 0.95;
+
+  const point = statistic(rows);
+  if (point === null) return null;
+
+  const keyed = rows.map((row) => ({ key: key(row), row }));
+  const seen = new Set<string>();
+  for (const { key: k } of keyed) {
+    if (seen.has(k)) throw new Error(`bootstrapRows: duplicate key "${k}"`);
+    seen.add(k);
+  }
+  keyed.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  const ordered = keyed.map((entry) => entry.row);
+
+  const n = ordered.length;
+  const random = mulberry32(seed);
+  const draws: number[] = [];
+
+  for (let iter = 0; iter < iterations; iter++) {
+    const sample = new Array<T>(n);
+    for (let k = 0; k < n; k++) sample[k] = ordered[Math.floor(random() * n)];
+    const value = statistic(sample);
+    if (value !== null) draws.push(value);
+  }
+
+  if (draws.length === 0) return null;
+  draws.sort((a, b) => a - b);
+
+  const tail = (1 - level) / 2;
+  return {
+    point,
+    lo: percentile(draws, tail),
+    hi: percentile(draws, 1 - tail),
+    used: draws.length,
+    iterations,
+  };
+}
+
+/**
  * mulberry32. Small, fast, and — the reason it is here rather than Math.random —
  * reproducible across implementations: scripts/stats_reference.py mirrors these exact
  * 32-bit operations, so a Python cross-check reproduces the published interval bit for bit.
@@ -699,6 +760,193 @@ export function minimumAttainableP(
 }
 
 // ---------------------------------------------------------------------------
+// The exact within-site rerandomization null
+//
+// Two arms measured on the same sites (two agents, or one agent twice). Conditioning on each
+// site's total successes over both arms, the only randomness left under the null is which of
+// those successes fell in arm 2, which is hypergeometric per site and independent across sites.
+// The statistic is a sum over sites, so its null distribution is the convolution of the per-site
+// pmfs, exactly enumerable with no seed. Same shape as gapNullDistribution, but with weights:
+// the product of the per-site table counts overflows 2^53 long before 27 sites, so the pmf is
+// carried as floats from the start, in a fixed operation order on both sides of the contract.
+// ---------------------------------------------------------------------------
+
+export interface RerandomizationCell {
+  site_id: string;
+  /** Arm 1 successes and trials. */
+  k1: number;
+  n1: number;
+  /** Arm 2 successes and trials. */
+  k2: number;
+  n2: number;
+}
+
+/**
+ * "sum": T = sum over sites of (N * x - n2 * s) / g, arm 2's deviation from its conditional
+ * expectation; two-sided, and at equal arms it reduces to n * sum(k2 - k1). Words the shift.
+ * "dispersion": D = sum of the squared terms; one-sided, since retest drift has no sign.
+ */
+export type RerandomizationKind = "sum" | "dispersion";
+
+export interface RerandomizationNull {
+  kind: RerandomizationKind;
+  /** g, the gcd over sites of gcd(N, n2), which keeps every term an integer. */
+  scale: number;
+  /** The statistic value at pmf index 0. */
+  min: number;
+  /** pmf[i] = P(T = min + i). Dense, so unreachable values in between carry exactly 0. */
+  pmf: number[];
+  /** Sites whose total was strictly between 0 and N, the only ones that carry any randomness. */
+  informative: number;
+  sites: number;
+}
+
+/** Exact binomial coefficient. Every intermediate is an integer, exact below 2^53. */
+export function comb(n: number, k: number): number {
+  if (k < 0 || k > n) return 0;
+  const j = Math.min(k, n - k);
+  let result = 1;
+  for (let i = 1; i <= j; i++) result = (result * (n - j + i)) / i;
+  return result;
+}
+
+function gcd(a: number, b: number): number {
+  while (b !== 0) {
+    const t = a % b;
+    a = b;
+    b = t;
+  }
+  return a;
+}
+
+/** Cells in canonical order, validated. Throws on a malformed cell: that is a programming error. */
+function canonicalCells(cells: RerandomizationCell[]): RerandomizationCell[] {
+  const ordered = [...cells].sort((a, b) =>
+    a.site_id < b.site_id ? -1 : a.site_id > b.site_id ? 1 : 0
+  );
+  for (const c of ordered) {
+    const whole = [c.k1, c.n1, c.k2, c.n2].every((v) => Number.isInteger(v) && v >= 0);
+    if (!whole || c.k1 > c.n1 || c.k2 > c.n2) {
+      throw new Error(`rerandomization: malformed cell for "${c.site_id}"`);
+    }
+  }
+  return ordered.filter((c) => c.n1 + c.n2 > 0);
+}
+
+/** g over the cells that carry trials. 0 when there are none. */
+function rerandomizationScale(cells: RerandomizationCell[]): number {
+  let g = 0;
+  for (const c of cells) g = gcd(g, gcd(c.n1 + c.n2, c.n2));
+  return g;
+}
+
+/** The observed statistic on the same integer scale as the null. Null when no cell has trials. */
+export function rerandomizationStatistic(
+  cells: RerandomizationCell[],
+  kind: RerandomizationKind
+): { value: number; scale: number } | null {
+  const ordered = canonicalCells(cells);
+  if (ordered.length === 0) return null;
+  const g = rerandomizationScale(ordered);
+  let total = 0;
+  for (const c of ordered) {
+    const term = ((c.n1 + c.n2) * c.k2 - c.n2 * (c.k1 + c.k2)) / g;
+    total += kind === "sum" ? term : term * term;
+  }
+  return { value: total, scale: g };
+}
+
+/**
+ * The exact null of the statistic, convolved site by site in ascending site-id order, each
+ * site's terms in ascending x. The per-site probabilities are exact comb ratios converted to a
+ * float once; both comb values and their product are exact integers up to N = 52 per site, so
+ * the division is correctly rounded and identical in both languages.
+ *
+ * Null when there are no cells with trials, or when every site's total is 0 or N: then the
+ * null has a single point and no test exists.
+ */
+export function rerandomizationNull(
+  cells: RerandomizationCell[],
+  kind: RerandomizationKind
+): RerandomizationNull | null {
+  const ordered = canonicalCells(cells);
+  if (ordered.length === 0) return null;
+  const g = rerandomizationScale(ordered);
+
+  let min = 0;
+  let pmf: number[] = [1];
+  let informative = 0;
+
+  for (const c of ordered) {
+    const s = c.k1 + c.k2;
+    const N = c.n1 + c.n2;
+    if (s === 0 || s === N) continue; // a point mass at zero: convolving it changes nothing
+    informative++;
+
+    const lo = Math.max(0, s - c.n1);
+    const hi = Math.min(c.n2, s);
+    const denominator = comb(N, s);
+    const terms: number[] = [];
+    const probabilities: number[] = [];
+    for (let x = lo; x <= hi; x++) {
+      const term = (N * x - c.n2 * s) / g;
+      terms.push(kind === "sum" ? term : term * term);
+      probabilities.push((comb(c.n2, x) * comb(c.n1, s - x)) / denominator);
+    }
+
+    let termMin = terms[0];
+    let termMax = terms[0];
+    for (const t of terms) {
+      if (t < termMin) termMin = t;
+      if (t > termMax) termMax = t;
+    }
+
+    const next = new Array<number>(pmf.length + (termMax - termMin)).fill(0);
+    for (let i = 0; i < pmf.length; i++) {
+      const p = pmf[i];
+      if (p === 0) continue;
+      for (let j = 0; j < terms.length; j++) {
+        next[i + (terms[j] - termMin)] += p * probabilities[j];
+      }
+    }
+    min += termMin;
+    pmf = next;
+  }
+
+  if (informative === 0) return null;
+  return { kind, scale: g, min, pmf, informative, sites: ordered.length };
+}
+
+/**
+ * p of an observed statistic against the exact null. Two-sided on |T| for the sum, one-sided
+ * (large D) for the dispersion, with TIE_EPSILON slack so a tie counts as at least as extreme.
+ */
+export function pFromRerandomization(distribution: RerandomizationNull, observed: number): number {
+  let p = 0;
+  for (let i = 0; i < distribution.pmf.length; i++) {
+    const value = distribution.min + i;
+    const extreme =
+      distribution.kind === "sum"
+        ? Math.abs(value) >= Math.abs(observed) - TIE_EPSILON
+        : value >= observed - TIE_EPSILON;
+    if (extreme) p += distribution.pmf[i];
+  }
+  // A pmf that sums to 1 in exact arithmetic can sum to 1 + 2e-16 in floats; a p is at most 1.
+  return Math.min(1, p);
+}
+
+/**
+ * The smallest p any arrangement of these cells could reach: the p at the extreme of the
+ * support. Above the level, no outcome of the comparison could have cleared it.
+ */
+export function minAttainableRerandomizationP(distribution: RerandomizationNull): number {
+  const max = distribution.min + distribution.pmf.length - 1;
+  const extreme =
+    distribution.kind === "sum" ? Math.max(Math.abs(distribution.min), Math.abs(max)) : max;
+  return pFromRerandomization(distribution, extreme);
+}
+
+// ---------------------------------------------------------------------------
 // What this cohort could have detected
 //
 // The critical value alone is a 50%-power threshold: the gap at which a study of this shape
@@ -742,6 +990,14 @@ export function mean(values: number[]): number | null {
   let total = 0;
   for (const value of values) total += value;
   return total / values.length;
+}
+
+/** Median; an even count takes the mean of the middle two. Null on an empty list. */
+export function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
 /** Sample (n-1) standard deviation. */

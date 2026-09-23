@@ -22,6 +22,7 @@ import argparse
 import csv
 import json
 import math
+import re
 from collections import defaultdict
 from pathlib import Path
 
@@ -188,6 +189,50 @@ def bootstrap_ci(
     # Canonical order, mirroring lib/stats.ts: a seeded bootstrap whose interval depends on
     # input order is not reproducible, and the page and this script order rows differently.
     ordered = sorted(pairs)
+
+    n = len(ordered)
+    rnd = mulberry32(seed)
+    draws: list[float] = []
+
+    for _ in range(iterations):
+        sample = [ordered[math.floor(rnd() * n)] for _ in range(n)]
+        value = statistic(sample)
+        if value is not None:
+            draws.append(value)
+
+    if not draws:
+        return None
+    draws.sort()
+
+    tail = (1 - level) / 2
+    return {
+        "point": point,
+        "lo": percentile(draws, tail),
+        "hi": percentile(draws, 1 - tail),
+        "used": len(draws),
+        "iterations": iterations,
+    }
+
+
+def bootstrap_rows(
+    rows: list,
+    key,
+    statistic,
+    iterations: int = DEFAULT_ITERATIONS,
+    seed: int = DEFAULT_SEED,
+    level: float = 0.95,
+) -> dict | None:
+    """Mirror of bootstrapRows in lib/stats.ts: records resampled with replacement, ordered by
+    a caller key (compared as strings; identical to the bytewise order for ASCII ids), same
+    PRNG and percentile as bootstrap_ci. Keys must be unique."""
+    point = statistic(rows)
+    if point is None:
+        return None
+
+    keys = [key(row) for row in rows]
+    if len(set(keys)) != len(keys):
+        raise ValueError("bootstrap_rows: duplicate key")
+    ordered = [row for _, row in sorted(zip(keys, rows), key=lambda pair: pair[0])]
 
     n = len(ordered)
     rnd = mulberry32(seed)
@@ -456,6 +501,115 @@ def minimum_attainable_p(
     return p_from_null(buckets, most_extreme)["p"]
 
 
+# --- the exact within-site rerandomization null ------------------------------
+#
+# Mirrors lib/stats.ts: per site the hypergeometric pmf of arm-2 successes given the site's
+# total, as exact comb ratios converted to a float once; convolved site by site in ascending
+# site-id order, each site's terms in ascending x, into a dense float list. Same operation
+# order on both sides, so the p-values agree to the last bit.
+
+
+def _canonical_cells(cells: list[dict]) -> list[dict]:
+    ordered = sorted(cells, key=lambda c: c["site_id"])
+    for c in ordered:
+        values = [c["k1"], c["n1"], c["k2"], c["n2"]]
+        whole = all(isinstance(v, int) and not isinstance(v, bool) and v >= 0 for v in values)
+        if not whole or c["k1"] > c["n1"] or c["k2"] > c["n2"]:
+            raise ValueError(f"rerandomization: malformed cell for {c['site_id']}")
+    return [c for c in ordered if c["n1"] + c["n2"] > 0]
+
+
+def _rerandomization_scale(cells: list[dict]) -> int:
+    g = 0
+    for c in cells:
+        g = math.gcd(g, math.gcd(c["n1"] + c["n2"], c["n2"]))
+    return g
+
+
+def rerandomization_statistic(cells: list[dict], kind: str) -> dict | None:
+    ordered = _canonical_cells(cells)
+    if not ordered:
+        return None
+    g = _rerandomization_scale(ordered)
+    total = 0
+    for c in ordered:
+        term = ((c["n1"] + c["n2"]) * c["k2"] - c["n2"] * (c["k1"] + c["k2"])) // g
+        total += term if kind == "sum" else term * term
+    return {"value": total, "scale": g}
+
+
+def rerandomization_null(cells: list[dict], kind: str) -> dict | None:
+    ordered = _canonical_cells(cells)
+    if not ordered:
+        return None
+    g = _rerandomization_scale(ordered)
+
+    minimum = 0
+    pmf = [1.0]
+    informative = 0
+
+    for c in ordered:
+        s = c["k1"] + c["k2"]
+        total = c["n1"] + c["n2"]
+        if s == 0 or s == total:
+            continue
+        informative += 1
+
+        lo = max(0, s - c["n1"])
+        hi = min(c["n2"], s)
+        denominator = math.comb(total, s)
+        terms = []
+        probabilities = []
+        for x in range(lo, hi + 1):
+            term = (total * x - c["n2"] * s) // g
+            terms.append(term if kind == "sum" else term * term)
+            probabilities.append(math.comb(c["n2"], x) * math.comb(c["n1"], s - x) / denominator)
+
+        term_min = min(terms)
+        term_max = max(terms)
+        nxt = [0.0] * (len(pmf) + term_max - term_min)
+        for i, p in enumerate(pmf):
+            if p == 0:
+                continue
+            for j, term in enumerate(terms):
+                nxt[i + term - term_min] += p * probabilities[j]
+        minimum += term_min
+        pmf = nxt
+
+    if informative == 0:
+        return None
+    return {
+        "kind": kind,
+        "scale": g,
+        "min": minimum,
+        "pmf": pmf,
+        "informative": informative,
+        "sites": len(ordered),
+    }
+
+
+def p_from_rerandomization(distribution: dict, observed: float) -> float:
+    p = 0.0
+    for i, probability in enumerate(distribution["pmf"]):
+        value = distribution["min"] + i
+        if distribution["kind"] == "sum":
+            extreme = abs(value) >= abs(observed) - TIE_EPSILON
+        else:
+            extreme = value >= observed - TIE_EPSILON
+        if extreme:
+            p += probability
+    return min(1.0, p)
+
+
+def min_attainable_rerandomization_p(distribution: dict) -> float:
+    maximum = distribution["min"] + len(distribution["pmf"]) - 1
+    if distribution["kind"] == "sum":
+        extreme = max(abs(distribution["min"]), abs(maximum))
+    else:
+        extreme = maximum
+    return p_from_rerandomization(distribution, extreme)
+
+
 # --- what this cohort could have detected -----------------------------------
 
 
@@ -481,6 +635,15 @@ def mean(values: list[float]) -> float | None:
     for value in values:
         total += value
     return total / len(values)
+
+
+def median(values: list[float]) -> float | None:
+    """Even count: the mean of the middle two, as in lib/stats.ts."""
+    if not values:
+        return None
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    return ordered[mid] if len(ordered) % 2 == 1 else (ordered[mid - 1] + ordered[mid]) / 2
 
 
 def standard_deviation(values: list[float]) -> float | None:
@@ -837,6 +1000,412 @@ def simulate_power(
     }
 
 
+# ===========================================================================
+# Study v2 — mirrors lib/study.ts (design/s2-2-study-v2.md section 7: c, b, m)
+# ===========================================================================
+
+_URL_AUTHORITY = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*://([^/?#]*)")
+_IPV4 = re.compile(r"^\d+\.\d+\.\d+\.\d+$")
+_PORT = re.compile(r":\d*$")
+# ASCII word boundaries, which is what JavaScript's \b means without the u flag.
+_BLANK = re.compile(r"\bblank\b", re.IGNORECASE | re.ASCII)
+BLOCK_PREFIX = "block_"
+UNCORROBORATED = "block_self_report_uncorroborated"
+
+
+def registrable_domain(url: str | None) -> str | None:
+    """Last two host labels; an IP literal or single-label host is itself. One regex, as in
+    lib/study.ts, so neither language's URL library gets a say."""
+    if not url:
+        return None
+    match = _URL_AUTHORITY.match(url)
+    if not match:
+        return None
+    authority = match.group(1)
+    at = authority.rfind("@")
+    if at >= 0:
+        authority = authority[at + 1 :]
+    if authority.startswith("["):
+        close = authority.find("]")
+        return authority[1:close].lower() if close > 1 else None
+    host = _PORT.sub("", authority).lower()
+    if not host:
+        return None
+    if _IPV4.match(host):
+        return host
+    labels = [label for label in host.split(".") if label]
+    if not labels:
+        return None
+    return ".".join(labels[-2:])
+
+
+def _transcript(run: dict) -> list:
+    transcript = run.get("transcript")
+    return transcript if isinstance(transcript, list) else []
+
+
+def _is_number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def site_domains(run: dict, site: dict | None) -> set[str]:
+    domains: set[str] = set()
+    if site:
+        for domain in (registrable_domain(site["start_url"]), site.get("answer_domain")):
+            if domain is not None:
+                domains.add(domain)
+    transcript = _transcript(run)
+    first = transcript[0] if transcript else None
+    if isinstance(first, dict) and isinstance(first.get("url"), str):
+        domain = registrable_domain(first["url"])
+        if domain is not None:
+            domains.add(domain)
+    return domains
+
+
+def _answer_step(run: dict) -> dict | None:
+    transcript = _transcript(run)
+    for i in range(len(transcript) - 1, -1, -1):
+        entry = transcript[i]
+        if not isinstance(entry, dict):
+            continue
+        action = entry.get("action")
+        if not isinstance(action, dict) or action.get("action") != "done":
+            continue
+        url = entry.get("url") if isinstance(entry.get("url"), str) else None
+        j = i - 1
+        while url is None and j >= 0:
+            earlier = transcript[j].get("url") if isinstance(transcript[j], dict) else None
+            if isinstance(earlier, str):
+                url = earlier
+            j -= 1
+        step = entry.get("step")
+        matched = entry.get("matched")
+        answer = action.get("answer")
+        reasoning = action.get("reasoning")
+        return {
+            "index": i,
+            "step": step if _is_number(step) else None,
+            "url": url,
+            "answer": answer if isinstance(answer, str) else None,
+            "reasoning": reasoning if isinstance(reasoning, str) else None,
+            "matched": matched if isinstance(matched, str) and matched else None,
+        }
+    return None
+
+
+def _end_reason(run: dict) -> str | None:
+    for entry in reversed(_transcript(run)):
+        if not isinstance(entry, dict):
+            continue
+        end = entry.get("end")
+        if isinstance(end, dict):
+            reason = end.get("reason")
+            return reason if isinstance(reason, str) else None
+    return None
+
+
+def classify_answer(run: dict, site: dict | None) -> dict | None:
+    """The registered rule of S2-2 section 7c, in the order lib/study.ts tests it."""
+    step = _answer_step(run)
+    if step is None:
+        return None
+
+    domain = registrable_domain(step["url"])
+    off_domain = domain is not None and domain not in site_domains(run, site)
+    reason = _end_reason(run)
+    reported = (step["answer"] or "").strip().upper() == "BLOCKED"
+
+    if run.get("success") is True or step["matched"] is not None:
+        answer_class = "matched"
+    elif reason is not None and reason.startswith(BLOCK_PREFIX) and reason != UNCORROBORATED:
+        answer_class = "corroborated_blocked"
+    elif reason == UNCORROBORATED or reported:
+        answer_class = "self_reported_blocked"
+    else:
+        answer_class = "wrong_answer"
+
+    self_reported = None
+    if answer_class == "self_reported_blocked":
+        if off_domain:
+            self_reported = "off_site"
+        elif _BLANK.search(step["reasoning"] or ""):
+            self_reported = "blank_report"
+        else:
+            self_reported = "on_site_report"
+
+    return {
+        "answer_class": answer_class,
+        "off_domain": off_domain,
+        "self_reported": self_reported,
+        "first_observation": step["step"] == 0,
+    }
+
+
+def answered_trials(runs: list[dict], sites: dict[str, dict]) -> dict | None:
+    if not any(isinstance(r.get("transcript"), list) and len(r["transcript"]) > 0 for r in runs):
+        return None
+
+    result = {
+        "recorded": len(runs),
+        "answered": 0,
+        "matched": 0,
+        "corroborated_blocked": 0,
+        "self_reported_blocked": 0,
+        "wrong_answer": 0,
+        "matched_off_domain": 0,
+        "self_reported_split": {
+            "off_site": 0,
+            "blank_report": 0,
+            "on_site_report": 0,
+            "first_observation": 0,
+        },
+        "not_answered": {"count": 0, "by_failure_mode": {}},
+    }
+    modes: dict[str, int] = defaultdict(int)
+
+    for run in runs:
+        answer = classify_answer(run, sites.get(run["site_id"]))
+        if answer is None:
+            result["not_answered"]["count"] += 1
+            modes[run["failure_mode"]] += 1
+            continue
+        result["answered"] += 1
+        result[answer["answer_class"]] += 1
+        if answer["answer_class"] == "matched" and answer["off_domain"]:
+            result["matched_off_domain"] += 1
+        if answer["self_reported"] is not None:
+            result["self_reported_split"][answer["self_reported"]] += 1
+            if answer["first_observation"]:
+                result["self_reported_split"]["first_observation"] += 1
+
+    result["not_answered"]["by_failure_mode"] = {mode: modes[mode] for mode in sorted(modes)}
+    return result
+
+
+def _split_group(cells: list[dict]) -> dict:
+    sites = sorted(c["site_id"] for c in cells)
+    scores = [c["lh_total"] for c in cells if c["lh_total"] is not None]
+    reportable = len(scores) >= MIN_GROUP
+    return {
+        "sites": sites,
+        "count": len(cells),
+        "dropped_null_lh": len(cells) - len(scores),
+        "mean": mean(scores) if reportable else None,
+        "min": min(scores) if reportable else None,
+        "max": max(scores) if reportable else None,
+    }
+
+
+def group_split(rows: list[dict], excluded=()) -> dict:
+    out = set(excluded)
+    measured_rows = [r for r in rows if r["n"] > 0]
+    present = {r["site_id"] for r in rows}
+    kept = [r for r in measured_rows if r["site_id"] not in out]
+    return {
+        "excluded": sorted(out),
+        "removed": sorted(s for s in out if s in present),
+        "unmeasured": sorted(r["site_id"] for r in rows if r["n"] == 0),
+        "all_succeeded": _split_group([r for r in kept if r["k"] == r["n"]]),
+        "all_failed": _split_group([r for r in kept if r["k"] == 0]),
+    }
+
+
+def sensitivity(
+    rows: list[dict],
+    excluded,
+    iterations: int = DEFAULT_ITERATIONS,
+    seed: int = DEFAULT_SEED,
+) -> dict | None:
+    out = set(excluded)
+    kept = [
+        r for r in rows if r["n"] > 0 and r["lh_total"] is not None and r["site_id"] not in out
+    ]
+    if len(kept) < MIN_N:
+        return None
+    pairs = [(r["lh_total"], r["k"] / r["n"]) for r in kept]
+    rho = spearman_rho(pairs)
+    if rho is None:
+        return None
+    ci = bootstrap_ci(pairs, spearman_rho, iterations=iterations, seed=seed)
+    if ci is None:
+        return None
+    split = group_split(rows, excluded)
+    return {
+        "excluded": split["excluded"],
+        "removed": split["removed"],
+        "n": len(kept),
+        "rho": rho,
+        "ci": ci,
+        "group_split": split,
+    }
+
+
+# ===========================================================================
+# The x-axis decomposition — mirrors lib/x-axis.ts (design/s2-7-x-axis.md section 8)
+# ===========================================================================
+
+ROUNDING_SLACK = 0.005
+LIGHTHOUSE_PASS_THRESHOLD = 0.9
+
+
+def _clamp01(value: float) -> float:
+    return max(0.0, min(1.0, value))
+
+
+def implied_cls(row: dict) -> dict:
+    t = row["lh_total"] / 100
+    candidates: list[dict] = []
+
+    def consider(denominator: int, base: int, schema) -> None:
+        point = t * denominator - base
+        lo = (t - ROUNDING_SLACK) * denominator - base
+        hi = (t + ROUNDING_SLACK) * denominator - base
+        if hi < -TIE_EPSILON or lo > 1 + TIE_EPSILON:
+            return
+        candidates.append(
+            {
+                "denominator": denominator,
+                "schema": schema,
+                "cls": _clamp01(point),
+                "lo": _clamp01(lo),
+                "hi": _clamp01(hi),
+            }
+        )
+
+    a11y = row["lh_accessibility_tree"]
+    llms = row["lh_llms_txt"]
+    if llms != 1:
+        consider(2, a11y, None)
+    consider(3, a11y + llms, None)
+    if row["lh_webmcp"] == 1:
+        consider(4, a11y + llms, 0)
+        consider(4, a11y + llms + 1, 1)
+
+    values = sorted({c["cls"] for c in candidates})
+    return {
+        "candidates": candidates,
+        "values": values,
+        "resolved": len(values) == 1,
+        "cls": values[0] if len(values) == 1 else None,
+    }
+
+
+def _range(values: list[float]) -> dict | None:
+    if not values:
+        return None
+    return {"min": min(values), "median": median(values), "max": max(values)}
+
+
+def cls_decomposition(rows: list[dict]) -> dict:
+    sites = [
+        {"site_id": r["site_id"], "lh_total": r["lh_total"], "implied": implied_cls(r)}
+        for r in sorted(rows, key=lambda r: r["site_id"])
+    ]
+    resolved = [s["site_id"] for s in sites if s["implied"]["resolved"]]
+    ambiguous = [
+        {"site_id": s["site_id"], "values": s["implied"]["values"]}
+        for s in sites
+        if len(s["implied"]["values"]) > 1
+    ]
+    inconsistent = [s["site_id"] for s in sites if len(s["implied"]["values"]) == 0]
+
+    identical = sorted(
+        (
+            (r["site_id"], r["lh_total"])
+            for r in rows
+            if r["lh_accessibility_tree"] == 0 and r["lh_llms_txt"] == 0 and r["lh_webmcp"] == 0
+        ),
+        key=lambda pair: pair[0],
+    )
+    span = None
+    if identical:
+        span = {"min": min(v for _, v in identical), "max": max(v for _, v in identical)}
+
+    assignments = 1
+    for site in ambiguous:
+        assignments *= len(site["values"])
+
+    decomposition = {
+        "sites": sites,
+        "resolved": resolved,
+        "ambiguous": ambiguous,
+        "inconsistent": inconsistent,
+        "identical_input": {"sites": [s for s, _ in identical], "span": span},
+        "assignments": assignments,
+        "rho_lh_total_cls": None,
+    }
+
+    usable = [s for s in sites if len(s["implied"]["values"]) > 0]
+    rhos = []
+    for assignment in cls_assignments(decomposition):
+        rho = spearman_rho([(s["lh_total"], assignment[s["site_id"]]) for s in usable])
+        if rho is not None:
+            rhos.append(rho)
+    if rhos:
+        decomposition["rho_lh_total_cls"] = {**_range(rhos), "n": len(usable)}
+    return decomposition
+
+
+def cls_assignments(decomposition: dict) -> list[dict]:
+    """Ambiguous sites in site-id order, the first as the fastest-varying digit, values
+    ascending: index i names the same assignment as clsAssignments in lib/x-axis.ts."""
+    fixed = {
+        s["site_id"]: s["implied"]["cls"]
+        for s in decomposition["sites"]
+        if s["implied"]["resolved"]
+    }
+    out = []
+    for index in range(decomposition["assignments"]):
+        assignment = dict(fixed)
+        rest = index
+        for site in decomposition["ambiguous"]:
+            assignment[site["site_id"]] = site["values"][rest % len(site["values"])]
+            rest //= len(site["values"])
+        out.append(assignment)
+    return out
+
+
+def cls_alternative_rule(
+    decomposition: dict, outcomes: list[dict], threshold: float = LIGHTHOUSE_PASS_THRESHOLD
+) -> dict:
+    rate_by_site = {o["site_id"]: o["success_rate"] for o in outcomes}
+    sites = [
+        s
+        for s in decomposition["sites"]
+        if len(s["implied"]["values"]) > 0 and s["site_id"] in rate_by_site
+    ]
+
+    gaps = []
+    rhos = []
+    splits: dict[int, list[int]] = {}
+    for assignment in cls_assignments(decomposition):
+        pairs = [
+            (
+                1.0 if assignment[s["site_id"]] >= threshold - TIE_EPSILON else 0.0,
+                rate_by_site[s["site_id"]],
+            )
+            for s in sites
+        ]
+        ones = sum(1 for x, _ in pairs if x == 1)
+        splits[ones] = [ones, len(pairs) - ones]
+        gap = mean_gap(pairs)
+        if gap is not None:
+            gaps.append(gap)
+        rho = spearman_rho([(assignment[s["site_id"]], rate_by_site[s["site_id"]]) for s in sites])
+        if rho is not None:
+            rhos.append(rho)
+
+    return {
+        "threshold": threshold,
+        "n": len(sites),
+        "assignments": decomposition["assignments"],
+        "splits": [splits[k] for k in sorted(splits)],
+        "gap": _range(gaps),
+        "rho_cls_rate": _range(rhos),
+    }
+
+
 # ---------------------------------------------------------------------------
 # The v1 dataset, read the way lib/queries.ts reads it
 # ---------------------------------------------------------------------------
@@ -1031,7 +1600,7 @@ def _pairs(sites: list[dict], key: str) -> list[tuple[float, float]]:
     return [(float(s[key]), s["success_rate"]) for s in sites]
 
 
-def sub_audit_vectors(agents: dict) -> dict:
+def sub_audit_vectors(agents: dict, calibration: bool = True) -> dict:
     lighthouse = json.loads(LIGHTHOUSE_PATH.read_text())
     tiers = load_cohort_tiers()
     agent_ids = sorted(agents)
@@ -1278,40 +1847,62 @@ def sub_audit_vectors(agents: dict) -> dict:
         }
 
     # --- calibration -------------------------------------------------------
-    false_positive = {}
-    for agent_id in agent_ids:
-        outcome = [s["success_rate"] for s in sites_of(agent_id)]
-        false_positive[agent_id] = {
-            str(ones): simulate_false_positive_rate(
-                outcome,
-                ones,
-                CALIBRATION_REPLICATES,
-                DEFAULT_SEED,
-                CALIBRATION_ITERATIONS,
-                FAMILY_ALPHA,
-                TRIALS_PER_SITE,
-            )
-            for ones in CALIBRATION_SPLITS
-        }
+    # The slow block (about two minutes): skipped under calibration=False, which the fast
+    # Python vector test uses; `--write` and the slow test always run it.
+    calibration_block = None
+    if calibration:
+        false_positive = {}
+        for agent_id in agent_ids:
+            outcome = [s["success_rate"] for s in sites_of(agent_id)]
+            false_positive[agent_id] = {
+                str(ones): simulate_false_positive_rate(
+                    outcome,
+                    ones,
+                    CALIBRATION_REPLICATES,
+                    DEFAULT_SEED,
+                    CALIBRATION_ITERATIONS,
+                    FAMILY_ALPHA,
+                    TRIALS_PER_SITE,
+                )
+                for ones in CALIBRATION_SPLITS
+            }
 
-    base_rates = [s["success_rate"] for s in sites_of(headline)]
-    power_simulation = []
-    for size in POWER_DESIGN_SIZES:
-        ones = size // 2
-        zeros = size - ones
-        result = simulate_power(
-            base_rates,
-            ones,
-            zeros,
-            POWER_EFFECT,
-            POWER_TRIALS,
-            POWER_REPLICATES,
-            DEFAULT_SEED,
-            family["critical_value"],
-            power[headline]["reference_split"]["ones"],
-            power[headline]["reference_split"]["zeros"],
-        )
-        power_simulation.append({"n": size, "ones": ones, "zeros": zeros, **result})
+        base_rates = [s["success_rate"] for s in sites_of(headline)]
+        power_simulation = []
+        for size in POWER_DESIGN_SIZES:
+            ones = size // 2
+            zeros = size - ones
+            result = simulate_power(
+                base_rates,
+                ones,
+                zeros,
+                POWER_EFFECT,
+                POWER_TRIALS,
+                POWER_REPLICATES,
+                DEFAULT_SEED,
+                family["critical_value"],
+                power[headline]["reference_split"]["ones"],
+                power[headline]["reference_split"]["zeros"],
+            )
+            power_simulation.append({"n": size, "ones": ones, "zeros": zeros, **result})
+
+        calibration_block = {
+            "false_positive": {
+                "splits": CALIBRATION_SPLITS,
+                "replicates": CALIBRATION_REPLICATES,
+                "iterations": CALIBRATION_ITERATIONS,
+                "level": FAMILY_ALPHA,
+                "agents": false_positive,
+            },
+            "power_simulation": {
+                "effect": POWER_EFFECT,
+                "trials": POWER_TRIALS,
+                "replicates": POWER_REPLICATES,
+                "seed": DEFAULT_SEED,
+                "base_rate_agent": headline,
+                "designs": power_simulation,
+            },
+        }
 
     # --- the estimator note (identical in v1, not identical in principle) ---
     equivalence = {
@@ -1325,7 +1916,7 @@ def sub_audit_vectors(agents: dict) -> dict:
         for agent_id in agent_ids
     }
 
-    return {
+    block = {
         "min_group": MIN_GROUP,
         "alpha": FAMILY_ALPHA,
         "iterations": DEFAULT_ITERATIONS,
@@ -1381,23 +1972,353 @@ def sub_audit_vectors(agents: dict) -> dict:
             "flipped_sites": flipped,
         },
         "estimator_equivalence": equivalence,
-        "calibration": {
-            "false_positive": {
-                "splits": CALIBRATION_SPLITS,
-                "replicates": CALIBRATION_REPLICATES,
-                "iterations": CALIBRATION_ITERATIONS,
-                "level": FAMILY_ALPHA,
-                "agents": false_positive,
-            },
-            "power_simulation": {
-                "effect": POWER_EFFECT,
-                "trials": POWER_TRIALS,
-                "replicates": POWER_REPLICATES,
-                "seed": DEFAULT_SEED,
-                "base_rate_agent": headline,
-                "designs": power_simulation,
-            },
+    }
+    if calibration_block is not None:
+        block["calibration"] = calibration_block
+    return block
+
+
+# ---------------------------------------------------------------------------
+# Study v2 vectors — the blocks a P5 surface prints (S2-2 section 13, as amended)
+# ---------------------------------------------------------------------------
+
+# The registrable domain of each site's registered answer page (docs/COHORT.md, the URL line
+# of every entry, under the last-two-labels rule). The third member of a site's domains, an
+# input to the v1 split of self-reported blocks; pinned in the `study_v2` block until
+# data/answer-pages.csv exists (plan A.13 item 3). Every site equals its start domain except
+# zalando, whose registered answer page is on zalando.pt.
+ANSWER_PAGE_DOMAINS = {
+    "amazon": "amazon.com",
+    "apple": "apple.com",
+    "bear": "bear.app",
+    "bestbuy": "bestbuy.com",
+    "ca_dmv": "ca.gov",
+    "cloudflare": "cloudflare.com",
+    "costco": "costco.com",
+    "craigslist": "craigslist.org",
+    "github": "github.com",
+    "ikea": "ikea.com",
+    "innout": "in-n-out.com",
+    "irs": "irs.gov",
+    "notion": "notion.com",
+    "oregon_state": "oregonstate.edu",
+    "portland": "portland.gov",
+    "powells": "powells.com",
+    "shopify": "shopify.com",
+    "spotify": "spotify.com",
+    "ssa": "ssa.gov",
+    "stripe": "stripe.com",
+    "target": "target.com",
+    "ticketmaster": "ticketmaster.com",
+    "trimet": "trimet.org",
+    "twilio": "twilio.com",
+    "tx_dmv": "txdmv.gov",
+    "usps": "usps.com",
+    "voodoo": "voodoodoughnut.com",
+    "zalando": "zalando.pt",
+}
+
+# Rule (d) of the registered exclusion rule reads the first complete three-pass
+# `instrument-v1`, which has not run. This is the site a scripted check predicts it will name
+# (S2-2 section 2); every figure computed with it is labelled conditional and is not printed
+# until the control is dated.
+RULE_D_CONDITIONAL = ["oregon_state"]
+
+
+def load_artifacts() -> tuple[list[dict], dict, dict[str, dict]]:
+    runs = [json.loads(line) for line in RUNS_PATH.read_text().splitlines() if line.strip()]
+    lighthouse = json.loads(LIGHTHOUSE_PATH.read_text())
+    with COHORT_PATH.open(newline="") as handle:
+        cohort = {row["site_id"]: row for row in csv.DictReader(handle)}
+    return runs, lighthouse, cohort
+
+
+def _rule_b_sites(runs: list[dict], agent_id: str) -> list[str]:
+    """Rule (b): a measured site whose every recorded trial is a harness error. Derived from
+    the rows, never typed; a site with no measured trial is rule (c), not (b)."""
+    by_site: dict[str, list[dict]] = defaultdict(list)
+    for run in runs:
+        if run["agent_id"] == agent_id:
+            by_site[run["site_id"]].append(run)
+    return sorted(
+        site_id
+        for site_id, rows in by_site.items()
+        if measured(rows) and all(r["failure_mode"] == "error" for r in rows)
+    )
+
+
+def _site_cells(agents: dict, agent_id: str, lighthouse: dict, site_ids: list[str]) -> list[dict]:
+    meta = agents[agent_id]["site_meta"]
+    cells = []
+    for site_id in site_ids:
+        m = meta.get(site_id)
+        lh = lighthouse.get(site_id)
+        cells.append(
+            {
+                "site_id": site_id,
+                "k": m["successes"] if m else 0,
+                "n": m["trials"] if m else 0,
+                "lh_total": lh["lh_total"] if lh else None,
+            }
+        )
+    return cells
+
+
+def _paired_delta(rows: list[dict]) -> float | None:
+    """Mean over sites of arm 2's rate minus arm 1's, as a fraction."""
+    return mean([r["k2"] / r["n2"] - r["k1"] / r["n1"] for r in rows])
+
+
+def _rerandomization_block(cells: list[dict]) -> dict:
+    block: dict = {"cells": cells}
+    for kind in ("sum", "dispersion"):
+        null = rerandomization_null(cells, kind)
+        statistic = rerandomization_statistic(cells, kind)
+        if null is None:
+            block[kind] = None
+            continue
+        block[kind] = {
+            "statistic": statistic["value"],
+            "scale": statistic["scale"],
+            "p": p_from_rerandomization(null, statistic["value"]),
+            "min_attainable_p": min_attainable_rerandomization_p(null),
+            "informative": null["informative"],
+            "support_min": null["min"],
+            "support_max": null["min"] + len(null["pmf"]) - 1,
+            # Sparse: the reachable values only. Every other index of the dense pmf is exactly 0,
+            # which the TypeScript test asserts.
+            "pmf": {str(null["min"] + i): p for i, p in enumerate(null["pmf"]) if p != 0},
+        }
+    return block
+
+
+def _synthetic_v2_answers() -> dict:
+    """v2-shaped rows, one per class, plus an off-domain match, a login-wall corroboration, a
+    redirected start and two non-answers. Answers known by hand."""
+    start = "https://example.com/"
+    sites = {"v2site": {"start_url": start, "answer_domain": "example.com"}}
+
+    def run(number, success, mode, transcript, site_id="v2site"):
+        return {
+            "site_id": site_id,
+            "agent_id": "synthetic@v2",
+            "batch_label": "synthetic",
+            "trial_number": number,
+            "success": success,
+            "step_count": len([s for s in transcript if "action" in s]),
+            "duration_seconds": 1,
+            "failure_mode": mode,
+            "transcript": transcript,
+            "run_at": "2026-09-23T00:00:00+00:00",
+        }
+
+    home = {"step": 0, "url": "https://www.example.com/", "action": {"action": "click", "selector": "Pricing"}}
+    runs = [
+        run(1, True, "success", [
+            home,
+            {"step": 1, "url": "https://www.example.com/pricing", "action": {"action": "done", "answer": "$12"}, "matched": "$12"},
+        ]),
+        run(2, False, "wrong_extraction", [
+            home,
+            {"step": 1, "url": "https://www.google.com/search?q=example", "action": {"action": "done", "answer": "$12"}, "matched": "$12"},
+            {"end": {"reason": "off_domain_done"}},
+        ]),
+        run(3, False, "blocked", [
+            home,
+            {"step": 1, "url": "https://www.example.com/login", "action": {"action": "done", "answer": "BLOCKED", "reasoning": "A sign-in wall."}, "matched": None},
+            {"end": {"reason": "block_corroborated:login_wall"}},
+        ]),
+        run(4, False, "wrong_extraction", [
+            home,
+            {"step": 1, "url": "https://www.example.com/pricing", "action": {"action": "done", "answer": "BLOCKED", "reasoning": "The page is blank."}, "matched": None},
+            {"end": {"reason": "block_self_report_uncorroborated"}},
+        ]),
+        run(5, False, "wrong_extraction", [
+            home,
+            {"step": 1, "url": "https://www.example.com/pricing", "action": {"action": "done", "answer": "$99"}, "matched": None},
+            {"end": {"reason": "answer_mismatch"}},
+        ]),
+        run(6, False, "timeout", [home, {"step": 1, "url": "https://www.example.com/pricing", "action": {"action": "scroll"}}]),
+        run(7, False, "blocked", [{"end": {"reason": "transport:ERR_CONNECTION_RESET"}}]),
+        run(8, True, "success", [
+            {"step": 0, "url": "https://shop.example-redirect.net/", "action": {"action": "click", "selector": "Pricing"}},
+            {"step": 1, "url": "https://shop.example-redirect.net/pricing", "action": {"action": "done", "answer": "$12"}, "matched": "$12"},
+        ]),
+    ]
+    return {
+        "sites": sites,
+        "runs": runs,
+        "per_run": [classify_answer(r, sites[r["site_id"]]) for r in runs],
+        "result": answered_trials(runs, sites),
+        "no_transcripts": answered_trials(
+            [{**runs[0], "transcript": None}, {**runs[1], "transcript": []}], sites
+        ),
+    }
+
+
+def study_v2_vectors(agents: dict) -> dict:
+    runs, lighthouse, cohort = load_artifacts()
+    agent_ids = sorted(agents)
+    site_ids = sorted(cohort)
+    sites = {
+        s: {"start_url": cohort[s]["start_url"], "answer_domain": ANSWER_PAGE_DOMAINS[s]}
+        for s in site_ids
+    }
+
+    # --- answered trials, the four classes and the v1 split -----------------
+    by_site_split: dict[str, dict] = {}
+    for run in runs:
+        answer = classify_answer(run, sites[run["site_id"]])
+        if answer is None or answer["self_reported"] is None:
+            continue
+        split = by_site_split.setdefault(
+            run["site_id"],
+            {"off_site": 0, "blank_report": 0, "on_site_report": 0, "first_observation": 0},
+        )
+        split[answer["self_reported"]] += 1
+        if answer["first_observation"]:
+            split["first_observation"] += 1
+
+    answered = {
+        "pooled": answered_trials(runs, sites),
+        "by_agent": {
+            a: answered_trials([r for r in runs if r["agent_id"] == a], sites) for a in agent_ids
         },
+        "self_reported_by_site": {s: by_site_split[s] for s in sorted(by_site_split)},
+        "v2_synthetic": _synthetic_v2_answers(),
+    }
+
+    # --- the one registered exclusion rule ------------------------------------
+    rule_b_by_agent = {a: _rule_b_sites(runs, a) for a in agent_ids}
+    rule_b = sorted(set().union(*rule_b_by_agent.values()))
+    rule_b_and_d = sorted(set(rule_b) | set(RULE_D_CONDITIONAL))
+    cells = {a: _site_cells(agents, a, lighthouse, site_ids) for a in agent_ids}
+
+    group = {
+        a: {
+            "published": group_split(cells[a]),
+            "rule_b": group_split(cells[a], rule_b),
+            "rule_b_and_d_conditional": group_split(cells[a], rule_b_and_d),
+        }
+        for a in agent_ids
+    }
+    sensitivities = {
+        a: {
+            "rule_b": sensitivity(cells[a], rule_b),
+            "rule_b_and_d_conditional": sensitivity(cells[a], rule_b_and_d),
+        }
+        for a in agent_ids
+    }
+
+    # --- the paired model gap: bootstrapRows and the exact null -----------------
+    first, second = agent_ids[0], agent_ids[1]
+    paired = []
+    for c1, c2 in zip(cells[first], cells[second]):
+        assert c1["site_id"] == c2["site_id"]
+        if c1["n"] > 0 and c2["n"] > 0:
+            paired.append(
+                {"site_id": c1["site_id"], "k1": c1["k"], "n1": c1["n"], "k2": c2["k"], "n2": c2["n"]}
+            )
+
+    synthetic_rows = [
+        {"site_id": "b", "k1": 1, "n1": 5, "k2": 4, "n2": 5},
+        {"site_id": "a", "k1": 5, "n1": 5, "k2": 5, "n2": 5},
+        {"site_id": "c", "k1": 0, "n1": 5, "k2": 0, "n2": 5},
+    ]
+    bootstrap = {
+        "v1_model_gap": {
+            "arms": [first, second],
+            "n": len(paired),
+            "sites_moved": sum(1 for r in paired if r["k1"] != r["k2"]),
+            "ci": bootstrap_rows(paired, lambda r: r["site_id"], _paired_delta),
+        },
+        "synthetic": {
+            "rows": synthetic_rows,
+            "ci": bootstrap_rows(synthetic_rows, lambda r: r["site_id"], _paired_delta),
+        },
+    }
+
+    rerandomization = {
+        "v1_model_gap": _rerandomization_block(paired),
+        "two_site": _rerandomization_block(
+            [
+                {"site_id": "a", "k1": 0, "n1": 2, "k2": 2, "n2": 2},
+                {"site_id": "b", "k1": 1, "n1": 2, "k2": 1, "n2": 2},
+            ]
+        ),
+        "five_v_seven": _rerandomization_block(
+            [
+                {"site_id": "x", "k1": 5, "n1": 5, "k2": 0, "n2": 7},
+                {"site_id": "y", "k1": 2, "n1": 5, "k2": 3, "n2": 7},
+                {"site_id": "z", "k1": 0, "n1": 5, "k2": 7, "n2": 7},
+            ]
+        ),
+        "all_boundary": _rerandomization_block(
+            [
+                {"site_id": "p", "k1": 0, "n1": 5, "k2": 0, "n2": 5},
+                {"site_id": "q", "k1": 5, "n1": 5, "k2": 5, "n2": 5},
+            ]
+        ),
+    }
+
+    return {
+        "sites": sites,
+        "exclusions": {
+            "rule_b": rule_b,
+            "rule_b_by_agent": rule_b_by_agent,
+            "rule_d": {"status": "pending instrument-v1", "conditional": RULE_D_CONDITIONAL},
+        },
+        "answered_trials": answered,
+        "cells": cells,
+        "group_split": group,
+        "sensitivity": sensitivities,
+        "bootstrap_rows": bootstrap,
+        "rerandomization": rerandomization,
+    }
+
+
+# ---------------------------------------------------------------------------
+# The x-axis decomposition vectors (S2-7 section 8)
+# ---------------------------------------------------------------------------
+
+
+def x_axis_vectors(agents: dict) -> dict:
+    lighthouse = json.loads(LIGHTHOUSE_PATH.read_text())
+    rows = [
+        {"site_id": site_id, "lh_total": row["lh_total"], **{key: row[key] for key in SUB_AUDITS}}
+        for site_id, row in sorted(lighthouse.items())
+    ]
+    decomposition = cls_decomposition(rows)
+
+    agent_ids = sorted(agents)
+    measured_ids = sorted(agents[agent_ids[0]]["site_meta"])
+    measured_only = cls_decomposition([r for r in rows if r["site_id"] in measured_ids])
+
+    alternative = {}
+    for agent_id in agent_ids:
+        outcomes = [
+            {"site_id": s["site_id"], "success_rate": s["success_rate"]}
+            for s in agents[agent_id]["sites"]
+        ]
+        alternative[agent_id] = cls_alternative_rule(decomposition, outcomes)
+
+    return {
+        "rounding_slack": ROUNDING_SLACK,
+        "rows": rows,
+        "implied_cls": {s["site_id"]: s["implied"] for s in decomposition["sites"]},
+        "resolved": decomposition["resolved"],
+        "ambiguous": decomposition["ambiguous"],
+        "inconsistent": decomposition["inconsistent"],
+        "identical_input": decomposition["identical_input"],
+        "assignments": decomposition["assignments"],
+        "rho_lh_total_cls": decomposition["rho_lh_total_cls"],
+        # The same statistic on the y-axis frame, which is where the behavioral half lives.
+        "measured": {
+            "excluded": sorted(set(lighthouse) - set(measured_ids)),
+            "assignments": measured_only["assignments"],
+            "rho_lh_total_cls": measured_only["rho_lh_total_cls"],
+        },
+        "alternative_rule": {"threshold": LIGHTHOUSE_PASS_THRESHOLD, "agents": alternative},
     }
 
 
@@ -1406,7 +2327,10 @@ def _shuffles(n: int, seed: int, count: int) -> list[list[int]]:
     return [shuffle_indices(n, rnd) for _ in range(count)]
 
 
-def build_vectors() -> dict:
+def build_vectors(calibration: bool = True) -> dict:
+    """Every block of the vector file. calibration=False skips the slow simulation block of
+    sub_audit_attribution (about two minutes) and omits its key; the fast Python test runs
+    that way, and `--write` never does."""
     agents = load_dataset()
     return {
         "_comment": (
@@ -1442,8 +2366,15 @@ def build_vectors() -> dict:
         ],
         "edge_cases": edge_cases(),
         "v1": {agent_id: summarize(agent) for agent_id, agent in agents.items()},
-        "sub_audit_attribution": sub_audit_vectors(agents),
+        "sub_audit_attribution": sub_audit_vectors(agents, calibration=calibration),
+        "study_v2": study_v2_vectors(agents),
+        "x_axis_decomposition": x_axis_vectors(agents),
     }
+
+
+def render_vectors(vectors: dict) -> str:
+    """The exact bytes `--write` puts in the file; the Python vector test checks them."""
+    return json.dumps(vectors, indent=2) + "\n"
 
 
 def _stream(seed: int, count: int) -> list[float]:
@@ -1470,7 +2401,7 @@ def main() -> None:
         )
 
     if args.write:
-        VECTORS_PATH.write_text(json.dumps(vectors, indent=2) + "\n")
+        VECTORS_PATH.write_text(render_vectors(vectors))
         print(f"\nwrote {VECTORS_PATH.relative_to(ROOT)}")
 
 
