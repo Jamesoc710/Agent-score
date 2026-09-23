@@ -1,0 +1,196 @@
+# Keep-alive for the free Supabase project, plus the check that no workflow holds a secret
+# (design S2-6 §9, with §8's secrets grep in the same file so the rule holds from the first
+# workflow).
+#
+# Why it exists. The free Supabase plan pauses a project after about seven days of low
+# activity. Every data page is force-dynamic and lib/queries.ts throws on a failed read rather
+# than showing invented numbers, so a paused project is a site-wide 500 with no other alert.
+# The keepalive job reads through the public site, the same path any visitor uses, and the
+# site reads with the anon key under select-only policies. It holds no key of any kind and
+# cannot write anything.
+#
+# The pager is GitHub's default failure email for a scheduled run, which goes to whoever last
+# changed the `schedule` line below (decided in S2-6 §14 q6). Nothing here uses
+# continue-on-error: a failed check always fails the run.
+#
+# Limits, stated so they are decided rather than discovered:
+# - The activity threshold is undocumented, so this is a mitigation, not a guarantee. The
+#   failing check is the alarm.
+# - In a public repository GitHub disables scheduled workflows after 60 days with no
+#   repository activity, and this workflow's own runs do not count as activity. Once it is
+#   disabled nothing pings, and no failure email can fire from a workflow that no longer
+#   runs. Any commit inside the 60 days resets the clock; after that, re-enable the workflow
+#   by hand from the Actions tab.
+# - An archived repository runs no workflows at all. The kill path (v2-plan §5) archives the
+#   repository, which stops this job, and about a week later the free project pauses. Decided
+#   (S2-6 §14 q9, option b): on a stop verdict the data pages move to the committed edition
+#   snapshot before the repository is archived, so the live site no longer needs the database.
+# - Scheduled runs can start late and, under heavy load, be dropped. Each check is timestamped
+#   in the log, so a missed day shows up as a gap rather than as silence.
+
+name: Keep-alive
+
+on:
+  # Schedules run only from the default branch, so the daily ping starts once this is on main.
+  schedule:
+    - cron: "17 9 * * *" # daily at 09:17 UTC, off the hour, when scheduled runs queue longest
+  workflow_dispatch:
+  # The secrets grep also runs whenever anything under .github/ changes, so a workflow that
+  # breaks the rule fails on its own push or pull request, before it can run on main.
+  push:
+    paths: [".github/**"]
+  pull_request:
+    paths: [".github/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  keepalive:
+    name: Ping the site and one data page
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read # to fetch the previous run's log artifact, nothing else
+    concurrency:
+      group: keepalive-log
+      cancel-in-progress: false
+    defaults:
+      run:
+        shell: bash
+    env:
+      SITE: https://agent-score-weld.vercel.app
+      LOG: keepalive.jsonl
+    steps:
+      # The log is rolling: each run downloads the newest keepalive-log artifact, appends its
+      # own checks and uploads the result, so uptime is recorded rather than assumed. When no
+      # earlier log can be fetched, the new one opens with a log_started line saying why.
+      - name: Carry the rolling log forward
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          restart() {
+            jq -nc --arg at "$now" --arg reason "$1" --arg run "$GITHUB_RUN_ID" \
+              '{checked_at: $at, event: "log_started", reason: $reason, run_id: $run}' > "$LOG"
+            echo "Starting a new log: $1"
+          }
+          if ! prev=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=keepalive-log&per_page=100" \
+              --jq '[.artifacts[] | select(.expired | not)] | sort_by(.created_at) | last | .workflow_run.id // empty'); then
+            restart "artifact lookup failed"
+          elif [ -z "$prev" ]; then
+            restart "no unexpired keepalive-log artifact from an earlier run"
+          elif gh run download "$prev" --repo "$GITHUB_REPOSITORY" --name keepalive-log --dir prev \
+              && found=$(find prev -name "$LOG" -print -quit) && [ -n "$found" ]; then
+            cp "$found" "$LOG"
+            echo "Carried forward the log from run $prev ($(wc -l < "$LOG") lines)."
+          else
+            restart "download from run $prev failed"
+          fi
+
+      # A status code alone cannot see a paused database. app/loading.tsx makes Next stream
+      # the data pages: the 200 and the loading shell are sent before the Supabase read
+      # finishes, so a failed read still arrives as HTTP 200 with the error inside the stream.
+      # /correlation must therefore also carry data. Its chart rows are serialized into the
+      # HTML, each with a site_id key, and neither the layout, the loading shell nor the error
+      # state contains one. If a change to that page moves the rows, this check fails loudly,
+      # which is the right direction to be wrong in. The home page is checked for status only.
+      # No retries: every attempt is recorded as it happened.
+      - name: Ping the site and one data page
+        id: ping
+        run: |
+          failed=0
+          check() {
+            local url="$1" marker="$2" out rc code secs bytes count ok
+            rc=0
+            out=$(curl --silent --show-error --max-time 60 \
+                    --user-agent "agentrank-keepalive (+https://github.com/$GITHUB_REPOSITORY)" \
+                    --output body.html \
+                    --write-out '%{http_code} %{time_total} %{size_download}' "$url") || rc=$?
+            read -r code secs bytes <<< "${out:-000 0 0}"
+            count=null
+            if [ -n "$marker" ]; then
+              count=$( { grep -o "$marker" body.html 2>/dev/null || true; } | wc -l | tr -d ' ')
+            fi
+            if [ "$rc" -eq 0 ] && [ "$code" = "200" ] && { [ -z "$marker" ] || [ "$count" -gt 0 ]; }; then
+              ok=true
+            else
+              ok=false
+              failed=1
+            fi
+            jq -nc \
+              --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg url "$url" \
+              --arg code "$code" --arg secs "$secs" --arg bytes "$bytes" \
+              --argjson curl_exit "$rc" --arg marker "$marker" --argjson count "$count" \
+              --argjson ok "$ok" --arg run "$GITHUB_RUN_ID" --arg trigger "$GITHUB_EVENT_NAME" \
+              '{checked_at: $at, url: $url, http_status: ($code | tonumber),
+                seconds: ($secs | tonumber), bytes: ($bytes | tonumber), curl_exit: $curl_exit,
+                data_marker: (if $marker == "" then null else $marker end),
+                marker_count: $count, ok: $ok, run_id: $run, trigger: $trigger}' >> "$LOG"
+            echo "ok=$ok status=$code seconds=$secs marker=${marker:-none} count=$count $url"
+            rm -f body.html
+          }
+          check "$SITE/" ""
+          check "$SITE/correlation" "site_id"
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the rolling log
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: keepalive-log
+          path: keepalive.jsonl
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Fail the run if any check failed
+        env:
+          FAILED: ${{ steps.ping.outputs.failed }}
+        run: |
+          if [ "$FAILED" != "0" ]; then
+            echo "::error::A keep-alive check failed: the site is down, or its database is paused or unreadable. The log lines above say which URL."
+            exit 1
+          fi
+          echo "Both checks passed."
+
+  # docs/ARCHITECTURE.md: exactly one file holds a credential that can write, and it is not
+  # on GitHub. The realistic threat is a compromised dependency running inside a workflow that
+  # holds the Supabase service key, so no workflow may reference any secret but GITHUB_TOKEN,
+  # nor carry the service key by name or by its key format. If a workflow ever needs the anon
+  # key, it goes in the file in plaintext, since it is public by construction (NEXT_PUBLIC_).
+  # The patterns below are written so they never match their own source.
+  secrets-grep:
+    name: No secrets in any workflow
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github
+
+      - name: Fail on any secret other than GITHUB_TOKEN
+        run: |
+          status=0
+          # Every reference into the secrets context, as file:line:match.
+          refs=$(grep -rnoE '\bsecrets(\.[A-Za-z0-9_-]+|\[[^]]*])' .github || true)
+          bad=$(printf '%s\n' "$refs" | grep -vE '(^$|:secrets\.GITHUB_TOKEN$)' || true)
+          # The whole context at once, in an expression or inherited by a called workflow.
+          whole=$(grep -rnE '\$\{\{[^}]*\bsecrets\b[^.[]|\bsecrets:[[:space:]]*inherit' .github || true)
+          # The service key by name or by Supabase's secret-key prefix, however it is passed.
+          named=$(grep -rniE 'service[_-]?role|sb_secret[_]' .github || true)
+          for found in "$bad" "$whole" "$named"; do
+            if [ -n "$found" ]; then
+              echo "::error::A file under .github/ references a secret other than GITHUB_TOKEN:"
+              printf '%s\n' "$found"
+              status=1
+            fi
+          done
+          if [ "$status" -eq 0 ]; then
+            echo "No secret other than GITHUB_TOKEN is referenced under .github/."
+          fi
+          exit "$status"

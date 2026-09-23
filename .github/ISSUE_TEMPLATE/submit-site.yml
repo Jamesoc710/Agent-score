@@ -1,0 +1,107 @@
+# Site submissions (design S2-6 §10). The site's "Submit a site" link opens this form
+# prefilled: /issues/new?template=submit-site.yml&title=Site+submission%3A+ with field ids
+# as query parameters. The filename and the field ids are therefore an interface: change
+# neither without changing that link.
+#
+# For now this form is a request channel and a count, not an intake. Each submission is
+# answered, labelled `submission` and tallied as a site-owner request, reported beside the
+# kill review's two counts and never deciding it (v2-plan §5). Approving one would add a row
+# to data/cohort.csv, and a cohort expansion is out of scope by decision (v2-plan §3), so no
+# row is added until a dated decision says otherwise.
+#
+# GitHub applies a form's labels only if they already exist in the repository, so the
+# `submission` label has to be created there once.
+
+name: Submit a site
+description: Ask for a site to be measured. Every request is answered and counted; the cohort is closed for now, so no site is added.
+title: "Site submission: "
+labels: [submission]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **The cohort is closed for now.** AgentRank measures a fixed, pre-registered set of 28 sites, and adding one would change every statistic the site publishes. Submitting this form does not schedule a measurement and is not a promise that the site will be measured. Every submission gets a reply, a label and a place in the count of site requests.
+
+        If the cohort ever reopens, a site joins only through a public commit that registers its question and answer before any run ([docs/METHODOLOGY.md](https://github.com/Jamesoc710/Agent-score/blob/main/docs/METHODOLOGY.md)). The fields below are what that registration needs. Only the start URL is required.
+
+  - type: input
+    id: start_url
+    attributes:
+      label: Start URL
+      description: Where an agent would start, usually the home page. Getting from here to the answer is part of the test.
+      placeholder: https://example.com
+    validations:
+      required: true
+
+  - type: input
+    id: name
+    attributes:
+      label: Site name
+      placeholder: Example Co.
+
+  - type: input
+    id: question
+    attributes:
+      label: Question
+      description: One question with one factual answer on a public page.
+      placeholder: What is the monthly price of the entry-level plan?
+
+  - type: input
+    id: answer_url
+    attributes:
+      label: Answer page URL
+      description: The public page where the answer is written. It is used to check the answer and is never given to the agent.
+      placeholder: https://example.com/pricing
+
+  - type: input
+    id: answer_value
+    attributes:
+      label: Answer
+      description: The value an agent should report, written as it appears on the page, such as `$29` or `2.9%`. If the page states it in more than one correct form, separate them with ` | `.
+
+  - type: textarea
+    id: answer_evidence
+    attributes:
+      label: Evidence
+      description: Quote, word for word, the sentence on the answer page that contains the answer.
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Tier
+      description: >-
+        Which part of the cohort design the site would fill (docs/COHORT.md). anchor: modern
+        SaaS or developer tools. middle: retail, media or membership. government: government
+        or education. small_business: a small business or one-page site. off_diagonal: a site
+        expected to disagree with its static score. blocker: a site expected to block
+        automated agents. Pick the closest; the maintainer sets the final tier.
+      options:
+        - anchor
+        - middle
+        - government
+        - small_business
+        - off_diagonal
+        - blocker
+
+  - type: dropdown
+    id: relationship
+    attributes:
+      label: Your relationship to the site
+      description: A disclosure, recorded with the request. It does not change whether or how a site is measured.
+      # "no relationship" rather than a bare "none", which reads as GitHub's own empty choice.
+      options:
+        - owner
+        - employee
+        - no relationship
+
+  - type: checkboxes
+    id: assertions
+    attributes:
+      label: Before you submit
+      options:
+        - label: The answer I gave, if any, is on a public page that needs no login.
+          required: true
+        - label: The answer I gave, if any, is not a promotional price or a marketplace listing price.
+          required: true
+        - label: I understand that if this site is ever measured, the result is published whether it is good or bad.
+          required: true
