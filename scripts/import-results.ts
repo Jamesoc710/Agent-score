@@ -12,6 +12,13 @@
  *   npx tsx scripts/import-results.ts --batch v1
  *   npx tsx scripts/import-results.ts --batch v1 --dry-run
  *   npx tsx scripts/import-results.ts --runs-only | --lighthouse-only
+ *   npx tsx scripts/import-results.ts --batch v1 --no-manifest   # legacy batches only
+ *   npx tsx scripts/import-results.ts --batch <label> --reimport  # the identical Lane 1 artifact again
+ *
+ * Two refusals, before anything is written (scripts/import-guards.ts): a batch needs its
+ * data/manifest-<batch>.json (design S2-6 §3), and a Lane 1 label that already has rows in
+ * lighthouse_results is refused unless --reimport proves the artifact is the one the manifest
+ * digested (S2-7 §2).
  *
  * Requires SUPABASE_SERVICE_ROLE_KEY. `sites` must be seeded first (npm run seed:sites) —
  * both result tables have a foreign key to it.
@@ -25,6 +32,9 @@ import path from "path";
 import { getServiceClient } from "./supabase-admin";
 import { agentRunsArtifactPath, lighthouseArtifactPath } from "./artifacts";
 import { flagValue, hasFlag } from "./args";
+import { checkLighthouseLabel, checkManifestPrecondition, lighthouseRowCount, type Guard } from "./import-guards";
+import { readManifest } from "./manifest";
+import { repoRelative, sha256File } from "./lane1-env";
 import { ACTIVE_BATCH } from "../lib/dataset";
 import type { LighthouseResult, Run } from "../lib/types";
 
@@ -35,11 +45,24 @@ async function main() {
   const dryRun = hasFlag("--dry-run");
   const runsOnly = hasFlag("--runs-only");
   const lighthouseOnly = hasFlag("--lighthouse-only");
+  const noManifest = hasFlag("--no-manifest");
+  const reimport = hasFlag("--reimport");
 
   console.log(`\nImporting batch "${batch}"${dryRun ? " (dry run)" : ""}`);
 
   const lighthouse = lighthouseOnly || !runsOnly ? loadLighthouse(batch) : [];
   const runs = runsOnly || !lighthouseOnly ? loadRuns(batch) : [];
+
+  // Before the database is touched: no manifest, no import.
+  refuseUnless(
+    checkManifestPrecondition({
+      batch,
+      noManifest,
+      hasLighthouseArtifact: existsSync(lighthouseArtifactPath(batch)),
+      hasRunsArtifact: existsSync(agentRunsArtifactPath(batch)),
+      runAgentIds: [...new Set(runs.map((r) => r.agent_id))],
+    })
+  );
 
   if (lighthouse.length === 0 && runs.length === 0) {
     console.log("  Nothing to import.\n");
@@ -47,6 +70,25 @@ async function main() {
   }
 
   const db = getServiceClient();
+
+  if (lighthouse.length > 0) {
+    const artifact = lighthouseArtifactPath(batch);
+    const read = readManifest(batch);
+    refuseUnless(
+      checkLighthouseLabel({
+        batch,
+        existingRows: await lighthouseRowCount(
+          (table, column, value) =>
+            db.from(table).select("site_id", { count: "exact", head: true }).eq(column, value),
+          batch
+        ),
+        reimport,
+        artifactPath: repoRelative(artifact),
+        artifactSha256: sha256File(artifact),
+        manifest: read.ok ? read.manifest : null,
+      })
+    );
+  }
 
   const { data: siteRows, error: siteError } = await db.from("sites").select("site_id");
   if (siteError) throw new Error(`Could not read sites: ${siteError.message}`);
@@ -87,6 +129,12 @@ async function main() {
   }
 
   console.log(`\n✓ Imported batch "${batch}".\n`);
+}
+
+function refuseUnless(guard: Guard): void {
+  if (guard.ok) return;
+  console.error(`\n✗ Refused. Nothing was imported.\n${guard.problems.map((p) => `  - ${p}`).join("\n")}\n`);
+  process.exit(1);
 }
 
 function loadLighthouse(batch: string): LighthouseResult[] {
