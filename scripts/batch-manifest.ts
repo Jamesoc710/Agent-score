@@ -40,6 +40,7 @@ import {
   resolveChromePath,
   sha256File,
   sha256Hex,
+  vantageFingerprint,
   type Lane1Preset,
 } from "./lane1-env";
 import { refuseExistingLabel, resolveLabel, type ResolvedLabel, type Vantage } from "./lane1-label";
@@ -176,8 +177,14 @@ async function lookupVantage(kind: Vantage) {
       country: body.country ?? null,
       ...(body.country ? {} : { country_null_reason: "lookup returned no country" }),
       source,
-      public_ip_sha256: body.ip ? sha256Hex(body.ip) : null,
-      ...(body.ip ? {} : { public_ip_sha256_null_reason: "lookup returned no ip" }),
+      ...(body.ip
+        ? (({ hmac, key_id }) => ({ public_ip_hmac_sha256: hmac, public_ip_hmac_key_id: key_id }))(vantageFingerprint(body.ip))
+        : {
+            public_ip_hmac_sha256: null,
+            public_ip_hmac_sha256_null_reason: "lookup returned no ip",
+            public_ip_hmac_key_id: null,
+            public_ip_hmac_key_id_null_reason: "lookup returned no ip",
+          }),
     };
   } catch (err) {
     const reason = `lookup failed: ${(err as Error).message}`;
@@ -190,8 +197,10 @@ async function lookupVantage(kind: Vantage) {
       country: null,
       country_null_reason: reason,
       source,
-      public_ip_sha256: null,
-      public_ip_sha256_null_reason: reason,
+      public_ip_hmac_sha256: null,
+      public_ip_hmac_sha256_null_reason: reason,
+      public_ip_hmac_key_id: null,
+      public_ip_hmac_key_id_null_reason: reason,
     };
   }
 }

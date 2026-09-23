@@ -67,7 +67,8 @@ def hc4(batch: str, expected: int) -> dict:
 
 def hc12(batch: str) -> dict:
     lhr_dir = DATA / "lhr" / batch
-    files = sorted(lhr_dir.glob("*.json")) if lhr_dir.exists() else []
+    # Only <site_id>.<repeat>.json are LHRs; reconstruction.json lives beside them.
+    files = sorted(f for f in lhr_dir.glob("*.*.json") if f.name.split(".")[1].isdigit()) if lhr_dir.exists() else []
     raw = sum(f.stat().st_size for f in files)
     gz = sum(len(gzip.compress(f.read_bytes(), compresslevel=6)) for f in files)
 

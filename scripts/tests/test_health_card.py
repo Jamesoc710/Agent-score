@@ -65,3 +65,8 @@ def test_main_writes_the_card_and_exits_nonzero_on_block(data):
     card = json.loads((data / "health-b.json").read_text())
     assert card["verdict"] == "block"
     assert set(card["gates"]) == {"HC4", "HC12"}
+
+
+def test_hc12_counts_only_per_site_lhrs_not_the_reconstruction(data):
+    (data / "lhr" / "b" / "reconstruction.json").write_text(json.dumps({"batch_label": "b"}))
+    assert health_card.hc12("b")["detail"]["lhr_files"] == 1

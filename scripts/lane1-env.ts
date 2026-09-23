@@ -1,6 +1,6 @@
 import { execFileSync } from "child_process";
-import { createHash } from "crypto";
-import { existsSync, readFileSync } from "fs";
+import { createHash, createHmac, randomBytes } from "crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import os from "os";
 import path from "path";
 
@@ -121,6 +121,27 @@ export function lighthouseArgs(url: string, outputPath: string, preset: Lane1Pre
 
 export function sha256Hex(data: string | Buffer): string {
   return createHash("sha256").update(data).digest("hex");
+}
+
+// A plain sha256 of an IPv4 address is reversible by enumerating the 2^32 space, and manifests are
+// public. The vantage is fingerprinted with an HMAC under a key that never leaves this machine, so two
+// batches can be shown to share a vantage without publishing the address.
+const VANTAGE_KEY_PATH =
+  process.env.AGENTRANK_VANTAGE_KEY_PATH ?? path.join(os.homedir(), ".config", "agentrank", "vantage-key");
+
+function vantageKey(): Buffer {
+  if (!existsSync(VANTAGE_KEY_PATH)) {
+    mkdirSync(path.dirname(VANTAGE_KEY_PATH), { recursive: true });
+    writeFileSync(VANTAGE_KEY_PATH, randomBytes(32).toString("hex"), { mode: 0o600 });
+  }
+  return Buffer.from(readFileSync(VANTAGE_KEY_PATH, "utf8").trim(), "hex");
+}
+
+export function vantageFingerprint(ip: string, key: Buffer = vantageKey()): { hmac: string; key_id: string } {
+  return {
+    hmac: createHmac("sha256", key).update(ip).digest("hex"),
+    key_id: sha256Hex(key).slice(0, 8),
+  };
 }
 
 export function sha256File(file: string): string {
