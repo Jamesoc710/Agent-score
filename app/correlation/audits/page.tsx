@@ -9,13 +9,27 @@ import {
   type SubAuditAnalysis,
 } from "@/lib/sub-audits";
 import { MIN_GROUP, formatInterval, formatR } from "@/lib/stats";
-import { agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
-import { formatP, formatPoints, formatPointsInterval, formatSmallP } from "@/lib/format";
+import { ACTIVE_BATCH, USING_FIXTURES, agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
+import { EDITION, editionMatches } from "@/lib/edition-data";
+import type { EditionRemeasurement } from "@/lib/edition";
+import { formatDate, formatP, formatPoints, formatPointsInterval, formatSmallP } from "@/lib/format";
 import IntervalBar, { PowerScale } from "@/components/IntervalBar";
 
 // The shared gap scale, in percentage points. Every gap bar on this site uses it, so a
 // width here is comparable to a width on /correlation.
 const GAP_DOMAIN = { min: -80, max: 80 };
+
+/** The re-measurement batch run at a given Lighthouse version, mobile form factor. */
+function remeasuredAt(remeasurement: EditionRemeasurement | null, version: string) {
+  return (
+    remeasurement?.batches.find((b) => b.lighthouse_version === version && b.form_factor === "mobile") ??
+    null
+  );
+}
+
+function siteName(siteId: string): string {
+  return EDITION.sites.find((s) => s.site_id === siteId)?.name ?? siteId;
+}
 
 // Rendered per request, like every other page: results change when a batch is imported.
 export const dynamic = "force-dynamic";
@@ -31,6 +45,11 @@ export default async function SubAuditPage({
   const agentId = resolveAgentId(searchParams.agent);
   const panel = await getPanelAuditPoints();
   const analysis = analyzeSubAudits(panel);
+  // The dated re-measurement is the edition snapshot's; it is cited only beside its own batch.
+  const remeasurement = !USING_FIXTURES && editionMatches(ACTIVE_BATCH) ? EDITION.remeasurement : null;
+  const pinned = remeasuredAt(remeasurement, EDITION.lane1.lighthouse_version ?? "");
+  const latest = remeasuredAt(remeasurement, "13.5.0");
+  const cohortIds = (panel[0]?.points ?? []).map((p) => p.site_id);
 
   return (
     <div>
@@ -43,8 +62,22 @@ export default async function SubAuditPage({
       <header className="mb-8">
         <h1 className="page-title max-w-3xl">Which sub-audit is doing the work?</h1>
         <p className="page-lead max-w-3xl">
-          Google&apos;s Agentic Browsing score is built from individual pass/fail audits. Each one
-          splits the cohort in two, so each one can be asked the same question the composite score
+          The Lighthouse Agentic Browsing{" "}
+          <Link href="/#fraction-not-score" className="link-ink">
+            category mean
+          </Link>{" "}
+          is built from
+          {pinned ? <> the {pinned.audit_ids.length} audits of</> : <> the audits of</>} Lighthouse{" "}
+          {EDITION.lane1.lighthouse_version}, the version v1 ran: two informative and never scored,
+          one continuous. A sub-audit here is a 0/1 flag as v1 recorded it.
+          {latest && remeasurement && (
+            <>
+              {" "}
+              At {latest.lighthouse_version} the category has {latest.audit_ids.length}, and the
+              re-measurement of {formatDate(remeasurement.date)} records all of them.
+            </>
+          )}{" "}
+          Each flag splits the cohort in two, so each can be asked the question the category mean
           was asked: do the sites that pass it complete more tasks?
         </p>
       </header>
@@ -73,11 +106,11 @@ export default async function SubAuditPage({
           <ResultsTable analysis={analysis} />
           <PowerCard analysis={analysis} />
           <FullStatistics analysis={analysis} />
-          <Caveats analysis={analysis} />
+          <Caveats analysis={analysis} remeasurement={remeasurement} cohortIds={cohortIds} />
         </>
       )}
 
-      <Method analysis={analysis} agentId={agentId} />
+      <Method analysis={analysis} agentId={agentId} remeasurement={remeasurement} />
     </div>
   );
 }
@@ -605,7 +638,15 @@ function FullStatistics({ analysis }: { analysis: SubAuditAnalysis }) {
   );
 }
 
-function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
+function Caveats({
+  analysis,
+  remeasurement,
+  cohortIds,
+}: {
+  analysis: SubAuditAnalysis;
+  remeasurement: EditionRemeasurement | null;
+  cohortIds: string[];
+}) {
   const confound = analysis.confound!;
   const stratified = confound.stratified.comparisons;
   const pooled = analysis.pooled!;
@@ -631,13 +672,24 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
       <div className="max-w-3xl space-y-7 text-sm leading-relaxed text-ink-body">
         <Caveat title="llms.txt is confounded with the cohort design, almost perfectly">
           <p>
-            The {confound.passingSites.length} sites that ship llms.txt are{" "}
+            In v1 (Aug 19, 2026), the {confound.passingSites.length} sites whose llms.txt passed the audit were{" "}
             {confound.passingSites.map((s) => s.name).join(", ")}.{" "}
             {confound.passingSites.filter((s) => s.tier === "anchor").length} of them are
             anchor-tier: the modern SaaS sites the cohort deliberately picked to score well on
-            both axes. There is exactly one anchor without the file (
-            {confound.anchorsWithout.join(", ")}) and one non-anchor with it.
+            both axes. {confound.anchorsWithout.length === 1 ? "Exactly one anchor" : `${confound.anchorsWithout.length} anchors`}{" "}
+            did not pass it ({confound.anchorsWithout.map(siteName).join(", ")}), and{" "}
+            {confound.passingSites
+              .filter((s) => s.tier !== "anchor")
+              .map((s) => s.name)
+              .join(", ") || "no non-anchor"}{" "}
+            did.
           </p>
+          <LlmsTxtRemeasurement
+            remeasurement={remeasurement}
+            passing={confound.passingSites.map((s) => s.site_id)}
+            anchorsWithout={confound.anchorsWithout}
+            cohortIds={cohortIds}
+          />
           <p className="mt-2">
             So the design is tested directly: permuting the audit label{" "}
             <em>within tier</em> holds the tier composition fixed and asks what the file buys on
@@ -773,6 +825,56 @@ function Caveats({ analysis }: { analysis: SubAuditAnalysis }) {
   );
 }
 
+/**
+ * What v1 could not record about the sites that did not pass the llms.txt audit, and what the
+ * dated re-measurement did record (design S2-7 section 9). v1's flag merged "failing file" with
+ * "no file"; every count here is read from the edition snapshot's re-measurement slice.
+ */
+function LlmsTxtRemeasurement({
+  remeasurement,
+  passing,
+  anchorsWithout,
+  cohortIds,
+}: {
+  remeasurement: EditionRemeasurement | null;
+  passing: string[];
+  anchorsWithout: string[];
+  cohortIds: string[];
+}) {
+  const others = cohortIds.filter((id) => !passing.includes(id) && !anchorsWithout.includes(id));
+  const text =
+    "v1 recorded 0 for a site that served a failing file and for one that served none, so it cannot say which of these did which.";
+  if (!remeasurement) return <p className="mt-2">{text}</p>;
+
+  const status = (id: string) => remeasurement.sites[id]?.llms_txt ?? null;
+  const count = (value: string) => others.filter((id) => status(id) === value).length;
+  const anchorWords = anchorsWithout.map((id) => {
+    const s = status(id);
+    const word =
+      s === "pass"
+        ? "passes the audit"
+        : s === "fail"
+          ? "fails it"
+          : s === "absent"
+            ? "is absent"
+            : s === "error"
+              ? "could not be fetched"
+              : "was not re-measured";
+    return `${siteName(id)}'s file ${word}`;
+  });
+  const version = remeasurement.batches.find((b) => b.label === remeasurement.pinned_batch)?.lighthouse_version;
+
+  return (
+    <p className="mt-2">
+      {text} The re-measurement of {formatDate(remeasurement.date)}
+      {version && <> (Lighthouse {version}, the same version)</>} did: there, {anchorWords.join("; ")}
+      , and of the {others.length} others, {count("fail")} served a failing file,{" "}
+      {count("absent")} served none, and the fetch failed on {count("error")}. Those are the
+      re-measurement&apos;s facts about those sites on that date, not v1&apos;s.
+    </p>
+  );
+}
+
 function Caveat({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="border-t border-line-soft pt-5">
@@ -811,7 +913,15 @@ function NotEnoughData({ analysis }: { analysis: SubAuditAnalysis }) {
   );
 }
 
-function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: string }) {
+function Method({
+  analysis,
+  agentId,
+  remeasurement,
+}: {
+  analysis: SubAuditAnalysis;
+  agentId: string;
+  remeasurement: EditionRemeasurement | null;
+}) {
   const family = analysis.family;
 
   return (
@@ -846,7 +956,8 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
       </p>
       <p className="max-w-3xl">
         <span className="font-semibold text-ink">Denominators:</span> n ={" "}
-        {analysis.siteCount} sites with both a Lighthouse score and at least one measured trial.
+        {analysis.siteCount} sites with both a Lighthouse category mean and at least one measured
+        trial.
         {analysis.excludedSiteIds.length > 0 && (
           <>
             {" "}
@@ -858,35 +969,60 @@ function Method({ analysis, agentId }: { analysis: SubAuditAnalysis; agentId: st
         )}{" "}
         Trials per site: {analysis.trialsPerSite ?? "mixed"}.
       </p>
-      <p className="max-w-3xl">
-        <span className="font-semibold text-ink">WebMCP adoption:</span>{" "}
-        {analysis.cohort.passing.lh_webmcp} of {analysis.cohort.siteCount} sites in this batch pass{" "}
-        <span className="font-mono">webmcp-registered-tools</span>, counted over the whole cohort,
-        including sites with no behavioral measurement, because adoption is a property of the site
-        rather than of the trial.{" "}
-        {analysis.cohort.passing.lh_webmcp > 0 ? (
-          <>
-            That resolves an open question in the methodology record, which flagged an all-zero
-            column in an earlier draft batch as possibly a broken audit id: the id is live, and a
-            single-digit pass count across major sites is an adoption finding rather than a harness
-            fault. It is still not enough sites to test anything.
-          </>
-        ) : (
-          <>
-            No site passes it here, which is not by itself evidence either way about adoption: the
-            methodology record flags an all-zero column in an earlier draft batch as possibly a
-            broken audit id, and a batch this small cannot separate the two.
-          </>
-        )}
-      </p>
+      <WebMcpNote analysis={analysis} remeasurement={remeasurement} />
       <p>
         <Link
           href={withAgent("/correlation", agentId)}
           className="link-ink -mx-1 inline-block px-1 py-1.5 font-medium text-ink"
         >
-          ← Back to the composite result
+          ← Back to the category-mean result
         </Link>
       </p>
     </section>
+  );
+}
+
+/**
+ * The WebMCP flag, withdrawn as an adoption count (design S2-7 section 9). "Did not apply" is a
+ * property of the Chrome build, so no count of sites is published from this column.
+ */
+function WebMcpNote({
+  analysis,
+  remeasurement,
+}: {
+  analysis: SubAuditAnalysis;
+  remeasurement: EditionRemeasurement | null;
+}) {
+  const applied = analysis.cohort.passing.lh_webmcp;
+  const total = analysis.cohort.siteCount;
+  const pinned = remeasurement?.batches.find((b) => b.label === remeasurement.pinned_batch) ?? null;
+  const webmcpAudits = pinned?.audit_ids.filter((id) => id.startsWith("webmcp-")).length ?? null;
+  const sites = remeasurement ? Object.values(remeasurement.sites) : [];
+
+  return (
+    <p className="max-w-3xl">
+      <span className="font-semibold text-ink">WebMCP:</span> the
+      {webmcpAudits !== null && <> {webmcpAudits}</>} audits did not apply on {total - applied} of{" "}
+      {total} sites in this batch, and &ldquo;did not apply&rdquo; is a property of the Chrome build
+      (no <code className="font-mono">navigator.modelContext</code>), not of the site.
+      {applied > 0 && (
+        <>
+          {" "}
+          v1&apos;s {applied === 1 ? "one “pass” is" : `${applied} “pass” rows are`} an applicability
+          flag.
+        </>
+      )}{" "}
+      No adoption count is published from this column.
+      {remeasurement && sites.length > 0 && (
+        <>
+          {" "}
+          The re-measurement of {formatDate(remeasurement.date)}, on a Chromium build that exposes
+          the API, records the audits applying on {sites.filter((s) => s.webmcp_applied).length} of{" "}
+          {sites.length} sites, with a tool listed on{" "}
+          {sites.filter((s) => (s.webmcp_tools ?? 0) > 0).length}: the same sites, a different
+          browser, a different answer.
+        </>
+      )}
+    </p>
   );
 }

@@ -1,0 +1,3507 @@
+{
+  "schema_version": 1,
+  "batch_label": "v1",
+  "edition": {
+    "number": 1,
+    "title": "State of the Agentic Web, No. 1",
+    "doi": null
+  },
+  "answer_key_tag": "answer-key-v3",
+  "run_window": {
+    "first": "2026-08-19T16:14:58.078314+00:00",
+    "last": "2026-08-19T18:53:36.852581+00:00"
+  },
+  "protocol": {
+    "trials_per_site": 5,
+    "max_steps": 15,
+    "clock_seconds": 90,
+    "source": "scripts/lane2-agent.py"
+  },
+  "agents": [
+    {
+      "id": "gemini-3.5-flash-lite",
+      "label": "Gemini 3.5 Flash Lite",
+      "trials": 135,
+      "successes": 69,
+      "measured_sites": 27,
+      "unmeasured_sites": [
+        "costco"
+      ],
+      "vector": "v1/gemini-3.5-flash-lite"
+    },
+    {
+      "id": "gemini-3.6-flash",
+      "label": "Gemini 3.6 Flash",
+      "trials": 135,
+      "successes": 77,
+      "measured_sites": 27,
+      "unmeasured_sites": [
+        "costco"
+      ],
+      "vector": "v1/gemini-3.6-flash"
+    }
+  ],
+  "lane1": {
+    "batch": "v1",
+    "lighthouse_version": "13.3.0",
+    "version_source": "package-lock.json at answer-key-v3; v1 retained no report",
+    "form_factor": "mobile",
+    "form_factor_source": "inferred from the v1 command, which passed no preset; v1 retained no report",
+    "run_window": {
+      "first": "2026-08-19T16:04:39.172Z",
+      "last": "2026-08-19T16:11:48.478Z"
+    }
+  },
+  "remeasurement": {
+    "date": "2026-09-23",
+    "pinned_batch": "lh-v2-20260923",
+    "batches": [
+      {
+        "label": "lh-v2-20260923",
+        "lighthouse_version": "13.3.0",
+        "form_factor": "mobile",
+        "audit_ids": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt",
+          "webmcp-form-coverage",
+          "webmcp-registered-tools",
+          "webmcp-schema-validity"
+        ],
+        "run_window": {
+          "first": "2026-09-23T07:47:44.448Z",
+          "last": "2026-09-23T08:11:00.744Z"
+        }
+      },
+      {
+        "label": "lh-v2-20260923-13.4.1",
+        "lighthouse_version": "13.4.1",
+        "form_factor": "mobile",
+        "audit_ids": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt",
+          "webmcp-form-coverage",
+          "webmcp-registered-tools",
+          "webmcp-schema-validity"
+        ],
+        "run_window": {
+          "first": "2026-09-23T08:11:59.665Z",
+          "last": "2026-09-23T08:34:30.270Z"
+        }
+      },
+      {
+        "label": "lh-v2-20260923-13.5.0",
+        "lighthouse_version": "13.5.0",
+        "form_factor": "mobile",
+        "audit_ids": [
+          "agent-accessibility-tree",
+          "ard-schema",
+          "cumulative-layout-shift",
+          "llms-txt",
+          "webmcp-form-coverage",
+          "webmcp-registered-tools",
+          "webmcp-schema-validity"
+        ],
+        "run_window": {
+          "first": "2026-09-23T08:35:20.526Z",
+          "last": "2026-09-23T08:59:08.615Z"
+        }
+      },
+      {
+        "label": "lh-v2-20260923-desktop",
+        "lighthouse_version": "13.3.0",
+        "form_factor": "desktop",
+        "audit_ids": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt",
+          "webmcp-form-coverage",
+          "webmcp-registered-tools",
+          "webmcp-schema-validity"
+        ],
+        "run_window": {
+          "first": "2026-09-23T09:00:13.848Z",
+          "last": "2026-09-23T09:23:38.999Z"
+        }
+      }
+    ],
+    "sites": {
+      "amazon": {
+        "lh_total": 50,
+        "lh_passed": 1,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "apple": {
+        "lh_total": 50,
+        "lh_passed": 1,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "bear": {
+        "lh_total": 12,
+        "lh_passed": 0,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "bestbuy": {
+        "lh_total": 31,
+        "lh_passed": 1,
+        "lh_passable": 3,
+        "llms_txt": "error",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "ca_dmv": {
+        "lh_total": 67,
+        "lh_passed": 2,
+        "lh_passable": 3,
+        "llms_txt": "fail",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "cloudflare": {
+        "lh_total": 100,
+        "lh_passed": 3,
+        "lh_passable": 3,
+        "llms_txt": "pass",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "costco": {
+        "lh_total": 75,
+        "lh_passed": 1,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "craigslist": {
+        "lh_total": 1,
+        "lh_passed": 0,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "github": {
+        "lh_total": 99,
+        "lh_passed": 3,
+        "lh_passable": 3,
+        "llms_txt": "pass",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "ikea": {
+        "lh_total": 50,
+        "lh_passed": 1,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "innout": {
+        "lh_total": 38,
+        "lh_passed": 0,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "irs": {
+        "lh_total": 50,
+        "lh_passed": 1,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "notion": {
+        "lh_total": 100,
+        "lh_passed": 3,
+        "lh_passable": 3,
+        "llms_txt": "pass",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "oregon_state": {
+        "lh_total": 48,
+        "lh_passed": 1,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "portland": {
+        "lh_total": 100,
+        "lh_passed": 2,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "powells": {
+        "lh_total": 3,
+        "lh_passed": 0,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "shopify": {
+        "lh_total": 67,
+        "lh_passed": 2,
+        "lh_passable": 3,
+        "llms_txt": "pass",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "spotify": {
+        "lh_total": 59,
+        "lh_passed": 1,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "ssa": {
+        "lh_total": 100,
+        "lh_passed": 2,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "stripe": {
+        "lh_total": 100,
+        "lh_passed": 3,
+        "lh_passable": 3,
+        "llms_txt": "pass",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "target": {
+        "lh_total": 100,
+        "lh_passed": 4,
+        "lh_passable": 4,
+        "llms_txt": "pass",
+        "webmcp_applied": true,
+        "webmcp_tools": 1
+      },
+      "ticketmaster": {
+        "lh_total": 50,
+        "lh_passed": 1,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "trimet": {
+        "lh_total": 99,
+        "lh_passed": 2,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "twilio": {
+        "lh_total": 63,
+        "lh_passed": 1,
+        "lh_passable": 3,
+        "llms_txt": "pass",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "tx_dmv": {
+        "lh_total": 100,
+        "lh_passed": 2,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "usps": {
+        "lh_total": 37,
+        "lh_passed": 0,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "voodoo": {
+        "lh_total": 100,
+        "lh_passed": 2,
+        "lh_passable": 2,
+        "llms_txt": "absent",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      },
+      "zalando": {
+        "lh_total": 67,
+        "lh_passed": 2,
+        "lh_passable": 3,
+        "llms_txt": "fail",
+        "webmcp_applied": true,
+        "webmcp_tools": 0
+      }
+    }
+  },
+  "exclusions": [
+    {
+      "site_id": "trimet",
+      "class": "harness_artifact",
+      "rule": "b",
+      "source": "batch v1 trial record",
+      "reason": "every recorded trial ended in the harness's own error after the site was reached",
+      "recorded": 10,
+      "errors": 10,
+      "error_signature": "state capture failed: Page.screenshot: Protocol error (Page.captureScreenshot): Unable to capture screenshot",
+      "instrument": null,
+      "vector": "study_v2/exclusions/rule_b"
+    }
+  ],
+  "pending": [
+    {
+      "site_id": "oregon_state",
+      "rule": "d",
+      "status": "control not run",
+      "registered_on": "2026-09-23",
+      "recorded": 10,
+      "timeouts": 10,
+      "decision": "v2 plan 2026-09-08 (oregon_state joins the TriMet-class corrections) and decision D17 B, 2026-09-22"
+    }
+  ],
+  "sites": [
+    {
+      "site_id": "amazon",
+      "name": "Amazon",
+      "tier": "blocker",
+      "start_url": "https://www.amazon.com",
+      "lh_total": 50,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 9.4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "navigation_stuck",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "navigation_stuck",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "navigation_stuck",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "apple",
+      "name": "Apple",
+      "tier": "off_diagonal",
+      "start_url": "https://www.apple.com",
+      "lh_total": 50,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 3,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 10.4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 3.2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "bear",
+      "name": "Bear",
+      "tier": "small_business",
+      "start_url": "https://bear.app/",
+      "lh_total": 12,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 1,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 1,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "bestbuy",
+      "name": "Best Buy",
+      "tier": "middle",
+      "start_url": "https://www.bestbuy.com",
+      "lh_total": 33,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4.2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "ca_dmv",
+      "name": "California DMV",
+      "tier": "government",
+      "start_url": "https://www.dmv.ca.gov",
+      "lh_total": 67,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4.4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "cloudflare",
+      "name": "Cloudflare",
+      "tier": "anchor",
+      "start_url": "https://www.cloudflare.com",
+      "lh_total": 100,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "pass",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 1,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 4,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 1.6,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "costco",
+      "name": "Costco",
+      "tier": "middle",
+      "start_url": "https://www.costco.com",
+      "lh_total": 49,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 0,
+          "excluded": 5,
+          "mean_steps": null,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 0,
+          "excluded": 5,
+          "mean_steps": null,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "error",
+              "measured": false
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "craigslist",
+      "name": "Craigslist",
+      "tier": "off_diagonal",
+      "start_url": "https://www.craigslist.org",
+      "lh_total": 50,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 1,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 8.2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 5.8,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "github",
+      "name": "GitHub",
+      "tier": "anchor",
+      "start_url": "https://github.com",
+      "lh_total": 99,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "below_1.00",
+        "llms_txt": "pass",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "ikea",
+      "name": "IKEA",
+      "tier": "middle",
+      "start_url": "https://www.ikea.com",
+      "lh_total": 50,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4.4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "innout",
+      "name": "In-N-Out",
+      "tier": "small_business",
+      "start_url": "https://www.in-n-out.com",
+      "lh_total": 50,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 2,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 9.8,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "navigation_stuck",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "navigation_stuck",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "navigation_stuck",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 11.6,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "irs",
+      "name": "IRS",
+      "tier": "government",
+      "start_url": "https://www.irs.gov",
+      "lh_total": 50,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2.6,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 6,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "notion",
+      "name": "Notion",
+      "tier": "anchor",
+      "start_url": "https://www.notion.com",
+      "lh_total": 100,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "pass",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 3.2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "oregon_state",
+      "name": "Oregon State University",
+      "tier": "government",
+      "start_url": "https://financialaid.oregonstate.edu",
+      "lh_total": 48,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 7,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 6.2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "portland",
+      "name": "City of Portland",
+      "tier": "government",
+      "start_url": "https://www.portland.gov",
+      "lh_total": 100,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 2,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 5.2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 1,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 3.6,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "powells",
+      "name": "Powell's Books",
+      "tier": "small_business",
+      "start_url": "https://www.powells.com",
+      "lh_total": 3,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 4,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 3.8,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 3,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2.6,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "shopify",
+      "name": "Shopify",
+      "tier": "anchor",
+      "start_url": "https://www.shopify.com",
+      "lh_total": 59,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "pass",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 2,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "spotify",
+      "name": "Spotify",
+      "tier": "middle",
+      "start_url": "https://www.spotify.com",
+      "lh_total": 100,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "ssa",
+      "name": "Social Security Admin",
+      "tier": "government",
+      "start_url": "https://www.ssa.gov",
+      "lh_total": 100,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 3,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 1,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 9.8,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "stripe",
+      "name": "Stripe",
+      "tier": "anchor",
+      "start_url": "https://stripe.com",
+      "lh_total": 100,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "pass",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "target",
+      "name": "Target",
+      "tier": "middle",
+      "start_url": "https://www.target.com",
+      "lh_total": 100,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "pass",
+        "webmcp": "applied"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 3,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "ticketmaster",
+      "name": "Ticketmaster",
+      "tier": "blocker",
+      "start_url": "https://www.ticketmaster.com",
+      "lh_total": 5,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 1,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2.8,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 1,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2.8,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "trimet",
+      "name": "TriMet",
+      "tier": "government",
+      "start_url": "https://support.trimet.org",
+      "lh_total": 98,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2.6,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": "rule_b"
+    },
+    {
+      "site_id": "twilio",
+      "name": "Twilio",
+      "tier": "anchor",
+      "start_url": "https://www.twilio.com",
+      "lh_total": 33,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 5.4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4.2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "tx_dmv",
+      "name": "Texas DMV",
+      "tier": "government",
+      "start_url": "https://www.txdmv.gov",
+      "lh_total": 100,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4.6,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "usps",
+      "name": "USPS",
+      "tier": "government",
+      "start_url": "https://www.usps.com",
+      "lh_total": 40,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 1,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 1,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "voodoo",
+      "name": "Voodoo Doughnut",
+      "tier": "small_business",
+      "start_url": "https://www.voodoodoughnut.com",
+      "lh_total": 14,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "fail",
+        "cls": "below_1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 1,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 5.8,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "timeout",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 5,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 4.2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": true,
+              "failure_mode": "success",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    },
+    {
+      "site_id": "zalando",
+      "name": "Zalando",
+      "tier": "off_diagonal",
+      "start_url": "https://www.zalando.com",
+      "lh_total": 67,
+      "lh_passed": null,
+      "lh_passable": null,
+      "audits": {
+        "a11y_tree": "pass",
+        "cls": "1.00",
+        "llms_txt": "fail_or_na",
+        "webmcp": "not_applicable"
+      },
+      "results": {
+        "gemini-3.5-flash-lite": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            }
+          ]
+        },
+        "gemini-3.6-flash": {
+          "k": 0,
+          "n": 5,
+          "excluded": 0,
+          "mean_steps": 2,
+          "outcomes": [
+            {
+              "trial": 1,
+              "success": false,
+              "failure_mode": "error",
+              "measured": true
+            },
+            {
+              "trial": 2,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 3,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 4,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            },
+            {
+              "trial": 5,
+              "success": false,
+              "failure_mode": "blocked",
+              "measured": true
+            }
+          ]
+        }
+      },
+      "provenance": null
+    }
+  ],
+  "stats": {
+    "rho": {
+      "gemini-3.5-flash-lite": {
+        "point": 0.10588837430883734,
+        "lo": -0.29251462312567245,
+        "hi": 0.47953231741034413,
+        "n": 27,
+        "vector": "v1/gemini-3.5-flash-lite/spearman_ci",
+        "ts": "lib/stats.ts#bootstrapCI",
+        "py": "scripts/stats_reference.py#bootstrap_ci"
+      },
+      "gemini-3.6-flash": {
+        "point": -0.02144114362605633,
+        "lo": -0.373619143906658,
+        "hi": 0.3320704910250192,
+        "n": 27,
+        "vector": "v1/gemini-3.6-flash/spearman_ci",
+        "ts": "lib/stats.ts#bootstrapCI",
+        "py": "scripts/stats_reference.py#bootstrap_ci"
+      }
+    },
+    "sensitivity": {
+      "rule": "b",
+      "excluded": [
+        "trimet"
+      ],
+      "rule_d": "pending",
+      "by_agent": {
+        "gemini-3.5-flash-lite": {
+          "point": 0.1294136683411641,
+          "lo": -0.2597531027953476,
+          "hi": 0.507603458967646,
+          "n": 26,
+          "vector": "study_v2/sensitivity/gemini-3.5-flash-lite/rule_b",
+          "ts": "lib/study.ts#sensitivity",
+          "py": "scripts/stats_reference.py#sensitivity"
+        },
+        "gemini-3.6-flash": {
+          "point": -0.006041908335950799,
+          "lo": -0.3645376968319613,
+          "hi": 0.35577963464480716,
+          "n": 26,
+          "vector": "study_v2/sensitivity/gemini-3.6-flash/rule_b",
+          "ts": "lib/study.ts#sensitivity",
+          "py": "scripts/stats_reference.py#sensitivity"
+        }
+      }
+    },
+    "group_split": {
+      "gemini-3.5-flash-lite": {
+        "published": {
+          "excluded": [],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "bear",
+              "cloudflare",
+              "github",
+              "ikea",
+              "notion",
+              "shopify",
+              "spotify",
+              "ssa",
+              "stripe",
+              "twilio",
+              "usps"
+            ],
+            "count": 11,
+            "mean": 72.0909090909091,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "amazon",
+              "bestbuy",
+              "ca_dmv",
+              "irs",
+              "oregon_state",
+              "target",
+              "trimet",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 9,
+            "mean": 68.11111111111111,
+            "min": 33,
+            "max": 100
+          }
+        },
+        "rule_b": {
+          "excluded": [
+            "trimet"
+          ],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "bear",
+              "cloudflare",
+              "github",
+              "ikea",
+              "notion",
+              "shopify",
+              "spotify",
+              "ssa",
+              "stripe",
+              "twilio",
+              "usps"
+            ],
+            "count": 11,
+            "mean": 72.0909090909091,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "amazon",
+              "bestbuy",
+              "ca_dmv",
+              "irs",
+              "oregon_state",
+              "target",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 8,
+            "mean": 64.375,
+            "min": 33,
+            "max": 100
+          }
+        },
+        "vector": "study_v2/group_split/gemini-3.5-flash-lite",
+        "ts": "lib/study.ts#groupSplit",
+        "py": "scripts/stats_reference.py#group_split"
+      },
+      "gemini-3.6-flash": {
+        "published": {
+          "excluded": [],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "amazon",
+              "apple",
+              "bear",
+              "craigslist",
+              "github",
+              "ikea",
+              "notion",
+              "spotify",
+              "stripe",
+              "target",
+              "twilio",
+              "usps",
+              "voodoo"
+            ],
+            "count": 13,
+            "mean": 61.38461538461539,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "bestbuy",
+              "ca_dmv",
+              "innout",
+              "irs",
+              "oregon_state",
+              "trimet",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 8,
+            "mean": 64.125,
+            "min": 33,
+            "max": 100
+          }
+        },
+        "rule_b": {
+          "excluded": [
+            "trimet"
+          ],
+          "unmeasured": [
+            "costco"
+          ],
+          "all_succeeded": {
+            "sites": [
+              "amazon",
+              "apple",
+              "bear",
+              "craigslist",
+              "github",
+              "ikea",
+              "notion",
+              "spotify",
+              "stripe",
+              "target",
+              "twilio",
+              "usps",
+              "voodoo"
+            ],
+            "count": 13,
+            "mean": 61.38461538461539,
+            "min": 12,
+            "max": 100
+          },
+          "all_failed": {
+            "sites": [
+              "bestbuy",
+              "ca_dmv",
+              "innout",
+              "irs",
+              "oregon_state",
+              "tx_dmv",
+              "zalando"
+            ],
+            "count": 7,
+            "mean": 59.285714285714285,
+            "min": 33,
+            "max": 100
+          }
+        },
+        "vector": "study_v2/group_split/gemini-3.6-flash",
+        "ts": "lib/study.ts#groupSplit",
+        "py": "scripts/stats_reference.py#group_split"
+      }
+    },
+    "model_gap": {
+      "arms": [
+        "gemini-3.5-flash-lite",
+        "gemini-3.6-flash"
+      ],
+      "point": 0.05925925925925926,
+      "lo": -0.0888888888888889,
+      "hi": 0.2222222222222222,
+      "n": 27,
+      "sites_moved": 11,
+      "vector": "study_v2/bootstrap_rows/v1_model_gap",
+      "ts": "lib/stats.ts#bootstrapRows",
+      "py": "scripts/stats_reference.py#bootstrap_rows"
+    },
+    "layout_shift": {
+      "rho": {
+        "min": 0.6142349001144886,
+        "median": 0.6981735872151875,
+        "max": 0.7696623241713529,
+        "n": 28
+      },
+      "assignments": 256,
+      "identical_input": {
+        "count": 14,
+        "min": 3,
+        "max": 50
+      },
+      "vector": "x_axis_decomposition",
+      "ts": "lib/x-axis.ts#clsDecomposition",
+      "py": "scripts/stats_reference.py#cls_decomposition"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "data/agent-runs-goodhart.jsonl",
+      "role": "every Goodhart exhibit trial, with its transcript",
+      "bytes": 39069,
+      "sha256": "ae62f665b2be96301ba0183489f847eba0f3f47c71338e1b47b55b10c6764614"
+    },
+    {
+      "path": "data/agent-runs-v1.jsonl",
+      "role": "every batch v1 trial, with its transcript",
+      "bytes": 325368,
+      "sha256": "e300052513e397bb02d18736fe1ad73b40fd0d61c443247acb9928a5694a33ce"
+    },
+    {
+      "path": "data/cohort.csv",
+      "role": "the cohort and its registered answer keys",
+      "bytes": 9964,
+      "sha256": "17aa82db57034dd24a1e76f5d189ed235932b299c17105cc2bf397140c7f2cb6"
+    },
+    {
+      "path": "data/exhibit-cohort.csv",
+      "role": "the Goodhart exhibit's registered pair (not cohort data)",
+      "bytes": 1543,
+      "sha256": "c85daa3c4dd1904946bc591df3da0f145f845de0d7a1fb2de4da4a14b0e423e1"
+    },
+    {
+      "path": "data/exhibit-goodhart.json",
+      "role": "the Goodhart exhibit's committed fold",
+      "bytes": 74547,
+      "sha256": "2dc110095465a44f02a3e8123d8257316a0525ba21e6f25ad7091b7d90495f38"
+    },
+    {
+      "path": "data/health-lh-v2-20260923-13.4.1.json",
+      "role": "batch health card, lh-v2-20260923-13.4.1",
+      "bytes": 621,
+      "sha256": "ff9569dfbbcff016756d38f82f4e6eb1deb2c53c76fc6a6fe52ec260a0ca3dbc"
+    },
+    {
+      "path": "data/health-lh-v2-20260923-13.5.0.json",
+      "role": "batch health card, lh-v2-20260923-13.5.0",
+      "bytes": 621,
+      "sha256": "0fcd57c52b92daeea4d8970c105800e98a445ebd72d7fd1f6d76e5e7f18cb4c7"
+    },
+    {
+      "path": "data/health-lh-v2-20260923-desktop.json",
+      "role": "batch health card, lh-v2-20260923-desktop",
+      "bytes": 622,
+      "sha256": "1a2b38650463c6689e1cbab1ac353ecd51532086adadef5c1684f6b1d6b87475"
+    },
+    {
+      "path": "data/health-lh-v2-20260923.json",
+      "role": "batch health card, lh-v2-20260923",
+      "bytes": 614,
+      "sha256": "e59d05faf31b769d641f80c19d7d1620a51407f1a2b51651df36dec0068f5ec4"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-13.4.1/",
+      "role": "raw Lighthouse reports, three repeats per site; lh-v2-20260923-13.4.1",
+      "bytes": 20745682,
+      "sha256": null,
+      "files": 84
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-13.5.0/",
+      "role": "raw Lighthouse reports, three repeats per site; lh-v2-20260923-13.5.0",
+      "bytes": 20640207,
+      "sha256": null,
+      "files": 84
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/",
+      "role": "raw Lighthouse reports, three repeats per site; lh-v2-20260923-desktop",
+      "bytes": 20446307,
+      "sha256": null,
+      "files": 84
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923/",
+      "role": "raw Lighthouse reports, three repeats per site; lh-v2-20260923",
+      "bytes": 21161484,
+      "sha256": null,
+      "files": 85
+    },
+    {
+      "path": "data/lighthouse-goodhart.json",
+      "role": "the Goodhart exhibit's Lane 1 rows",
+      "bytes": 496,
+      "sha256": "3d19a6566b8ed33c0be5c19f4b21808d84808406b51605e8eee736223d9dfc26"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-13.4.1.audits.json",
+      "role": "every audit of every repeat, lh-v2-20260923-13.4.1",
+      "bytes": 409277,
+      "sha256": "37bda19b5ec5a45dee0676046c04fb17f9c6152ff13e189c3d1e4859b0fe4eb8"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-13.4.1.json",
+      "role": "Lane 1 rows, lh-v2-20260923-13.4.1",
+      "bytes": 7121,
+      "sha256": "c6ad409f2fb1ea20541e6c5523b9670783853d3e0f80202b89708cce24a2c910"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-13.4.1.llms-txt.json",
+      "role": "a plain GET of /llms.txt per site, lh-v2-20260923-13.4.1",
+      "bytes": 11658,
+      "sha256": "05dcc206749291a8469050ccaa51771acb3f8770ee49053ff8f3c8c2d3187bce"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-13.4.1.panel.json",
+      "role": "per-site panel: fraction, CLS score, llms.txt status, WebMCP; lh-v2-20260923-13.4.1",
+      "bytes": 25220,
+      "sha256": "b97aec2abbd41732a0fe436336404f2b4b66218a86d3ef05c25c8440ab0981b3"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-13.5.0.audits.json",
+      "role": "every audit of every repeat, lh-v2-20260923-13.5.0",
+      "bytes": 447486,
+      "sha256": "47d0bf4b7a1a84805f2671a59f3574987861b2a5156f1416bc025445ef5d224d"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-13.5.0.json",
+      "role": "Lane 1 rows, lh-v2-20260923-13.5.0",
+      "bytes": 7122,
+      "sha256": "44ae6781cf3a674ba80846ae251043e2eefe3c8c93fe8d0fad71964a583bb009"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-13.5.0.llms-txt.json",
+      "role": "a plain GET of /llms.txt per site, lh-v2-20260923-13.5.0",
+      "bytes": 11658,
+      "sha256": "844f3767dbd9abf774f77a37aad160c35a57321f09375612c9288a9f1cf41131"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-13.5.0.panel.json",
+      "role": "per-site panel: fraction, CLS score, llms.txt status, WebMCP; lh-v2-20260923-13.5.0",
+      "bytes": 25726,
+      "sha256": "3a10983b123603657d9898cec74006dd088fd7452f4ba63cdbfe62152c3c6f32"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-desktop.audits.json",
+      "role": "every audit of every repeat, lh-v2-20260923-desktop",
+      "bytes": 408520,
+      "sha256": "a3bbd397c5f4b16dc1dfdbf472ad8fc8a64a05c5ba3cd5aa4acd279b461689a1"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-desktop.json",
+      "role": "Lane 1 rows, lh-v2-20260923-desktop",
+      "bytes": 7150,
+      "sha256": "efe7d7b0fdf68d662ec8464d0e7d86b4a612a6c91c2bf84b49539cd8b29b10f3"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-desktop.llms-txt.json",
+      "role": "a plain GET of /llms.txt per site, lh-v2-20260923-desktop",
+      "bytes": 11322,
+      "sha256": "1b985caaac3ee4eaa90bdbf2fd93d3bf0010b3d2b04be0543d9347c718916c73"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-desktop.panel.json",
+      "role": "per-site panel: fraction, CLS score, llms.txt status, WebMCP; lh-v2-20260923-desktop",
+      "bytes": 25250,
+      "sha256": "bf9707bb86cee28edb4a17a3aaf235c5ad45ca426b2def257fe33d49c2947983"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923.audits.json",
+      "role": "every audit of every repeat, lh-v2-20260923",
+      "bytes": 408774,
+      "sha256": "977e21784f90e3e8204954c556a161d9ea1f1eb175321187d37b6d7b8c38bcb1"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923.json",
+      "role": "Lane 1 rows, lh-v2-20260923",
+      "bytes": 6924,
+      "sha256": "912080b1880982452a1211f632c7d38152c99f3d46a84a811eee3af710fa1a7f"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923.llms-txt.json",
+      "role": "a plain GET of /llms.txt per site, lh-v2-20260923",
+      "bytes": 11658,
+      "sha256": "0bc1ab5a533c2c3d34585318c2abdeeb766eb39960eccfaf23a04a44136d3e38"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923.panel.json",
+      "role": "per-site panel: fraction, CLS score, llms.txt status, WebMCP; lh-v2-20260923",
+      "bytes": 25019,
+      "sha256": "7f81c233db330c47a1116310957a61a9c0785435126bd3976e3bb0142f6e64e3"
+    },
+    {
+      "path": "data/lighthouse-v1.json",
+      "role": "the batch v1 Lane 1 rows: category mean and four flags",
+      "bytes": 6588,
+      "sha256": "016449e7f4a74163b95d04fd8d39f7c60884fed5bc38e14dae745a4f0d0b0986"
+    },
+    {
+      "path": "data/manifest-lh-v2-20260923-13.4.1.json",
+      "role": "batch manifest: code, browser, vantage; lh-v2-20260923-13.4.1",
+      "bytes": 21295,
+      "sha256": "788746439d53591023a29eb1db03905afa40721b731855ecf54be79c5eeb942c"
+    },
+    {
+      "path": "data/manifest-lh-v2-20260923-13.5.0.json",
+      "role": "batch manifest: code, browser, vantage; lh-v2-20260923-13.5.0",
+      "bytes": 21674,
+      "sha256": "4a3b08481f81296614deff6b15e495b6db95c8e5602eaba34ba1f4d7a1a6b4cd"
+    },
+    {
+      "path": "data/manifest-lh-v2-20260923-desktop.json",
+      "role": "batch manifest: code, browser, vantage; lh-v2-20260923-desktop",
+      "bytes": 21978,
+      "sha256": "997a20ec81f503b0f2d9d51ab781f6a28d5cb1a99556ccb76079f1baa2dd16d6"
+    },
+    {
+      "path": "data/manifest-lh-v2-20260923.json",
+      "role": "batch manifest: code, browser, vantage; lh-v2-20260923",
+      "bytes": 20221,
+      "sha256": "cbf7a16829dd1fd8f291d35bab96869bcd628dad7c18d051a862f90bd455c352"
+    },
+    {
+      "path": "data/scanners-20260923.json",
+      "role": "ora.ai and Cloudflare scans of the cohort, the same day",
+      "bytes": 9923024,
+      "sha256": "086d36594317cd46f68df0b3b7c70d69ebb3af340c4398b5f72db2f2095a3756"
+    },
+    {
+      "path": "scripts/tests/stats-vectors.json",
+      "role": "every published statistic, computed in Python and pinned",
+      "bytes": 115036,
+      "sha256": "c7f200b02e512a32dc0797b2f87be2c9f072152eb2c85bd6676db25db88f62be"
+    }
+  ]
+}

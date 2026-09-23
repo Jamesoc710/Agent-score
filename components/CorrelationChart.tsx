@@ -12,25 +12,20 @@ import {
 } from "recharts";
 import { CorrelationPoint } from "@/lib/types";
 
+// No fitted line: the headline statistic is Spearman's rho over an ordinal rubric, and a
+// least-squares line through it would invite a linear reading that statistic does not make.
 interface Props {
   points: CorrelationPoint[];
-  /** Least-squares fit, or null when there is nothing (or nothing varying) to fit. */
-  fit: { slope: number; intercept: number } | null;
   /**
    * Authored points overlaid on the measured cohort, drawn as outlined diamonds.
    *
    * Used by /correlation/exhibit for the two Goodhart pages. They are a separate Recharts
    * series fed by a separate prop, and no statistic on this site ever sees them: rho, the
-   * bootstrap interval, the fitted line and n are all computed upstream from `points` alone.
+   * bootstrap interval and n are all computed upstream from `points` alone.
    * When this is non-empty the cohort dots are drawn small, muted and unlabelled, so the
    * overlay reads as an annotation on the cohort rather than as more cohort data.
    */
   authored?: CorrelationPoint[];
-}
-
-/** Keep the fitted line inside the plotted 0–100% range. */
-function clamp(value: number): number {
-  return Math.max(0, Math.min(1, value));
 }
 
 function CustomTooltip({
@@ -49,7 +44,7 @@ function CustomTooltip({
         <p className="mb-1 text-xs text-ink-muted">Authored exhibit, not cohort data</p>
       )}
       <p className="text-ink-muted">
-        Lighthouse: <span className="font-mono tabular-nums text-ink-body">{d.lh_total}</span>
+        LH mean: <span className="font-mono tabular-nums text-ink-body">{d.lh_total}</span>
       </p>
       <p className="text-ink-muted">
         Success rate:{" "}
@@ -188,7 +183,7 @@ function AuthoredMark(props: { cx?: number; cy?: number; payload?: CorrelationPo
   );
 }
 
-export default function CorrelationChart({ points, fit, authored = [] }: Props) {
+export default function CorrelationChart({ points, authored = [] }: Props) {
   const hasAuthored = authored.length > 0;
 
   // Guard the empty/partial-data case (e.g. Lane 1 hasn't run yet) so Math.min/max over an
@@ -200,18 +195,6 @@ export default function CorrelationChart({ points, fit, authored = [] }: Props) 
       </div>
     );
   }
-
-  // Build trend line from min to max x. Only the cohort's own points set its extent: the
-  // authored overlay must not stretch, shorten or otherwise touch the fitted line.
-  const xs = points.length > 0 ? points.map((p) => p.lh_total) : [0, 100];
-  const xMin = Math.max(0, Math.min(...xs) - 5);
-  const xMax = Math.min(100, Math.max(...xs) + 5);
-  const trendData = fit
-    ? [
-        { lh_total: xMin, success_rate: clamp(fit.slope * xMin + fit.intercept) },
-        { lh_total: xMax, success_rate: clamp(fit.slope * xMax + fit.intercept) },
-      ]
-    : [];
 
   // Sorted by site id so the label-collision pass below walks the points in an order that
   // does not depend on the measurement. Recharts reads x/y off these keys.
@@ -245,7 +228,7 @@ export default function CorrelationChart({ points, fit, authored = [] }: Props) 
             tickLine={false}
           >
             <Label
-              value="Lighthouse Agentic Browsing Score (0–100)"
+              value="Lighthouse category mean (0–100)"
               offset={-12}
               position="insideBottom"
               style={{ fontSize: 12 }}
@@ -271,12 +254,6 @@ export default function CorrelationChart({ points, fit, authored = [] }: Props) 
             />
           </YAxis>
           <Tooltip content={<CustomTooltip />} />
-          {/* Trend line */}
-          <Scatter
-            data={trendData}
-            line={{ strokeDasharray: "4 4", strokeWidth: 1.5, className: "chart-trend" }}
-            shape={() => <g />}
-          />
           {/* Measured cohort points. Animation off: the label-collision pass reads the final
               positions, and animating them would make labels flicker in and out. */}
           <Scatter

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { EDITION_TITLE } from "@/lib/edition";
 
 // Static OG card — must never read the database (share crawlers hit it constantly and
 // it should not assert any measurement, per the no-invented-numbers rule).
@@ -7,7 +8,7 @@ import { ImageResponse } from "next/og";
 // share card that drifted from the site would be a second brand.
 
 export const runtime = "edge";
-export const alt = "AgentRank: behavioral agent-readiness scoring for websites";
+export const alt = `AgentRank: ${EDITION_TITLE}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -36,7 +37,7 @@ export default function OpenGraphImage() {
           <span>AgentRank</span>
         </div>
         <div style={{ fontSize: 40, color: "#c5c1b7", marginTop: 20 }}>
-          Is the web ready for agents?
+          {EDITION_TITLE}
         </div>
         <div
           style={{
@@ -47,8 +48,8 @@ export default function OpenGraphImage() {
             fontFamily: "sans-serif",
           }}
         >
-          A fixed browser agent, one task shape, pre-registered answers: behavioral
-          agent-readiness scores for real websites, correlated with Lighthouse.
+          One frozen agent, one fixed task shape, answers registered before any run: a
+          behavioral rate per site, beside the Lighthouse category mean.
         </div>
       </div>
     ),

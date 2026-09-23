@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { getPublishedDataset, toCorrelationPoints } from "@/lib/queries";
-import { SiteLeaderboardEntry } from "@/lib/types";
+import { FailureMode, SiteLeaderboardEntry } from "@/lib/types";
 import { TierBadge, FlagBadge } from "@/components/SiteBadges";
 import AgentToggle from "@/components/AgentToggle";
 import IntervalBar from "@/components/IntervalBar";
+import GoodhartCard from "@/components/GoodhartCard";
+import EditionMismatch from "@/components/EditionMismatch";
+import SensitivityLine from "@/components/SensitivityLine";
+import DatasetJsonLd from "@/components/DatasetJsonLd";
 import { PUBLISHED_AGENTS, agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
-import { formatPercent, formatRunWindow } from "@/lib/format";
+import { EDITION, editionMatches } from "@/lib/edition-data";
+import { formatDate, formatPercent, formatPoints, formatPointsInterval, formatRunWindow } from "@/lib/format";
+import { FAILURE_MODE_BADGES, auditStatesOf, v1AuditLines } from "@/lib/labels";
+import packageJson from "@/package.json";
 import {
   bootstrapCI,
   formatInterval,
@@ -37,16 +44,9 @@ function LhScore({ score }: { score: number | null }) {
   return <span className="font-mono text-[13px] tabular-nums text-ink">{score}</span>;
 }
 
-function FailureBadge({ mode }: { mode: string }) {
-  if (mode === "success") return <span className="chip chip-good">✓ success</span>;
-  const labels: Record<string, string> = {
-    blocked: "⛔ blocked",
-    timeout: "⏱ timeout",
-    wrong_extraction: "⚠ wrong ans.",
-    navigation_stuck: "🔀 nav stuck",
-    error: "💥 error",
-  };
-  return <span className="chip chip-neutral">{labels[mode] ?? mode}</span>;
+function FailureBadge({ mode }: { mode: FailureMode }) {
+  if (mode === "success") return <span className="chip chip-good">{FAILURE_MODE_BADGES.success}</span>;
+  return <span className="chip chip-neutral">{FAILURE_MODE_BADGES[mode] ?? mode}</span>;
 }
 
 // Two different absences, and conflating them would misreport both: a site the agent
@@ -71,31 +71,27 @@ function NotMeasured({ href }: { href: string | null }) {
   );
 }
 
+// v1's flags, named for the audit and never for the fact they are mistaken for. The WebMCP
+// flag is not shown: it records whether the browser exposed the API, which is not a property
+// of the site (design S2-7 section 9).
 function SubAudits({ entry }: { entry: SiteLeaderboardEntry }) {
-  const audits = [
-    { key: "lh_accessibility_tree", label: "A11y Tree" },
-    { key: "lh_layout_stability", label: "Stability" },
-    { key: "lh_llms_txt", label: "llms.txt" },
-    { key: "lh_webmcp", label: "WebMCP" },
-  ] as const;
-
+  const states = auditStatesOf(entry);
+  if (!states) return null;
   return (
     <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 text-[11px]">
-      {audits.map(({ key, label }) => {
-        const val = entry[key];
-        if (val === null) return null;
-        return (
+      {v1AuditLines(states)
+        .filter((line) => line.chip !== null)
+        .map((line) => (
           <span
-            key={key}
-            title={label}
-            // The glyph and the audit name carry it. A pass sits in body ink and a fail in
-            // muted ink, which is a weight difference rather than a verdict colour.
-            className={`whitespace-nowrap ${val === 1 ? "text-ink-body" : "text-ink-muted"}`}
+            key={line.key}
+            title={`${line.label}: ${line.value.replace(/^[✓✗] /, "")}`}
+            // A pass sits in body ink and anything else in muted ink: a weight difference, not
+            // a verdict colour.
+            className={`whitespace-nowrap ${line.tone === "pass" ? "text-ink-body" : "text-ink-muted"}`}
           >
-            {val === 1 ? "✓" : "✗"} {label}
+            {line.chip}
           </span>
-        );
-      })}
+        ))}
     </div>
   );
 }
@@ -119,6 +115,13 @@ export default async function LeaderboardPage({
 
   const runWindow = formatRunWindow(summary.run_window);
   const unmeasured = new Set(summary.unmeasured_site_ids);
+
+  // The snapshot's figures (the sensitivity, the model gap, the protocol, the JSON-LD) print only
+  // beside the batch they describe. A re-import that moves the table without regenerating the
+  // snapshot shows a banner instead of two editions at once.
+  const matches = editionMatches(summary.batch_label);
+  const gap = matches ? EDITION.stats.model_gap : null;
+  const protocol = matches ? EDITION.protocol : null;
 
   // Unweighted mean of per-site rates: a different number from the trial-level rate above,
   // and labelled as such so the two can never be read as the same measurement.
@@ -164,7 +167,7 @@ export default async function LeaderboardPage({
       bar: false,
     },
     {
-      label: "Static score vs success",
+      label: "Category mean vs success",
       value: rhoCI ? `ρ = ${formatR(rhoCI.point)}` : "–",
       sub: rhoCI
         ? `95% CI ${formatInterval(rhoCI)}, n = ${pairs.length}`
@@ -173,12 +176,26 @@ export default async function LeaderboardPage({
     },
   ];
 
+  const lighthousePin = packageJson.devDependencies.lighthouse;
+  const remeasured = matches ? EDITION.remeasurement : null;
+  const companionVersions = remeasured
+    ? [
+        ...new Set(
+          remeasured.batches
+            .map((b) => b.lighthouse_version)
+            .filter((v): v is string => v !== null && v !== lighthousePin)
+        ),
+      ]
+    : [];
+
   return (
     <div>
+      {matches ? <DatasetJsonLd /> : <EditionMismatch pageBatch={summary.batch_label} />}
+
       {/* Hero — the measured result, with its denominators */}
       <header>
         <div className="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
-          <h1 className="page-title max-w-2xl">Is the web ready for agents?</h1>
+          <h1 className="page-title max-w-2xl">{EDITION.edition.title}</h1>
           <AgentToggle selected={agentId} basePath="/" />
         </div>
 
@@ -193,7 +210,7 @@ export default async function LeaderboardPage({
           <div className="max-w-3xl space-y-3 text-ink-body">
             <p className="text-[17px] leading-relaxed">
               <span className="font-semibold text-ink">
-                {agentLabel(measuredAgentId)} completed the task on{" "}
+                {agentLabel(measuredAgentId)} found the registered fact within the budget on{" "}
                 {formatPercent(summary.success_rate)} of trials
               </span>{" "}
               ({summary.success_count} of {summary.trial_count} measured trials across{" "}
@@ -202,10 +219,10 @@ export default async function LeaderboardPage({
               {rhoCI ? (
                 <>
                   {relationshipVerdict(rhoCI) === "none"
-                    ? "No relationship between Google's Lighthouse Agentic Browsing score and where it succeeded was distinguishable from noise"
-                    : `Google's Lighthouse Agentic Browsing score tracked where it succeeded (${
+                    ? "No relationship between the Lighthouse category mean and where it succeeded was distinguishable from noise"
+                    : `The Lighthouse category mean tracked where it succeeded (${
                         relationshipVerdict(rhoCI) === "positive" ? "higher" : "lower"
-                      } scores, more successes)`}
+                      } means, more successes)`}
                   : ρ&nbsp;=&nbsp;{formatR(rhoCI.point)}, 95%&nbsp;CI&nbsp;
                   {formatInterval(rhoCI)}, n&nbsp;=&nbsp;{pairs.length} sites.{" "}
                   <Link
@@ -224,13 +241,23 @@ export default async function LeaderboardPage({
                 </Link>
               )}
             </p>
+            {rhoCI && matches && <SensitivityLine className="text-sm leading-relaxed" />}
             {otherAgents.length > 0 && (
               <p className="text-sm leading-relaxed">
                 {otherAgents.map((other) => (
                   <span key={other.agent_id}>
-                    {agentLabel(other.agent_id)} ran the identical loop on the identical cohort and
-                    scored {formatPercent(other.success_rate)} ({other.success_count}/
-                    {other.trial_count}).{" "}
+                    {agentLabel(other.agent_id)} ran the identical loop on the identical cohort (
+                    {other.success_count} of {other.trial_count} measured trials).{" "}
+                    {gap && gap.arms.includes(other.agent_id) && gap.arms.includes(measuredAgentId) && (
+                      <>
+                        {relationshipVerdict(gap) === "none"
+                          ? "The two models are not distinguishable on this cohort"
+                          : "The two models differ on this cohort"}
+                        : paired mean gap {formatPoints(gap.point)} points ({agentLabel(gap.arms[1])}{" "}
+                        minus {agentLabel(gap.arms[0])}), 95%&nbsp;CI {formatPointsInterval(gap)}, over{" "}
+                        {gap.n} sites.{" "}
+                      </>
+                    )}
                     {switchable(other.agent_id) && (
                       <Link href={withAgent("/", other.agent_id)} className="link-ink">
                         Switch to it →
@@ -241,11 +268,21 @@ export default async function LeaderboardPage({
               </p>
             )}
             <p className="text-xs leading-relaxed text-ink-muted">
-              Scope of the claim: {summary.site_count} sites, one task shape, 5 trials per site,
-              {panel.length === 1 ? " one agent" : ` ${panel.length} agents`} behind one frozen
+              Scope of the claim: {summary.site_count} sites, one task shape
+              {protocol && (
+                <>
+                  , {protocol.trials_per_site} trials per site, {protocol.max_steps} steps and a{" "}
+                  {protocol.clock_seconds}-second clock per trial
+                </>
+              )}
+              ,{panel.length === 1 ? " one agent" : ` ${panel.length} agents`} behind one frozen
               harness, one run window. Success is
               pre-registered exact match; trials that never reached the server are excluded from
-              the denominator rather than scored 0%.
+              the denominator rather than scored 0%.{" "}
+              <Link href="/methodology" className="link-ink">
+                Methodology
+              </Link>
+              .
             </p>
           </div>
         )}
@@ -281,27 +318,36 @@ export default async function LeaderboardPage({
         ))}
       </div>
 
-      {/* Table */}
+      {/* Not batch-scoped: the exhibit is its own batch, so the mismatch guard never hides it. */}
+      <GoodhartCard />
+
+      {/* Table. No rank column: at five trials most rows are tied, and a number down the side
+          reads as an ordering this study cannot resolve. Ties are in name order. */}
       {/* Scrolls rather than clips: overflow-hidden silently cut the sub-audit column off
           the right edge once real site names widened the table. */}
-      <div className="mt-12 overflow-x-auto border-y border-line">
-        <table className="w-full min-w-[56rem] text-sm">
+      <div id="leaderboard" className="mt-12 scroll-mt-6 overflow-x-auto border-y border-line">
+        <table className="w-full min-w-[52rem] text-sm">
           <thead>
             <tr className="border-b border-line bg-surface-2 text-left">
-              <th scope="col" className="col-head w-10 whitespace-nowrap px-4 py-2.5">#</th>
               <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Site</th>
               <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Tier</th>
               <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Agent Success</th>
               <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Top Failure</th>
               <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5 text-right">Avg Steps</th>
-              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5 text-right">Lighthouse</th>
-              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5">Sub-audits</th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5 text-right">
+                <a href="#fraction-not-score" className="link-ink" title="Lighthouse category mean">
+                  LH mean
+                </a>
+              </th>
+              <th scope="col" className="col-head whitespace-nowrap px-4 py-2.5" title="v1's recorded flags; key below the table">
+                Sub-audits
+              </th>
             </tr>
           </thead>
           <tbody>
             {entries.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-sm text-ink-muted">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-ink-muted">
                   No cohort data yet. Seed the sites and run the lanes, or set{" "}
                   <code className="font-mono text-ink-body">USE_FAKE_DATA=true</code> for fixtures.
                 </td>
@@ -317,9 +363,6 @@ export default async function LeaderboardPage({
                     i === entries.length - 1 ? "border-b-0" : ""
                   }`}
                 >
-                  <td className="px-4 py-3.5 font-mono text-[13px] tabular-nums text-ink-muted">
-                    {entry.rank}
-                  </td>
                   <td className="px-4 py-3.5">
                     <Link
                       href={siteHref}
@@ -384,21 +427,48 @@ export default async function LeaderboardPage({
         </table>
       </div>
 
-      <p className="mx-auto mt-6 max-w-3xl text-center text-xs leading-relaxed text-ink-muted">
-        Scoring is pre-registered exact-match, decided before any agent runs (batch{" "}
-        <code className="font-mono">{summary.batch_label}</code>, agent{" "}
-        <code className="font-mono">{measuredAgentId}</code>
-        {runWindow && <>, {runWindow}</>}). Static scores use{" "}
-        <a
-          href="https://developer.chrome.com/docs/lighthouse"
-          target="_blank"
-          rel="noreferrer"
-          className="link-ink"
-        >
-          Lighthouse 13.3 Agentic Browsing category
-        </a>
-        , unmodified.
-      </p>
+      <div className="mx-auto mt-6 max-w-3xl space-y-2 text-center text-xs leading-relaxed text-ink-muted">
+        <p>
+          Scoring is pre-registered exact-match, decided before any agent runs (batch{" "}
+          <code className="font-mono">{summary.batch_label}</code>, agent{" "}
+          <code className="font-mono">{measuredAgentId}</code>
+          {runWindow && <>, {runWindow}</>}). Rows with the same success rate are in name order.
+          Sub-audits: ✓ passed, ✗ did not pass, – did not pass or did not apply (v1 did not record
+          which); the CLS chip is v1&apos;s flag for a layout-shift audit result of exactly 1.00.
+        </p>
+        {/* Stated once, here; every other surface links to this anchor (design S2-7 section 9, rule 2). */}
+        <p id="fraction-not-score" className="scroll-mt-6">
+          The static axis is the{" "}
+          <a
+            href="https://developer.chrome.com/docs/lighthouse"
+            target="_blank"
+            rel="noreferrer"
+            className="link-ink"
+          >
+            Lighthouse Agentic Browsing category
+          </a>
+          , unmodified
+          {matches && EDITION.lane1.lighthouse_version && (
+            <>
+              , at Lighthouse {EDITION.lane1.lighthouse_version} for batch{" "}
+              <code className="font-mono">{EDITION.batch_label}</code>; the current pin is{" "}
+              {lighthousePin}
+              {remeasured && companionVersions.length > 0 && (
+                <>
+                  , and the re-measurement of {formatDate(remeasured.date)} also ran{" "}
+                  {companionVersions.join(" and ")}
+                </>
+              )}
+            </>
+          )}
+          . Chrome shows this category as a fraction of checks passed and publishes no score; the
+          mean is Lighthouse&apos;s own arithmetic, which we read from the JSON.{" "}
+          <Link href="/methodology#static-axis" className="link-ink">
+            About half of it is layout shift
+          </Link>
+          .
+        </p>
+      </div>
     </div>
   );
 }

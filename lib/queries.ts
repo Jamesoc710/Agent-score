@@ -379,15 +379,17 @@ function panelSummaries(allRuns: Run[]): AgentPanelSummary[] {
 }
 
 function rankEntries(entries: SiteLeaderboardEntry[]): SiteLeaderboardEntry[] {
-  // Deterministic order for a published table: success rate, then static score, then name.
-  // Without the tie-breaks, sites with equal success rates (common while a batch is still
-  // filling in) would shuffle between renders.
+  // Deterministic order for a published table: measured sites first (a site never reached has
+  // no rate and must not sort in among the 0% rows), then success rate, then name. The
+  // Lighthouse category mean is never a tiebreak: at five trials most rows sit in ties, so
+  // breaking them by the x-axis made the visible order an x-axis ordering under a headline
+  // that finds no relationship with it (docs/METHODOLOGY.md, 2026-09-23 leaderboard block).
+  const measured = (e: SiteLeaderboardEntry) => (e.trial_count > 0 ? 0 : 1);
   entries.sort(
     (a, b) =>
-      b.success_rate - a.success_rate ||
-      (b.lh_total ?? -1) - (a.lh_total ?? -1) ||
-      a.name.localeCompare(b.name)
+      measured(a) - measured(b) || b.success_rate - a.success_rate || a.name.localeCompare(b.name)
   );
+  // `rank` stays in the frozen contract (lib/types.ts) and is no longer rendered anywhere.
   entries.forEach((e, i) => (e.rank = i + 1));
   return entries;
 }

@@ -6,36 +6,115 @@ import { Run } from "@/lib/types";
 import { TierBadge, FlagBadge } from "@/components/SiteBadges";
 import AgentToggle from "@/components/AgentToggle";
 import TrialReplay from "@/components/TrialReplay";
-import { agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
-import { formatRunWindow } from "@/lib/format";
+import EditionMismatch from "@/components/EditionMismatch";
+import { ACTIVE_BATCH, agentLabel, resolveAgentId, withAgent } from "@/lib/dataset";
+import { EDITION, editionMatches } from "@/lib/edition-data";
+import { formatDate, formatRunWindow } from "@/lib/format";
+import { FAILURE_MODE_BADGES, FAILURE_MODE_WORDS, auditStatesOf, v1AuditLines, type AuditLine } from "@/lib/labels";
+import { formatR } from "@/lib/stats";
 import { resolveTrialParam } from "@/lib/transcript";
 
-function SubAuditRow({ label, value }: { label: string; value: number | null }) {
-  if (value === null) return null;
+// One v1 flag, in the words it can support (design S2-7 section 9). The row takes a state, not
+// a 0/1: "did not pass or did not apply" is not a fail, and a browser flag is not a verdict.
+function SubAuditRow({ line }: { line: AuditLine }) {
   return (
     <div className="flex items-center justify-between gap-3 border-b border-line-soft py-2.5 last:border-0">
-      <span className="text-[13px] text-ink-body">{label}</span>
+      <span className="text-[13px] text-ink-body">{line.label}</span>
       {/* Glyph and word both say it; the tone is the third, redundant channel. */}
       <span
-        className={`whitespace-nowrap text-[13px] font-medium ${
-          value === 1 ? "text-good" : "text-ink-muted"
+        className={`text-right text-[13px] font-medium ${
+          line.tone === "pass" ? "text-good" : line.tone === "muted" ? "text-ink-muted" : "text-ink-body"
         }`}
       >
-        {value === 1 ? "✓ Pass" : "✗ Fail"}
+        {line.value}
       </span>
     </div>
   );
 }
 
+/**
+ * Registered rule (b), from the batch's own trial record (design S2-4 section 5). It never
+ * changes the rate; it says what the rate measured, and prints the registered sensitivity.
+ */
+function InstrumentCaveat({ siteId, agentId }: { siteId: string; agentId: string }) {
+  const exclusion = EDITION.exclusions.find((e) => e.site_id === siteId);
+  if (!exclusion) return null;
+  const split = EDITION.stats.group_split[agentId];
+  const sens = EDITION.stats.sensitivity.by_agent;
+  const others = Object.entries(sens).filter(([id]) => id !== agentId);
+  const registered = EDITION.pending.find((p) => p.registered_on)?.registered_on ?? null;
+  const recordDate = formatRunWindow(EDITION.run_window);
+
+  return (
+    <div className="card-notice mt-8">
+      <h2 className="text-base font-semibold text-notice-ink">The instrument, not the site.</h2>
+      <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-notice-body">
+        {exclusion.errors === exclusion.recorded ? "All" : `${exclusion.errors} of`}{" "}
+        {exclusion.recorded} recorded trials, across both agents, ended in the harness&apos;s own
+        error after the site was reached
+        {exclusion.error_signature && (
+          <>
+            {" "}
+            (<code className="rounded bg-notice-soft px-1 py-0.5 font-mono text-xs">{exclusion.error_signature}</code>)
+          </>
+        )}
+        , so registered rule (b) (every recorded trial the harness&apos;s own error, read from the
+        batch record{recordDate && <> of {recordDate}</>}) names this site. The pre-registered rule
+        counts an error that reached the site as a failure, so the rate above stands as published
+        and is not retro-excluded; what it measures here is our instrument.
+        {split && sens[agentId] && (
+          <>
+            {" "}
+            Sensitivity under the registered rule: excluding it moves the all-failed group&apos;s
+            Lighthouse category mean from {split.published.all_failed.mean?.toFixed(1)} to{" "}
+            {split.rule_b.all_failed.mean?.toFixed(1)} over {split.rule_b.all_failed.count} sites,
+            and the correlation to ρ&nbsp;=&nbsp;{formatR(sens[agentId].point)} at n&nbsp;=&nbsp;
+            {sens[agentId].n} ({agentLabel(agentId)}
+            {others.map(([id, s]) => (
+              <span key={id}>
+                ; {formatR(s.point)} on {agentLabel(id)}
+              </span>
+            ))}
+            ).
+          </>
+        )}{" "}
+        Rule (d), the instrument control
+        {registered && <> registered on {formatDate(registered)}</>}, has not run.{" "}
+        <Link href="/methodology#sensitivity" className="underline underline-offset-2">
+          The rule
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
+
+/** A prediction, not a finding: no provenance mark, no exclusion, no sensitivity (S2-4 section 5). */
+function PendingNote({ siteId }: { siteId: string }) {
+  const pending = EDITION.pending.find((p) => p.site_id === siteId);
+  if (!pending) return null;
+  return (
+    <div className="card-notice mt-8">
+      <h2 className="text-base font-semibold text-notice-ink">Pending the instrument control.</h2>
+      <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-notice-body">
+        {pending.timeouts === pending.recorded ? "Every" : `${pending.timeouts} of ${pending.recorded}`}{" "}
+        recorded trial{pending.timeouts === pending.recorded ? "" : "s"} on this site
+        {pending.timeouts === pending.recorded && <> ({pending.recorded} of {pending.recorded}, across both agents)</>}{" "}
+        ended at the {EDITION.protocol.clock_seconds}-second clock. A click on a matched, visible
+        link that never lands is a suspected harness cause, which the instrument control
+        {pending.registered_on ? <> registered on {formatDate(pending.registered_on)}</> : null} tests;
+        it has not run. Until it does, the rate above stands as measured and no sensitivity
+        excludes this site.{" "}
+        <Link href="/methodology#instrument-v1" className="underline underline-offset-2">
+          The control
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
+
 function TrialRow({ run, excluded, href }: { run: Run; excluded: boolean; href: string }) {
-  const failureLabels: Record<string, string> = {
-    success: "✓ success",
-    blocked: "⛔ blocked",
-    timeout: "⏱ timeout",
-    wrong_extraction: "⚠ wrong answer",
-    navigation_stuck: "🔀 nav stuck",
-    error: "💥 error",
-  };
   return (
     <tr className="border-b border-line-soft text-xs sm:text-sm">
       <td className="px-2 py-2 text-ink-body sm:px-4">
@@ -66,7 +145,7 @@ function TrialRow({ run, excluded, href }: { run: Run; excluded: boolean; href: 
         )}
       </td>
       <td className="whitespace-nowrap px-2 py-2 text-ink-body sm:px-4">
-        {failureLabels[run.failure_mode]}
+        {FAILURE_MODE_BADGES[run.failure_mode]}
       </td>
       <td className="whitespace-nowrap px-2 py-2 font-mono tabular-nums text-ink-body sm:px-4">
         {run.step_count} steps
@@ -120,6 +199,12 @@ export default async function SiteDetailPage({
 
   const measuredIds = new Set(runs.map((r) => r.trial_number));
 
+  // The batch this page read, and whether the edition snapshot describes the same one. The
+  // exclusion notes are the snapshot's, so they print only beside their own batch.
+  const pageBatch = allRuns[0]?.batch_label ?? lighthouse?.batch_label ?? ACTIVE_BATCH;
+  const matches = editionMatches(pageBatch);
+  const audits = lighthouse ? auditStatesOf(lighthouse) : null;
+
   // Which trial's replay renders open. An unrecognised, non-numeric or out-of-range value
   // opens nothing: a bad link shows the page, never a 404 and never an invented trial.
   const openTrial = resolveTrialParam(searchParams.trial, allRuns);
@@ -139,6 +224,7 @@ export default async function SiteDetailPage({
 
   return (
     <div>
+      {!matches && <EditionMismatch pageBatch={pageBatch} />}
       <div className="mb-8 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <Link href={withAgent("/", agentId)} className="back-link">
           ← Leaderboard
@@ -172,7 +258,8 @@ export default async function SiteDetailPage({
             {runs.length > 0 ? "Agent success rate" : "Not measured"}
           </div>
           <div className="mt-0.5 text-xs text-ink-muted">
-            {runs.length} measured trials · {agentLabel(measuredAgentId)}
+            {runs.length} measured trials · {agentLabel(measuredAgentId)} · batch{" "}
+            <code className="font-mono">{pageBatch}</code>
             {runWindow && <> · {runWindow}</>}
           </div>
           {excluded > 0 && (
@@ -192,11 +279,14 @@ export default async function SiteDetailPage({
         </div>
       </header>
 
+      {matches && <InstrumentCaveat siteId={site.site_id} agentId={measuredAgentId} />}
+      {matches && <PendingNote siteId={site.site_id} />}
+
       <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
-        {/* Lighthouse scores. A bare number: the same reason the leaderboard column is bare. */}
+        {/* The category mean. A bare number: the same reason the leaderboard column is bare. */}
         <div className="md:border-r md:border-line md:pr-12">
-          <h2 className="card-title mb-4 flex items-baseline justify-between gap-3">
-            Lighthouse Agentic Browsing
+          <h2 className="card-title flex items-baseline justify-between gap-3">
+            Lighthouse category mean
             {lighthouse ? (
               <span className="font-mono text-xl font-semibold tabular-nums text-ink">
                 {lighthouse.lh_total}
@@ -205,15 +295,25 @@ export default async function SiteDetailPage({
               <span className="text-sm font-normal text-ink-muted">Not run yet</span>
             )}
           </h2>
-          {lighthouse ? (
+          {lighthouse && (
+            <p className="card-note mb-4">
+              Batch <code className="font-mono">{lighthouse.batch_label}</code>
+              {matches && EDITION.lane1.lighthouse_version && <> · Lighthouse {EDITION.lane1.lighthouse_version}</>} ·{" "}
+              {formatDate(lighthouse.run_at)}. Chrome shows a fraction, not this mean;{" "}
+              <Link href="/#fraction-not-score" className="link-ink">
+                what the number is
+              </Link>
+              .
+            </p>
+          )}
+          {lighthouse && audits ? (
             <div>
-              <SubAuditRow label="Accessibility Tree Quality" value={lighthouse.lh_accessibility_tree} />
-              <SubAuditRow label="Layout Stability" value={lighthouse.lh_layout_stability} />
-              <SubAuditRow label="llms.txt Present" value={lighthouse.lh_llms_txt} />
-              <SubAuditRow label="WebMCP Present" value={lighthouse.lh_webmcp} />
+              {v1AuditLines(audits).map((line) => (
+                <SubAuditRow key={line.key} line={line} />
+              ))}
             </div>
           ) : (
-            <p className="text-sm text-ink-muted">Run Lane 1 to populate Lighthouse scores.</p>
+            <p className="text-sm text-ink-muted">Run Lane 1 to populate the category mean.</p>
           )}
         </div>
 
@@ -236,7 +336,9 @@ export default async function SiteDetailPage({
                 <p className="eyebrow mb-2">Failure breakdown</p>
                 {Object.entries(failureCounts).map(([mode, count]) => (
                   <div key={mode} className="flex justify-between gap-3 py-1 text-[13px]">
-                    <span className="capitalize text-ink-body">{mode.replace(/_/g, " ")}</span>
+                    <span className="capitalize text-ink-body">
+                      {FAILURE_MODE_WORDS[mode as Run["failure_mode"]] ?? mode.replace(/_/g, " ")}
+                    </span>
                     <span className="font-mono tabular-nums text-ink">{count}×</span>
                   </div>
                 ))}

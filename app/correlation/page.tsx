@@ -6,7 +6,6 @@ import {
   bootstrapCI,
   formatInterval,
   formatR,
-  linearRegression,
   pearson,
   relationshipVerdict,
   spearmanRho,
@@ -20,6 +19,10 @@ import CorrelationChart from "@/components/CorrelationChart";
 import AgentToggle from "@/components/AgentToggle";
 import IntervalBar, { IntervalTicks } from "@/components/IntervalBar";
 import { EXHIBIT } from "@/lib/exhibit-data";
+import { editionMatches } from "@/lib/edition-data";
+import EditionMismatch from "@/components/EditionMismatch";
+import SensitivityLine from "@/components/SensitivityLine";
+import type { SiteLeaderboardEntry } from "@/lib/types";
 
 // Every gap bar on this site shares one scale, so widths are comparable between figures. The
 // widest published interval is [-44.5, +50.3]; ±80 points contains everything with margin.
@@ -44,16 +47,18 @@ export default async function CorrelationPage({
   const pairs: Pair[] = points.map((p) => ({ x: p.lh_total, y: p.success_rate }));
   const n = pairs.length;
 
-  // Rank correlation is the headline: the Lighthouse score is an ordinal rubric score, and
-  // rho does not assume the relationship is linear. Pearson is kept alongside because it is
-  // what the fitted line on the scatter actually is.
+  // Rank correlation is the headline: the category mean is an ordinal rubric, and rho does not
+  // assume the relationship is linear. No fitted line is drawn: a least-squares line through an
+  // ordinal rubric invites a linear reading the headline statistic does not make. Pearson is
+  // printed once, as a sensitivity.
   const rhoCI = bootstrapCI(pairs, spearmanRho);
   const rho = rhoCI?.point ?? spearmanRho(pairs);
   const r = pearson(pairs);
-  const fit = linearRegression(pairs);
   const runWindow = formatRunWindow(summary.run_window);
+  // The sensitivity line is the edition snapshot's; it prints only beside its own batch.
+  const matches = editionMatches(summary.batch_label);
 
-  // The authored exhibit's own static score, read from its committed artifact rather than
+  // The authored exhibit's own category mean, read from its committed artifact rather than
   // written into the copy: this card must not assert a number the exhibit did not measure.
   const exhibitScores = [
     ...new Set(EXHIBIT.pages.map((p) => p.lighthouse?.lh_total).filter((v) => v != null)),
@@ -73,22 +78,29 @@ export default async function CorrelationPage({
     ? subAudits.family.comparisons.filter((c) => c.pFamilyWise <= subAudits.family!.level).length
     : 0;
 
-  // The biggest disagreement between the two rankings — the exhibit for "the static rubric
-  // gets this one wrong".
-  const byLh = [...points].sort((a, b) => b.lh_total - a.lh_total);
-  const bySuccess = [...points].sort((a, b) => b.success_rate - a.success_rate);
-  const surprising = points.reduce(
-    (best, p) => {
-      const lhRank = byLh.findIndex((x) => x.site_id === p.site_id);
-      const successRank = bySuccess.findIndex((x) => x.site_id === p.site_id);
-      const gap = Math.abs(lhRank - successRank);
-      return gap > best.gap ? { site: p, gap, lhRank, successRank } : best;
-    },
-    { site: points[0], gap: 0, lhRank: 0, successRank: 0 }
-  );
+  // The plainest disagreements, as values and names rather than as two ranks: the lowest
+  // category mean among the sites where every trial succeeded, and the highest among the sites
+  // where none did. Ranks here would be an x-axis ordering and a rank over a six-valued rate.
+  const everyTrial = entries.filter((e) => e.trial_count > 0 && e.lh_total !== null && e.success_rate === 1);
+  const noTrial = entries.filter((e) => e.trial_count > 0 && e.lh_total !== null && e.success_rate === 0);
+  const extreme = (group: SiteLeaderboardEntry[], pick: (values: number[]) => number) => {
+    if (group.length === 0) return null;
+    const value = pick(group.map((e) => e.lh_total!));
+    return { value, sites: group.filter((e) => e.lh_total === value) };
+  };
+  // "5 of 5", or "0 of 5 each" when every named site has the same count.
+  const outcomeOf = (sites: SiteLeaderboardEntry[]) => {
+    const counts = [
+      ...new Set(sites.map((e) => `${Math.round(e.success_rate * e.trial_count)} of ${e.trial_count}`)),
+    ];
+    return counts.length === 1 ? `${counts[0]}${sites.length > 1 ? " each" : ""}` : counts.join(", ");
+  };
+  const lowestSucceeded = extreme(everyTrial, (v) => Math.min(...v));
+  const highestFailed = extreme(noTrial, (v) => Math.max(...v));
 
   return (
     <div>
+      {!matches && <EditionMismatch pageBatch={summary.batch_label} />}
       <div className="mb-8 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <Link href={withAgent("/", agentId)} className="back-link">
           ← Leaderboard
@@ -99,9 +111,12 @@ export default async function CorrelationPage({
       <header>
         <h1 className="page-title max-w-3xl">Does Google&apos;s rubric predict agent success?</h1>
         <p className="page-lead max-w-3xl">
-          Each point is one site. The x-axis is Google&apos;s Lighthouse Agentic Browsing score; the
-          y-axis is the measured success rate of {agentLabel(measuredAgentId)} completing a real task,
-          5 trials per site. The dashed line is a least-squares fit.
+          Each point is one site. The x-axis is the Lighthouse Agentic Browsing category mean (
+          <Link href="/#fraction-not-score" className="link-ink">
+            what that number is
+          </Link>
+          ); the y-axis is the measured success rate of {agentLabel(measuredAgentId)} on the same
+          sites, over each site&apos;s measured trials.
         </p>
       </header>
 
@@ -111,8 +126,9 @@ export default async function CorrelationPage({
           <div>
             <p className="text-lg font-medium text-ink">No correlation to report yet.</p>
             <p className="mt-1 text-sm text-ink-body">
-              {n} {n === 1 ? "site has" : "sites have"} both a Lighthouse score and measured
-              agent trials; {MIN_N} is the minimum this page will compute a correlation from.
+              {n} {n === 1 ? "site has" : "sites have"} both a Lighthouse category mean and
+              measured agent trials; {MIN_N} is the minimum this page will compute a correlation
+              from.
             </p>
           </div>
         ) : (
@@ -147,7 +163,7 @@ export default async function CorrelationPage({
                 </span>{" "}
                 {relationshipVerdict(rhoCI) === "none" ? (
                   <>
-                    Spearman rank correlation between the static score and behavioral success is{" "}
+                    Spearman rank correlation between the category mean and behavioral success is{" "}
                     {formatR(rho)}, and the 95% bootstrap interval {formatInterval(rhoCI)} spans
                     zero: at {n} sites this experiment cannot distinguish the rubric&apos;s
                     predictive power from none at all. That is the result, not a
@@ -161,7 +177,7 @@ export default async function CorrelationPage({
               </p>
               <p className="text-xs leading-relaxed text-ink-muted">
                 Spearman ρ, 10,000-iteration percentile bootstrap resampling sites, fixed seed.
-                Pearson r = {r === null ? "–" : formatR(r)} (the fitted line).{" "}
+                Pearson r = {r === null ? "–" : formatR(r)}, a sensitivity.{" "}
                 {runWindow && <>Measured {runWindow} (UTC).</>} Sites whose every trial never
                 reached the server are excluded from n, not counted as 0%
                 {summary.unmeasured_site_ids.length > 0 && (
@@ -169,6 +185,7 @@ export default async function CorrelationPage({
                 )}
                 .
               </p>
+              {matches && <SensitivityLine className="text-xs leading-relaxed text-ink-muted" />}
             </div>
           </div>
         )}
@@ -177,7 +194,7 @@ export default async function CorrelationPage({
       {/* The scatter chart, unframed: it sits on the page between hairlines rather than in a
           box, so the plot is the object rather than the card around it. */}
       <div className="border-b border-line py-4 sm:py-6">
-        <CorrelationChart points={points} fit={fit} />
+        <CorrelationChart points={points} />
       </div>
 
       <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
@@ -269,37 +286,37 @@ export default async function CorrelationPage({
           </Link>
         </div>
 
-        {/* Surprising site callout */}
-        {surprising.gap > 1 && surprising.site && (
+        {/* The plainest disagreements, by value and name */}
+        {lowestSucceeded && highestFailed && (
           <div>
-            <h2 className="section-title">The most interesting data point</h2>
+            <h2 className="section-title">Where the two measures part most plainly</h2>
             <p className="mb-5 mt-2 text-sm leading-relaxed text-ink-body">
-              This site has the biggest gap between its Lighthouse rank and its behavioral rank: the
-              case where the static rubric gets it wrong.
+              The lowest category mean among the sites where every measured trial succeeded, and
+              the highest among the sites where none did, for {agentLabel(measuredAgentId)}.
             </p>
-            <Link
-              href={withAgent(`/site/${surprising.site.site_id}`, agentId)}
-              className="block rounded-lg border border-line p-5 transition-colors hover:border-ink-muted hover:bg-surface-2"
-            >
-              <p className="mb-2 font-serif text-lg font-medium text-ink">{surprising.site.name}</p>
-              <div className="space-y-1 text-sm text-ink-body">
-                <p>
-                  Lighthouse rank:{" "}
-                  <span className="font-mono tabular-nums text-ink">#{surprising.lhRank + 1}</span>{" "}
-                  (score: {surprising.site.lh_total})
+            <div className="space-y-3 text-sm text-ink-body">
+              {[
+                { group: lowestSucceeded, label: "every" },
+                { group: highestFailed, label: "no" },
+              ].map(({ group, label }) => (
+                <p key={label} className="border-t border-line-soft pt-3">
+                  {group.sites.map((site, i) => (
+                    <span key={site.site_id}>
+                      {i > 0 && (i === group.sites.length - 1 ? " and " : ", ")}
+                      <Link
+                        href={withAgent(`/site/${site.site_id}`, agentId)}
+                        className="link-ink font-medium text-ink"
+                      >
+                        {site.name}
+                      </Link>
+                    </span>
+                  ))}
+                  , category mean{" "}
+                  <span className="font-mono tabular-nums text-ink">{group.value}</span>,{" "}
+                  <span className="font-mono tabular-nums text-ink">{outcomeOf(group.sites)}</span>.
                 </p>
-                <p>
-                  Behavioral rank:{" "}
-                  <span className="font-mono tabular-nums text-ink">
-                    #{surprising.successRank + 1}
-                  </span>{" "}
-                  ({Math.round(surprising.site.success_rate * 100)}% success)
-                </p>
-                <p className="mt-3 font-medium text-ink underline decoration-line underline-offset-2">
-                  View site detail →
-                </p>
-              </div>
-            </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -313,20 +330,21 @@ export default async function CorrelationPage({
           {rho === null || rhoCI === null ? (
             <>
               No finding yet. {n === 0 ? "No site" : `Only ${n} ${n === 1 ? "site" : "sites"}`} in
-              this batch {n === 1 ? "has" : "have"} both a Lighthouse score and measured agent
+              this batch {n === 1 ? "has" : "have"} both a Lighthouse category mean and measured agent
               trials, so there is nothing to correlate; this page states the result once the lanes
               have run, and claims nothing before then.
             </>
           ) : relationshipVerdict(rhoCI) === "none" ? (
             <>
-              On {n} sites, no relationship between Google&apos;s Agentic Browsing score and whether{" "}
-              {agentLabel(measuredAgentId)} could complete a real task was distinguishable from noise
+              On {n} sites, no relationship between the Lighthouse category mean and whether{" "}
+              {agentLabel(measuredAgentId)} found the registered fact within the budget was
+              distinguishable from noise
               (ρ&nbsp;=&nbsp;{formatR(rho)}, 95% CI&nbsp;{formatInterval(rhoCI)}). The interval spans
               zero: this cohort cannot separate the rubric&apos;s predictive power from none at all.
             </>
           ) : (
             <>
-              On {n} sites, the Agentic Browsing score tracks behavioral success
+              On {n} sites, the Lighthouse category mean tracks behavioral success
               (ρ&nbsp;=&nbsp;{formatR(rho)}, 95% CI&nbsp;{formatInterval(rhoCI)}).
             </>
           )}
@@ -358,9 +376,9 @@ export default async function CorrelationPage({
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-body">
           Everything above is about what {n} sites could and could not detect. The other way to
           probe a rubric is to build a counterexample: two authored pages, identical down to the
-          rendered pixels, both scoring {exhibitScore ?? "the same"} on the Agentic Browsing
-          category, differing only in whether the rows outside a scroll box are placed in the
-          document. The agent answers on every trial against one of them and on none against the
+          rendered pixels, both with category mean {exhibitScore ?? "the same"} on the Agentic
+          Browsing category, differing only in whether the rows outside a scroll box are placed
+          in the document. The agent answers on every trial against one of them and on none against the
           other.
         </p>
         <p className="card-note max-w-3xl">

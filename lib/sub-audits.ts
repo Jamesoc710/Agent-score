@@ -52,8 +52,9 @@ export type AuditKey =
 
 export interface AuditDefinition {
   key: AuditKey;
+  /** Named for the audit, never for the fact the flag is mistaken for (design S2-7 section 9). */
   label: string;
-  /** The real Lighthouse audit id, so a row is checkable against Lighthouse 13.3.0 itself. */
+  /** The real Lighthouse audit id at the 13.3.0 pin, so a row is checkable against it. */
   lighthouseId: string;
 }
 
@@ -61,16 +62,17 @@ export interface AuditDefinition {
 export const AUDITS: AuditDefinition[] = [
   {
     key: "lh_accessibility_tree",
-    label: "Accessibility tree",
+    label: "Accessibility-tree audit",
     lighthouseId: "agent-accessibility-tree",
   },
   {
+    // v1's flag is CLS === 1.00, so the split is that and nothing more.
     key: "lh_layout_stability",
-    label: "Layout stability",
+    label: "CLS = 1.00 versus below",
     lighthouseId: "cumulative-layout-shift",
   },
-  { key: "lh_llms_txt", label: "llms.txt", lighthouseId: "llms-txt" },
-  { key: "lh_webmcp", label: "WebMCP", lighthouseId: "webmcp-registered-tools" },
+  { key: "lh_llms_txt", label: "llms.txt audit", lighthouseId: "llms-txt" },
+  { key: "lh_webmcp", label: "WebMCP audits (applicability)", lighthouseId: "webmcp-registered-tools" },
 ];
 
 export const ALPHA = 0.05;

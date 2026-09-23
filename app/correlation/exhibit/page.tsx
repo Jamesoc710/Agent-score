@@ -8,6 +8,7 @@ import { formatPercent, formatRunWindow } from "@/lib/format";
 import CorrelationChart from "@/components/CorrelationChart";
 import TrialReplay from "@/components/TrialReplay";
 import type { CorrelationPoint } from "@/lib/types";
+import { auditStatesOf, v1AuditLines } from "@/lib/labels";
 
 // Rendered per request like every other data page: the cohort backdrop comes from the
 // published batch, which changes when a batch is imported rather than when the app is built.
@@ -18,10 +19,10 @@ const CONTROL_ID = "exhibit_a";
 const GATED_ID = "exhibit_b";
 
 /**
- * The static score both halves were measured at, or null if they somehow differ.
+ * The category mean both halves were measured at, or null if they somehow differ.
  *
  * Read off the committed Lane 1 artifact rather than written into the copy. The whole page
- * turns on "both pages score the same", so that number is never a literal in a sentence.
+ * turns on "both pages have the same mean", so that number is never a literal in a sentence.
  */
 const SHARED_LH_TOTAL: number | null = (() => {
   const scores = [
@@ -35,7 +36,7 @@ export const metadata = {
   description:
     SHARED_LH_TOTAL === null
       ? "Two authored pages, identical except for one property the Lighthouse Agentic Browsing audit cannot see. The agent solves one on every trial and never solves the other."
-      : `Two authored pages that both score ${SHARED_LH_TOTAL} on Google's Lighthouse Agentic Browsing category. The agent solves one on every trial and never solves the other.`,
+      : `Two authored pages that both have a Lighthouse Agentic Browsing category mean of ${SHARED_LH_TOTAL}. The agent solves one on every trial and never solves the other.`,
 };
 
 export default async function ExhibitPage({
@@ -66,11 +67,11 @@ export default async function ExhibitPage({
         <h1 className="page-title">
           {SHARED_LH_TOTAL === null
             ? "A page that passes the audit and defeats the agent"
-            : `A page that scores ${SHARED_LH_TOTAL} and defeats the agent`}
+            : `A page with a Lighthouse category mean of ${SHARED_LH_TOTAL} that defeats the agent`}
         </h1>
         <p className="page-lead max-w-3xl">
-          The correlation study could not distinguish the Lighthouse Agentic Browsing score&apos;s
-          predictive power from noise, and neither could any single sub-audit. Both are statements
+          The correlation study could not distinguish the Lighthouse Agentic Browsing category
+          mean&apos;s predictive power from noise, and neither could any single sub-audit. Both are statements
           about what {cohortPoints.length} sites could detect. This page is the other kind of
           evidence: two authored pages, built to be identical except for one thing the audit
           cannot see.
@@ -150,14 +151,15 @@ function Headline({
   return (
     <section className="mt-12">
       <p className="font-serif text-[1.375rem] font-medium leading-snug text-ink sm:text-[1.625rem]">
-        Both pages score {control.lighthouse?.lh_total ?? "–"} out of 100. The agent reported the
+        Both pages have a Lighthouse category mean of {control.lighthouse?.lh_total ?? "–"}. The
+        agent reported the
         registered answer on {c.successes} of {c.measured} trials against one of them, and{" "}
         {g.successes} of {g.measured} against the other.
       </p>
       <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-body">
         Same question, same registered answer, same 40 rows of data, same styling, same copy. At
         1280 by 800 on load the two pages render the identical screenshot, byte for byte. Lighthouse
-        gives them the identical score with the identical audit outcomes. A person finds the answer
+        gives them the identical category mean with the identical audit outcomes. A person finds the answer
         on either one in a few seconds. The frozen agent finds it on one of them and never on the
         other, across {agentCount} models and {c.measured + g.measured} trials
         {runWindow && <> measured {runWindow} (UTC)</>}.
@@ -194,7 +196,7 @@ function SideCard({ page, tone }: { page: ExhibitPageResult; tone: "good" | "bad
           <p className="font-mono text-3xl font-semibold tabular-nums text-ink">
             {page.lighthouse?.lh_total ?? "–"}
           </p>
-          <p className="mt-1 text-[11px] text-ink-muted">Lighthouse score</p>
+          <p className="mt-1 text-[11px] text-ink-muted">LH mean</p>
         </div>
       </div>
       <p className="mt-3 text-xs leading-relaxed text-ink-body">{page.site.flag}</p>
@@ -233,7 +235,7 @@ function Scatter({
 
   return (
     <div className="mt-10 border-y border-line py-4 sm:py-6">
-      <CorrelationChart points={cohortPoints} fit={null} authored={authored} />
+      <CorrelationChart points={cohortPoints} authored={authored} />
       <p className="mt-4 px-2 text-xs leading-relaxed text-ink-muted sm:px-0">
         Grey circles are the {cohortPoints.length} measured cohort sites from batch{" "}
         <code className="font-mono">{cohortBatch}</code> under {agentLabel(cohortAgent)}, shown as
@@ -278,12 +280,13 @@ function Mechanism({ control, gated }: { control: ExhibitPageResult; gated: Exhi
           <tbody className="text-ink-body">
             <MechanismRow label="Rendered screenshot, 1280 x 800" a="identical PNG" b="identical PNG" />
             <MechanismRow
-              label="Lighthouse Agentic Browsing"
+              label="Lighthouse category mean"
               a={String(control.lighthouse?.lh_total ?? "–")}
               b={String(gated.lighthouse?.lh_total ?? "–")}
             />
-            <MechanismRow label="Accessibility-tree audit" a="pass" b="pass" />
-            <MechanismRow label="Layout-stability audit" a="pass" b="pass" />
+            {auditRows(control, gated).map((row) => (
+              <MechanismRow key={row.label} label={row.label} a={row.a} b={row.b} />
+            ))}
             <MechanismRow label="Data rows in the document" a="40" b="16" />
             <MechanismRow label="Target row in document.body.innerText" a="yes" b="no" />
             <MechanismRow label="Target row in the screenshot" a="no, it is below the fold" b="no" />
@@ -306,6 +309,24 @@ function Mechanism({ control, gated }: { control: ExhibitPageResult; gated: Exhi
       </p>
     </section>
   );
+}
+
+/**
+ * The two recorded flags that entered both pages' mean, read from the committed Lane 1 rows in
+ * the words v1's flags can support (design S2-7 section 9), never typed as "pass".
+ */
+function auditRows(control: ExhibitPageResult, gated: ExhibitPageResult) {
+  const a = control.lighthouse ? auditStatesOf(control.lighthouse) : null;
+  const b = gated.lighthouse ? auditStatesOf(gated.lighthouse) : null;
+  if (!a || !b) return [];
+  const linesB = v1AuditLines(b);
+  return v1AuditLines(a)
+    .filter((line) => line.key === "a11y_tree" || line.key === "cls")
+    .map((line) => ({
+      label: line.label,
+      a: line.value.replace(/^[✓✗] /, ""),
+      b: linesB.find((l) => l.key === line.key)!.value.replace(/^[✓✗] /, ""),
+    }));
 }
 
 function MechanismRow({ label, a, b }: { label: string; a: string; b: string }) {
@@ -461,8 +482,9 @@ function Claims({ control, gated }: { control: ExhibitPageResult; gated: Exhibit
         What this does and does not show
       </h2>
       <p className="text-[17px] font-medium leading-relaxed text-emphasis-ink">
-        A page can score {gated.lighthouse?.lh_total ?? "–"} out of 100 on Google&apos;s Agentic
-        Browsing category, pass every audit in it, be fully usable by a person, and still defeat
+        A page can have a Lighthouse Agentic Browsing category mean of{" "}
+        {gated.lighthouse?.lh_total ?? "–"}, pass every audit that applied to it, be fully usable by
+        a person, and still defeat
         this agent on every one of {g.measured} trials across both models, while its twin is solved
         on {c.successes} of {c.measured}. The property that decides which happens is not one the
         audit looks at.
