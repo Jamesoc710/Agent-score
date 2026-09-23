@@ -1,7 +1,18 @@
 // Tiny CLI helpers, so the pipeline scripts don't each hand-roll argv parsing.
 // Supports `--flag`, `--flag value` and `--flag=value`.
 
-const VALUE_FLAGS = new Set(["--batch", "--agent-id"]);
+const VALUE_FLAGS = new Set([
+  "--batch",
+  "--agent-id",
+  "--lighthouse-version",
+  "--preset",
+  "--repeats",
+  "--sites",
+  "--date",
+  "--vantage",
+  "--lane-exit",
+  "--out",
+]);
 
 export function hasFlag(name: string, argv: string[] = process.argv.slice(2)): boolean {
   return argv.includes(name);

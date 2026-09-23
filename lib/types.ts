@@ -27,11 +27,13 @@ export interface Site {
 export interface LighthouseResult {
   site_id: string;
   batch_label: string;            // which Lane 1 batch this row belongs to
-  lh_total: number;               // 0–100 Agentic Browsing category score
-  lh_accessibility_tree: number;  // 0 or 1 (pass/fail)
-  lh_layout_stability: number;    // 0 or 1
-  lh_llms_txt: number;            // 0 or 1
-  lh_webmcp: number;              // 0 or 1
+  // 0–100: the category's arithmetic mean over applicable audits; Chrome displays a fraction, not this
+  lh_total: number;
+  // Each flag: 1 = passed; 0 = did not pass or did not apply (v1 semantics)
+  lh_accessibility_tree: number;
+  lh_layout_stability: number;    // 1 only when the CLS audit scored exactly 1.00
+  lh_llms_txt: number;
+  lh_webmcp: number;              // the audits applied in this run: a browser property, never adoption
   screenshot_path?: string;
   run_at: string; // ISO timestamp
 }
@@ -93,7 +95,7 @@ export interface SiteLeaderboardEntry {
   trial_count: number;
   mean_steps: number;
   top_failure_mode: FailureMode;
-  rank: number;
+  rank: number;              // kept in the contract; no longer rendered (no rank over ties)
 }
 
 // Derived view: what one published (batch, agent) slice actually measured. Every field is a

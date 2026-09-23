@@ -2,14 +2,14 @@
 
 **Is the web ready for agents?**
 
-AgentRank ranks real websites by how often a browser agent can actually complete a real task on them, and tests whether static "agent-readiness" scores (like Google's Lighthouse Agentic Browsing audit) predict measured agent success.
+AgentRank measures how often one fixed browser agent can complete one fixed-shape task on real, named websites, with every answer registered before any run, and checks whether static "agent-readiness" scores (Google's Lighthouse Agentic Browsing category among them) predict that measured success.
 
 Static scanners inspect your site and guess. AgentRank runs the agent and measures.
 
 ## Why this exists
 
 - Agent traffic is a real and fast-growing share of web traffic, on a web built for humans clicking buttons.
-- Lighthouse 13.3 shipped an Agentic Browsing audit category (accessibility-tree quality, layout stability, llms.txt, WebMCP) but publishes pass/fail signals without validating that they predict real task completion.
+- Lighthouse ships an Agentic Browsing category: six audits at 13.3.0, the version v1 ran (`agent-accessibility-tree`, `cumulative-layout-shift`, `llms-txt`, and three WebMCP audits, two of them informative and never scored); seven at 13.5.0, the version pinned since the re-measurement of 2026-09-23, with `ard-schema` added. Chrome displays the category as a fraction of applicable checks and publishes no score, and nothing in it has been validated against real task completion.
 - Existing agent benchmarks (WebArena, TAU-bench) hold the website constant and score the agent. AgentRank inverts that: we hold the agent constant and score the website.
 - Nobody has joined the two axes: static readiness score (x) vs measured behavioral success (y). That correlation, across real named sites, is the headline result.
 
@@ -17,15 +17,15 @@ See [docs/PRODUCT.md](./docs/PRODUCT.md) for the full thesis and market landscap
 
 ## How it works
 
-1. **Static lane** (`scripts/lane1-lighthouse.ts`): runs the official Lighthouse CLI with the Agentic Browsing category against each cohort site. We reimplement nothing; the static layer is Google's.
+1. **Static lane** (`scripts/lane1-lighthouse.ts`, launched by `scripts/run-batch.sh`): runs the official Lighthouse CLI with the Agentic Browsing category against each cohort site. We run the official CLI unmodified and record what it returns, including where its own audits do not apply. Since 2026-09-23 every raw report is retained under `data/lhr/<batch>/`, three runs per site, with the version, Chrome build and every audit's display mode recorded.
 2. **Behavioral lane** (`scripts/lane2-agent.py`): a fixed browser agent (Gemini + Playwright, one model, one prompt, one harness) attempts a fixed-shape task on each site, 5 trials per site. Success is scored against answers pre-registered by hand before any run. See [docs/METHODOLOGY.md](./docs/METHODOLOGY.md).
-3. **Leaderboard + correlation** (Next.js app): sites ranked by measured success rate, per-site failure breakdowns, and the scatter of static score vs behavioral success.
+3. **Leaderboard + correlation** (Next.js app): sites listed by measured success rate with no rank column, per-site failure breakdowns, and the scatter of the Lighthouse category mean against behavioral success.
 
 The cohort is 28 real sites chosen for score spread, from Stripe to legacy government portals: [docs/COHORT.md](./docs/COHORT.md), canonical data in [data/cohort.csv](./data/cohort.csv).
 
 ## Status
 
-Active buildout toward the first public leaderboard on real data. Current state, honestly: the frontend is complete, the data layer now runs on Supabase (Firebase is gone) and reads real data by default, with fixtures behind `USE_FAKE_DATA=true`. Lighthouse scores exist only for the earlier draft cohort; the behavioral lane has not yet produced real runs, so there is no correlation result yet — the deployed leaderboard lists the 28-site cohort with empty measurements and says so rather than implying a finding. Live at [agent-score-weld.vercel.app](https://agent-score-weld.vercel.app); pushes to `main` deploy production. Phases and sequencing live in [docs/ROADMAP.md](./docs/ROADMAP.md).
+v1 was measured on 19 August 2026: 28 sites, 280 trials, two Gemini arms behind one frozen harness, scored against answers registered and git-tagged before the run. It is live at [agent-score-weld.vercel.app](https://agent-score-weld.vercel.app) (the dataset and its citation block at [/data](https://agent-score-weld.vercel.app/data); the pre-registration record and contact at [/methodology](https://agent-score-weld.vercel.app/methodology)) and released as the git tag `dataset-v1`, from which a Zenodo DOI is minted and recorded on `/data`. The static axis was re-measured on 2026-09-23 with every report kept, and the corrections that followed are dated sections in [docs/METHODOLOGY.md](./docs/METHODOLOGY.md). Pushes to `main` deploy production. What is done, what is registered and what could run next, on what condition, is in [docs/ROADMAP.md](./docs/ROADMAP.md).
 
 ## Quick start (local dev, fixture data)
 
@@ -43,6 +43,8 @@ npm run seed:sites                 # data/cohort.csv -> sites table (needs servi
 
 npm run lane1                      # Lighthouse over the cohort -> data/lighthouse-<batch>.json
 npx tsx scripts/lane1-lighthouse.ts stripe vercel   # specific sites
+bash scripts/run-batch.sh --lane lighthouse --vantage residential --batch lh-v2-<yyyymmdd>
+                                   # a dated batch with manifest, health card and retained reports
 
 pip install -r scripts/requirements.txt && playwright install chromium
 GEMINI_API_KEY=... python scripts/lane2-agent.py --sites stripe --trials 3
@@ -63,7 +65,10 @@ them, so an interrupted run keeps everything already measured and a batch can be
 | `supabase/migrations/` | Schema, git-tracked, applied with the Supabase CLI |
 | `data/cohort.csv` | Canonical cohort: per-site question, pre-registered answer, match rule |
 | `data/lighthouse-*.json`, `data/agent-runs-*.jsonl` | Per-batch lane artifacts (the record of a run) |
-| `docs/` | Product, architecture, methodology, cohort, roadmap |
+| `data/lhr/<batch>/`, `data/manifest-*.json`, `data/env-*.txt`, `data/health-*.json` | Retained raw Lighthouse reports, batch manifests, environment records and health cards, from the dated batches of 2026-09-23 on |
+| `data/scanners-<date>.json` | The same-day scanner panel (ora.ai, Cloudflare), raw responses, fetched data never imported |
+| `public/exhibit/` | The two authored pages of the Goodhart pair |
+| `docs/` | Product, architecture, methodology, cohort, the exhibit's record, roadmap, and the Lighthouse report |
 
 ## Docs
 
@@ -73,4 +78,6 @@ them, so an interrupted run keeps everything already measured and a batch can be
 | [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | System design, data contract, environment |
 | [docs/METHODOLOGY.md](./docs/METHODOLOGY.md) | The pre-registered scoring contract and trial protocol |
 | [docs/COHORT.md](./docs/COHORT.md) | The 28-site cohort, site by site |
-| [docs/ROADMAP.md](./docs/ROADMAP.md) | Build phases and future work |
+| [docs/EXHIBIT.md](./docs/EXHIBIT.md) | The authored Goodhart pair: its own pre-registration record and measured result |
+| [docs/lighthouse-report.md](./docs/lighthouse-report.md) | The report for the Lighthouse team: the audit defects, the corrections, the counterexample and the bounded null |
+| [docs/ROADMAP.md](./docs/ROADMAP.md) | What is done, what is registered, the kill review, and what could run next |

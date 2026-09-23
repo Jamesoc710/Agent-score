@@ -1,134 +1,357 @@
 /**
- * Lane 1 — Lighthouse static scorer
+ * Lane 1: Lighthouse, the static x-axis (design S2-7 §2).
  *
- * Lighthouse 13.3.0 — agentic-browsing category, verified 2026-05-30 against stripe.com.
+ * Per site, per repeat (three by default, sequential, a fresh Chrome each run, 180 s timeout),
+ * the v1 invocation with its report retained:
  *
- * Verified audit IDs (confirmed from real LHR JSON):
- *   category  : "agentic-browsing"
- *   audits    : "agent-accessibility-tree", "cumulative-layout-shift",
- *               "llms-txt", "webmcp-registered-tools"
- *   lh_total  : Math.round(categories["agentic-browsing"].score * 100)
- *   sub-audits: 1 if score === 1 (strict pass), 0 otherwise — matches lib/types.ts
+ *   CHROME_PATH=<Playwright's Chromium> lighthouse "<start_url>" --output=json
+ *     --output-path=data/lhr/<batch>/<site_id>.<r>.json --quiet
+ *     --only-categories=agentic-browsing --chrome-flags='--headless --no-sandbox --disable-gpu'
  *
- * Usage:
- *   npx tsx scripts/lane1-lighthouse.ts                       # all cohort sites
- *   npx tsx scripts/lane1-lighthouse.ts stripe vercel         # named site IDs only
- *   npx tsx scripts/lane1-lighthouse.ts --batch v1            # label the batch
+ * with `--preset=desktop` added for the desktop companion and nothing else. The row comes from
+ * one repeat, the median by lh_total (ties to the earliest fetchTime); the spread sits beside
+ * it. A repeat with a runtimeError is invalid; a site with fewer than two valid repeats is not
+ * measured and is named in the failures sidecar. The run stops, with the offending report
+ * kept, when a report's Lighthouse version or Chrome is not the one requested.
  *
- * Output: data/lighthouse-<batch>.json only. This lane does not talk to the database —
- * load a batch with `npx tsx scripts/import-results.ts --batch <batch>`.
+ * Usage (scripts/run-batch.sh is the launch path for a published batch):
+ *   npx tsx scripts/lane1-lighthouse.ts --batch <label> [--lighthouse-version 13.4.1]
+ *       [--preset desktop] [--repeats 3] [--resume] [--dry-run] [site_id ...]
+ *
+ * Writes, and never touches the database:
+ *   data/lighthouse-<batch>.json            { site_id: LighthouseResult }, importable as today
+ *   data/lighthouse-<batch>.panel.json      the extended per-site row (median repeat, spread, panel)
+ *   data/lighthouse-<batch>.audits.json     the per-run extract, every repeat
+ *   data/lighthouse-<batch>.failures.json   sites not measured, with the error class per repeat
+ *   data/lighthouse-<batch>.llms-txt.json   one plain GET /llms.txt per site
+ *   data/lhr/<batch>/<site_id>.<r>.json     every raw report
  */
 
-import { execSync } from "child_process";
-import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from "fs";
+import { spawn } from "child_process";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 import path from "path";
 import { readCohort } from "./cohort-csv";
-import { lighthouseArtifactPath } from "./artifacts";
-import { flagValue, positionals } from "./args";
+import {
+  lhrDir,
+  lhrPath,
+  lighthouseArtifactPath,
+  lighthouseAuditsPath,
+  lighthouseFailuresPath,
+  lighthousePanelPath,
+  llmsTxtSidecarPath,
+} from "./artifacts";
+import { flagValue, hasFlag, positionals } from "./args";
+import {
+  EXPECTED_CHROME_VERSION,
+  assertLighthouseInstalled,
+  chromeBinaryVersion,
+  chromeMajor,
+  lighthouseArgs,
+  pinnedLighthouseVersion,
+  repoRelative,
+  resolveChromePath,
+  type Lane1Preset,
+} from "./lane1-env";
+import {
+  MIN_VALID_REPEATS,
+  buildPanelRow,
+  chromeVersionFromUserAgent,
+  extractLighthouseRow,
+  extractRunMeta,
+  flatFields,
+  invalidReason,
+  selectMedianRepeat,
+  toLighthouseResult,
+  type AuditExtract,
+  type LighthouseFlags,
+  type LighthousePanelRow,
+  type Lhr,
+  type PanelFields,
+  type RunMeta,
+} from "./lane1-extract";
 import { ACTIVE_BATCH } from "../lib/dataset";
-import type { LighthouseResult } from "../lib/types";
+import type { LighthouseResult, Site } from "../lib/types";
 
-// data/cohort.csv is the canonical 28-site cohort; readCohort() validates on read.
-const cohort = readCohort();
+const RUN_TIMEOUT_MS = 180_000;
+// SIGINT first so chrome-launcher's handler closes Chrome; SIGKILL if Lighthouse ignores it.
+const KILL_GRACE_MS = 15_000;
+const LLMS_TXT_TIMEOUT_MS = 20_000;
+const DEFAULT_REPEATS = 3;
+
+// Lighthouse runtimeError codes that mean the site refused or failed the load, as opposed to a
+// Lighthouse or Chrome failure. v1 separated the first two.
+const ACCESS_FAILURE_CODES = new Set([
+  "NO_FCP",
+  "FAILED_DOCUMENT_REQUEST",
+  "ERRORED_DOCUMENT_REQUEST",
+  "DNS_FAILURE",
+  "INSECURE_DOCUMENT_REQUEST",
+  "CHROME_INTERSTITIAL_ERROR",
+  "NOT_HTML",
+]);
+
+export type RepeatErrorClass =
+  | "access_failure"
+  | "runtime_error"
+  | "no_category_score"
+  | "timeout"
+  | "crash"
+  | "unreadable_report";
+
+export interface RepeatRecord {
+  repeat: number;
+  /** Repo-relative; null when Lighthouse wrote no report. */
+  lhr_path: string | null;
+  valid: boolean;
+  invalid_reason: string | null;
+  error_class: RepeatErrorClass | null;
+  exit_code: number | null;
+  wall_ms: number;
+  run: RunMeta | null;
+  extract: (LighthouseFlags & PanelFields) | null;
+  audits: Record<string, AuditExtract> | null;
+}
+
+export interface SiteAudits {
+  site_id: string;
+  start_url: string;
+  repeats: RepeatRecord[];
+}
+
+export interface SiteFailure {
+  site_id: string;
+  status: "not_measured";
+  valid_repeats: number;
+  attempted_repeats: number;
+  repeats: { repeat: number; error_class: RepeatErrorClass | null; reason: string | null }[];
+  recorded_at: string;
+}
+
+export interface LlmsTxtProbe {
+  url: string;
+  final_url: string | null;
+  status: number | null;
+  content_type: string | null;
+  bytes: number | null;
+  user_agent: string | null;
+  fetched_at: string;
+  error: string | null;
+}
+
+class InstrumentMismatch extends Error {}
+
+interface RunContext {
+  batch: string;
+  version: string;
+  preset: Lane1Preset;
+  bin: string;
+  chromePath: string;
+}
 
 // ---------------------------------------------------------------------------
-// Lighthouse runner
+// One repeat
 // ---------------------------------------------------------------------------
 
-async function runLighthouse(url: string): Promise<LighthouseResult | null> {
-  const tmpFile = path.join(process.cwd(), `.lh-tmp-${process.pid}.json`);
+async function runRepeat(site: Site, repeat: number, ctx: RunContext): Promise<RepeatRecord> {
+  const out = lhrPath(ctx.batch, site.site_id, repeat);
+  // A resumed site re-runs from repeat 1; never read a report left by the interrupted attempt.
+  if (existsSync(out)) unlinkSync(out);
 
-  try {
-    const cmd = [
-      "npx lighthouse",
-      `"${url}"`,
-      "--output=json",
-      `--output-path="${tmpFile}"`,
-      "--quiet",
-      "--only-categories=agentic-browsing",
-      "--chrome-flags='--headless --no-sandbox --disable-gpu'",
-    ].join(" ");
+  const started = Date.now();
+  const proc = await runProcess(
+    ctx.bin,
+    lighthouseArgs(site.start_url, out, ctx.preset),
+    { ...process.env, CHROME_PATH: ctx.chromePath },
+    RUN_TIMEOUT_MS
+  );
+  const wall_ms = Date.now() - started;
 
-    execSync(cmd, { stdio: "pipe", timeout: 180_000 });
+  const base = {
+    repeat,
+    exit_code: proc.code,
+    wall_ms,
+    run: null,
+    extract: null,
+    audits: null,
+  };
 
-    const raw = JSON.parse(readFileSync(tmpFile, "utf-8"));
-
-    // lh_total = the agentic-browsing category score. Never fabricate a substitute.
-    const agenticCategory = raw.categories?.["agentic-browsing"];
-    if (!agenticCategory || typeof agenticCategory.score !== "number") {
-      const available = Object.keys(raw.categories ?? {}).join(", ") || "(none)";
-      throw new Error(
-        `No "agentic-browsing" category in Lighthouse output. ` +
-        `Available: [${available}]. Confirm lighthouse >= 13.3 is installed.`
-      );
-    }
-    const lh_total = Math.round(agenticCategory.score * 100);
-
-    const audits = raw.audits ?? {};
-    const auditPass = (id: string): number => {
-      const audit = audits[id];
-      if (!audit || audit.score === null) return 0;
-      return audit.score === 1 ? 1 : 0;
-    };
-
-    // Log if an expected audit id is absent (catches future Lighthouse renames).
-    const expectedIds = [
-      "agent-accessibility-tree",
-      "cumulative-layout-shift",
-      "llms-txt",
-      "webmcp-registered-tools",
-    ];
-    const absent = expectedIds.filter((id) => !(id in audits));
-    if (absent.length) {
-      console.warn(`  ⚠ Audit ids not found in LHR: ${absent.join(", ")}`);
-    }
-
+  if (!existsSync(out)) {
     return {
-      site_id: "",     // filled in by caller
-      batch_label: "", // filled in by caller
-      lh_total,
-      lh_accessibility_tree: auditPass("agent-accessibility-tree"),
-      lh_layout_stability:   auditPass("cumulative-layout-shift"),
-      lh_llms_txt:           auditPass("llms-txt"),
-      lh_webmcp:             auditPass("webmcp-registered-tools"),
-      run_at: new Date().toISOString(),
+      ...base,
+      lhr_path: null,
+      valid: false,
+      error_class: proc.timedOut ? "timeout" : "crash",
+      invalid_reason: proc.timedOut
+        ? `no report within ${RUN_TIMEOUT_MS / 1000} s`
+        : `exit ${proc.code ?? proc.signal}: ${lastLine(proc.stderr)}`,
+    };
+  }
+
+  let lhr: Lhr;
+  try {
+    lhr = JSON.parse(readFileSync(out, "utf8")) as Lhr;
+  } catch (err) {
+    return {
+      ...base,
+      lhr_path: repoRelative(out),
+      valid: false,
+      error_class: "unreadable_report",
+      invalid_reason: `report does not parse: ${(err as Error).message}`,
+    };
+  }
+
+  checkInstrument(lhr, ctx, out);
+
+  const invalid = invalidReason(lhr);
+  if (invalid) {
+    const code = lhr.runtimeError?.code ?? "";
+    return {
+      ...base,
+      lhr_path: repoRelative(out),
+      valid: false,
+      error_class: lhr.runtimeError
+        ? ACCESS_FAILURE_CODES.has(code) ? "access_failure" : "runtime_error"
+        : "no_category_score",
+      invalid_reason: invalid,
+      run: extractRunMeta(lhr),
+    };
+  }
+
+  const extracted = extractLighthouseRow(lhr, { clsRule: "v1" });
+  return {
+    ...base,
+    lhr_path: repoRelative(out),
+    valid: true,
+    error_class: null,
+    invalid_reason: null,
+    run: extracted.run,
+    extract: flatFields(extracted),
+    audits: extracted.audits,
+  };
+}
+
+/** Refuse, with the report kept, when a report is not from the requested instrument. */
+function checkInstrument(lhr: Lhr, ctx: RunContext, file: string): void {
+  const where = repoRelative(file);
+  if (lhr.lighthouseVersion !== ctx.version) {
+    throw new InstrumentMismatch(
+      `${where}: lighthouseVersion is ${lhr.lighthouseVersion}, requested ${ctx.version}.`
+    );
+  }
+  // Chrome reduces the user agent to <major>.0.0.0, so the LHR can confirm the major version
+  // and the headless product; the full version is checked on the binary before the run.
+  const ua = lhr.environment?.hostUserAgent ?? "";
+  const uaVersion = chromeVersionFromUserAgent(ua);
+  const major = chromeMajor(EXPECTED_CHROME_VERSION);
+  const acceptable = [EXPECTED_CHROME_VERSION, `${major}.0.0.0`];
+  if (!ua.includes("HeadlessChrome/") || !uaVersion || !acceptable.includes(uaVersion)) {
+    throw new InstrumentMismatch(
+      `${where}: environment.hostUserAgent is "${ua}", expected HeadlessChrome/${acceptable.join(" or ")}.`
+    );
+  }
+}
+
+interface ProcessResult {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  timedOut: boolean;
+  stderr: string;
+}
+
+function runProcess(
+  cmd: string,
+  args: string[],
+  env: NodeJS.ProcessEnv,
+  timeoutMs: number
+): Promise<ProcessResult> {
+  return new Promise((resolve) => {
+    const child = spawn(cmd, args, { env, stdio: ["ignore", "ignore", "pipe"] });
+    let stderr = "";
+    let timedOut = false;
+    let killTimer: NodeJS.Timeout | undefined;
+    child.stderr?.on("data", (chunk: Buffer) => {
+      stderr = (stderr + chunk.toString()).slice(-4000);
+    });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      child.kill("SIGINT");
+      killTimer = setTimeout(() => child.kill("SIGKILL"), KILL_GRACE_MS);
+    }, timeoutMs);
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      if (killTimer) clearTimeout(killTimer);
+      resolve({ code: null, signal: null, timedOut, stderr: err.message });
+    });
+    child.on("close", (code, signal) => {
+      clearTimeout(timer);
+      if (killTimer) clearTimeout(killTimer);
+      resolve({ code, signal, timedOut, stderr });
+    });
+  });
+}
+
+function lastLine(text: string): string {
+  const lines = text.trim().split("\n").filter(Boolean);
+  return (lines[lines.length - 1] ?? "(no stderr)").slice(0, 300);
+}
+
+// ---------------------------------------------------------------------------
+// The plain GET /llms.txt beside the audit
+// ---------------------------------------------------------------------------
+
+// The LHR does not carry the HTTP status of a 4xx (the audit is notApplicable with no
+// displayValue), so one plain GET records it (S2-7 §2). It asks the same origin the audit asks
+// (finalDisplayedUrl) with the user agent Lighthouse's own fetch presented.
+export async function probeLlmsTxt(baseUrl: string, userAgent: string | null): Promise<LlmsTxtProbe> {
+  const url = new URL("/llms.txt", baseUrl).href;
+  const fetched_at = new Date().toISOString();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LLMS_TXT_TIMEOUT_MS);
+  try {
+    const headers: Record<string, string> = { Accept: "*/*" };
+    if (userAgent) headers["User-Agent"] = userAgent;
+    const res = await fetch(url, { headers, redirect: "follow", signal: controller.signal });
+    const body = await res.arrayBuffer();
+    return {
+      url,
+      final_url: res.url || null,
+      status: res.status,
+      content_type: res.headers.get("content-type"),
+      bytes: body.byteLength,
+      user_agent: userAgent,
+      fetched_at,
+      error: null,
     };
   } catch (err) {
-    const msg = (err as Error).message ?? String(err);
-    // Distinguish access failures from Lighthouse crashes so callers can label them correctly.
-    if (msg.includes("NO_FCP") || msg.includes("FAILED_DOCUMENT_REQUEST")) {
-      console.error(`  ✗ Access failure (site blocked Lighthouse): ${msg.slice(0, 120)}`);
-    } else {
-      console.error(`  ✗ Lighthouse error: ${msg.slice(0, 120)}`);
-    }
-    return null;
+    const e = err as Error & { cause?: { code?: string; message?: string } };
+    const cause = e.cause ? ` (${e.cause.code ?? e.cause.message ?? "cause unknown"})` : "";
+    return {
+      url,
+      final_url: null,
+      status: null,
+      content_type: null,
+      bytes: null,
+      user_agent: userAgent,
+      fetched_at,
+      error: `${e.name}: ${e.message}${cause}`,
+    };
   } finally {
-    try { unlinkSync(tmpFile); } catch {}
+    clearTimeout(timer);
   }
 }
 
 // ---------------------------------------------------------------------------
-// Persistence — local artifact only; scripts/import-results.ts loads it into Supabase
+// Persistence: local artifacts only; scripts/import-results.ts loads the typed rows
 // ---------------------------------------------------------------------------
 
-function loadLocalResults(artifactPath: string): Record<string, LighthouseResult> {
-  if (!existsSync(artifactPath)) return {};
-  try {
-    return JSON.parse(readFileSync(artifactPath, "utf-8"));
-  } catch {
-    return {};
-  }
+function loadJson<T>(file: string): Record<string, T> {
+  if (!existsSync(file)) return {};
+  return JSON.parse(readFileSync(file, "utf8")) as Record<string, T>;
 }
 
-// Written after every site, so an interrupted batch keeps everything already measured.
-function saveResult(
-  artifactPath: string,
-  result: LighthouseResult,
-  local: Record<string, LighthouseResult>
-): void {
-  local[result.site_id] = result;
-  mkdirSync(path.dirname(artifactPath), { recursive: true });
-  writeFileSync(artifactPath, JSON.stringify(local, null, 2));
+function saveJson(file: string, data: unknown): void {
+  mkdirSync(path.dirname(file), { recursive: true });
+  writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
 // ---------------------------------------------------------------------------
@@ -137,86 +360,165 @@ function saveResult(
 
 async function main() {
   const batch = flagValue("--batch", ACTIVE_BATCH);
-  const requested = positionals();
-  const targetIds = requested.length > 0 ? new Set(requested) : null;
-  const sites = targetIds
-    ? cohort.filter((s) => targetIds.has(s.site_id))
-    : cohort;
+  const version = flagValue("--lighthouse-version", pinnedLighthouseVersion());
+  const presetFlag = flagValue("--preset", "");
+  if (presetFlag !== "" && presetFlag !== "desktop") {
+    throw new Error(`--preset takes "desktop" only; got "${presetFlag}".`);
+  }
+  const preset: Lane1Preset = presetFlag === "desktop" ? "desktop" : null;
+  const repeats = Number(flagValue("--repeats", String(DEFAULT_REPEATS)));
+  if (!Number.isInteger(repeats) || repeats < 1) throw new Error(`--repeats must be a positive integer.`);
+  const minValid = Math.min(MIN_VALID_REPEATS, repeats);
+  const resume = hasFlag("--resume");
+  const dryRun = hasFlag("--dry-run");
 
-  if (sites.length === 0) {
-    console.error("No matching sites found. Check site IDs.");
-    process.exit(1);
+  const cohort = readCohort();
+  const requested = [
+    ...positionals(),
+    ...flagValue("--sites", "").split(",").map((s) => s.trim()).filter(Boolean),
+  ];
+  const unknown = requested.filter((id) => !cohort.some((s) => s.site_id === id));
+  if (unknown.length > 0) throw new Error(`Not in the cohort: ${unknown.join(", ")}`);
+  const sites = requested.length > 0 ? cohort.filter((s) => requested.includes(s.site_id)) : cohort;
+
+  const install = assertLighthouseInstalled(version);
+  const chromePath = resolveChromePath();
+  const chromeVersion = chromeBinaryVersion(chromePath);
+  if (chromeVersion !== EXPECTED_CHROME_VERSION) {
+    throw new InstrumentMismatch(
+      `CHROME_PATH is Chrome ${chromeVersion}; Lane 1 is pinned to ${EXPECTED_CHROME_VERSION} (${chromePath}).`
+    );
   }
 
-  const artifactPath = lighthouseArtifactPath(batch);
+  const paths = {
+    typed: lighthouseArtifactPath(batch),
+    panel: lighthousePanelPath(batch),
+    audits: lighthouseAuditsPath(batch),
+    failures: lighthouseFailuresPath(batch),
+    llms: llmsTxtSidecarPath(batch),
+    lhr: lhrDir(batch),
+  };
+  const existing = Object.values(paths).filter((p) => existsSync(p));
+  if (existing.length > 0 && !resume) {
+    throw new Error(
+      `Batch "${batch}" already has artifacts (${existing.map(repoRelative).join(", ")}). ` +
+        `A Lane 1 label is never re-used; --resume finishes an interrupted batch.`
+    );
+  }
 
-  console.log(`\nLane 1 — Lighthouse static scorer`);
-  console.log(`  Sites  : ${sites.length}`);
-  console.log(`  Batch  : ${batch}`);
-  console.log(`  Output : ${path.relative(process.cwd(), artifactPath)}`);
-  console.log(`${"─".repeat(52)}`);
+  const typed = loadJson<LighthouseResult>(paths.typed);
+  const panel = loadJson<LighthousePanelRow>(paths.panel);
+  const audits = loadJson<SiteAudits>(paths.audits);
+  const failures = loadJson<SiteFailure>(paths.failures);
+  const llms = loadJson<LlmsTxtProbe>(paths.llms);
 
-  const local = loadLocalResults(artifactPath);
-  const summary: { site_id: string; lh_total: number | null; status: string }[] = [];
+  const todo = resume ? sites.filter((s) => !(s.site_id in typed)) : sites;
 
-  for (let i = 0; i < sites.length; i++) {
-    const site = sites[i];
-    process.stdout.write(`[${i + 1}/${sites.length}] ${site.site_id.padEnd(14)} ${site.start_url} … `);
+  console.log(`\nLane 1: Lighthouse ${version}${preset ? ` (--preset=${preset})` : ""}`);
+  console.log(`  Batch   : ${batch}`);
+  console.log(`  Sites   : ${todo.length}${resume ? ` to resume (${sites.length - todo.length} already measured)` : ""}`);
+  console.log(`  Repeats : ${repeats} per site, sequential, ${RUN_TIMEOUT_MS / 1000} s timeout`);
+  console.log(`  Binary  : ${repoRelative(install.bin)}`);
+  console.log(`  Chrome  : ${chromeVersion} (${chromePath})`);
+  console.log(`  Output  : ${repoRelative(paths.typed)} and ${repoRelative(paths.lhr)}/`);
+  console.log(`${"─".repeat(60)}`);
 
-    const lh = await runLighthouse(site.start_url);
-    if (!lh) {
-      summary.push({ site_id: site.site_id, lh_total: null, status: "FAILED" });
-      console.log("FAILED");
-      continue;
-    }
+  if (dryRun) {
+    todo.forEach((s, i) => console.log(`  [${i + 1}/${todo.length}] ${s.site_id.padEnd(14)} ${s.start_url}`));
+    console.log(`\n--dry-run: no Lighthouse run, nothing written.\n`);
+    return;
+  }
 
-    lh.site_id = site.site_id;
-    lh.batch_label = batch;
+  mkdirSync(paths.lhr, { recursive: true });
+  const ctx: RunContext = { batch, version, preset, bin: install.bin, chromePath };
 
-    try {
-      saveResult(artifactPath, lh, local);
-      summary.push({ site_id: site.site_id, lh_total: lh.lh_total, status: "saved" });
-      console.log(
-        `lh_total=${String(lh.lh_total).padStart(3)}%  ` +
-        `a11y=${lh.lh_accessibility_tree}  cls=${lh.lh_layout_stability}  llms=${lh.lh_llms_txt}  webmcp=${lh.lh_webmcp}`
+  for (let i = 0; i < todo.length; i++) {
+    const site = todo[i];
+    process.stdout.write(`[${i + 1}/${todo.length}] ${site.site_id.padEnd(14)} `);
+
+    const records: RepeatRecord[] = [];
+    for (let r = 1; r <= repeats; r++) {
+      const record = await runRepeat(site, r, ctx);
+      records.push(record);
+      process.stdout.write(
+        record.valid ? `r${r}=${record.extract!.lh_total} ` : `r${r}=${record.error_class} `
       );
-    } catch (err) {
-      console.error(`  Write failed: ${(err as Error).message}`);
-      summary.push({ site_id: site.site_id, lh_total: lh.lh_total, status: "WRITE_FAILED" });
     }
-  }
 
-  // X-axis spread check (the never-cut gate)
-  const scored = summary.filter((r) => r.lh_total !== null).map((r) => r.lh_total as number).sort((a, b) => a - b);
-  const failed = summary.filter((r) => r.lh_total === null);
+    const valid = records.filter((r) => r.valid);
+    const selection = selectMedianRepeat(
+      valid.map((r) => ({ repeat: r.repeat, lh_total: r.extract!.lh_total, fetch_time: r.run!.fetch_time })),
+      minValid
+    );
 
-  console.log(`\n${"─".repeat(52)}`);
-  console.log(`X-AXIS SPREAD CHECK`);
-  if (scored.length > 0) {
-    const min = scored[0], max = scored[scored.length - 1];
-    const mean = (scored.reduce((a, b) => a + b, 0) / scored.length).toFixed(1);
-    const spread = max - min;
-    console.log(`  n=${scored.length}  min=${min}%  max=${max}%  mean=${mean}%  spread=${spread}pts`);
-    if (spread < 30) {
-      console.log(`  ⚠ BORING BLOB: spread only ${spread}pts. Swap in lower-scoring sites.`);
+    audits[site.site_id] = { site_id: site.site_id, start_url: site.start_url, repeats: records };
+
+    const probeFrom = records.find((r) => r.run)?.run ?? null;
+    llms[site.site_id] = await probeLlmsTxt(
+      probeFrom?.final_displayed_url ?? site.start_url,
+      probeFrom?.network_user_agent ?? null
+    );
+
+    if (selection) {
+      const median = records.find((r) => r.repeat === selection.lh_repeat)!;
+      const extracted = { ...median.extract!, run: median.run!, audits: median.audits! };
+      const row = buildPanelRow(site.site_id, batch, extracted, selection, {
+        valid: valid.length,
+        attempted: records.length,
+      });
+      panel[site.site_id] = row;
+      typed[site.site_id] = toLighthouseResult(row);
+      delete failures[site.site_id];
+      console.log(
+        `→ r${row.lh_repeat} lh_total=${row.lh_total} [${row.lh_total_min}-${row.lh_total_max}] ` +
+          `fraction ${row.lh_passed}/${row.lh_passable} cls=${row.lh_cls_score} ` +
+          `llms=${row.lh_llms_txt_status} webmcp=${row.lh_webmcp_applied ? `applied(${row.lh_webmcp_tool_count})` : "n/a"}` +
+          (row.lh_ard_schema_status ? ` ard=${row.lh_ard_schema_status}` : "") +
+          ` get=${llms[site.site_id].status ?? "error"}`
+      );
     } else {
-      console.log(`  ✓ Spread OK (${spread}pts ≥ 30pt threshold).`);
+      failures[site.site_id] = {
+        site_id: site.site_id,
+        status: "not_measured",
+        valid_repeats: valid.length,
+        attempted_repeats: records.length,
+        repeats: records.map((r) => ({ repeat: r.repeat, error_class: r.error_class, reason: r.invalid_reason })),
+        recorded_at: new Date().toISOString(),
+      };
+      console.log(`→ NOT MEASURED (${valid.length} valid of ${records.length})`);
     }
-    // Sort and print the table
-    const rows = summary
-      .filter((r) => r.lh_total !== null)
-      .sort((a, b) => (a.lh_total as number) - (b.lh_total as number));
-    console.log(`\n  lh_total  site_id`);
-    rows.forEach((r) => console.log(`  ${String(r.lh_total) + "%"}`.padEnd(10) + r.site_id));
+
+    // Written after every site, so an interrupted batch keeps everything already measured.
+    saveJson(paths.typed, typed);
+    saveJson(paths.panel, panel);
+    saveJson(paths.audits, audits);
+    saveJson(paths.llms, llms);
+    if (Object.keys(failures).length > 0) saveJson(paths.failures, failures);
+    else if (existsSync(paths.failures)) unlinkSync(paths.failures);
   }
-  if (failed.length) {
-    console.log(`\n  Failed (${failed.length}): ${failed.map((r) => r.site_id).join(", ")}`);
+
+  const measured = Object.values(panel).sort((a, b) => a.lh_total - b.lh_total);
+  const notMeasured = sites.filter((s) => !(s.site_id in typed)).map((s) => s.site_id);
+  console.log(`\n${"─".repeat(60)}`);
+  console.log(`Measured ${measured.length} of ${sites.length}.`);
+  if (measured.length > 0) {
+    console.log(`\n  mean  spread   fraction  site_id`);
+    for (const r of measured) {
+      console.log(
+        `  ${String(r.lh_total).padStart(4)}  ${`${r.lh_total_min}-${r.lh_total_max}`.padEnd(8)} ` +
+          `${`${r.lh_passed}/${r.lh_passable}`.padEnd(9)} ${r.site_id}`
+      );
+    }
   }
-  console.log(`\n  Results → ${path.relative(process.cwd(), artifactPath)}`);
-  console.log(`  Load into Supabase: npx tsx scripts/import-results.ts --batch ${batch}`);
+  if (notMeasured.length > 0) console.log(`\n  Not measured (${notMeasured.length}): ${notMeasured.join(", ")}`);
+  console.log(`\n  Rows → ${repoRelative(paths.typed)}`);
 }
 
 main().catch((err) => {
-  console.error("Fatal error:", err);
+  if (err instanceof InstrumentMismatch) {
+    console.error(`\n✗ Instrument mismatch, batch stopped: ${err.message}\n`);
+    process.exit(3);
+  }
+  console.error("\nFatal error:", err instanceof Error ? err.message : err);
   process.exit(1);
 });

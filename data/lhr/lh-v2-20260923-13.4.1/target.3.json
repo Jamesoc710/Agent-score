@@ -1,0 +1,1252 @@
+{
+  "lighthouseVersion": "13.4.1",
+  "requestedUrl": "https://www.target.com/",
+  "mainDocumentUrl": "https://www.target.com/",
+  "finalDisplayedUrl": "https://www.target.com/",
+  "finalUrl": "https://www.target.com/",
+  "fetchTime": "2026-09-23T08:20:53.315Z",
+  "gatherMode": "navigation",
+  "runWarnings": [],
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+  "environment": {
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+    "hostUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "benchmarkIndex": 4249,
+    "credits": {
+      "axe-core": "4.13.0"
+    }
+  },
+  "audits": {
+    "cumulative-layout-shift": {
+      "id": "cumulative-layout-shift",
+      "title": "Cumulative Layout Shift",
+      "description": "Cumulative Layout Shift measures the movement of visible elements within the viewport. [Learn more about the Cumulative Layout Shift metric](https://web.dev/articles/cls).",
+      "score": 1,
+      "scoreDisplayMode": "numeric",
+      "numericValue": 0,
+      "numericUnit": "unitless",
+      "displayValue": "0",
+      "scoringOptions": {
+        "p10": 0.1,
+        "median": 0.25
+      },
+      "details": {
+        "type": "debugdata",
+        "items": [
+          {
+            "cumulativeLayoutShiftMainFrame": 0,
+            "newEngineResult": {
+              "cumulativeLayoutShift": 0,
+              "cumulativeLayoutShiftMainFrame": 0
+            },
+            "newEngineResultDiffered": false
+          }
+        ]
+      }
+    },
+    "agent-accessibility-tree": {
+      "id": "agent-accessibility-tree",
+      "title": "Accessibility tree is well-formed",
+      "description": "A well-formed [accessibility tree](https://developer.chrome.com/docs/lighthouse/agentic-browsing/accessibility-for-agents) helps AI agents to navigate and interact with the page.",
+      "score": 1,
+      "scoreDisplayMode": "binary",
+      "displayValue": "All audits passed"
+    },
+    "webmcp-registered-tools": {
+      "id": "webmcp-registered-tools",
+      "title": "WebMCP tools registered",
+      "description": "Lists the [WebMCP tools](https://developer.chrome.com/docs/ai/webmcp) registered at the time of analysis.",
+      "score": 1,
+      "scoreDisplayMode": "informative",
+      "details": {
+        "type": "list",
+        "items": [
+          {
+            "type": "list-section",
+            "title": "Imperative Tools",
+            "value": {
+              "type": "table",
+              "headings": [
+                {
+                  "key": "tool",
+                  "valueType": "text",
+                  "label": "Tool name"
+                },
+                {
+                  "key": "description",
+                  "valueType": "text",
+                  "label": "Description"
+                },
+                {
+                  "key": "source",
+                  "valueType": "source-location",
+                  "label": "Source Location"
+                },
+                {
+                  "key": "inputSchema",
+                  "valueType": "code",
+                  "label": "Input schema"
+                }
+              ],
+              "items": [
+                {
+                  "tool": "search_products",
+                  "description": "Search for products on Target.com. Use this when the user wants to find products by keyword. Navigates to the search results page. Use filter_products after this to narrow results.",
+                  "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"searchTerm\": {\n      \"type\": \"string\",\n      \"description\": \"The search term to find products (e.g. \\\"coffee maker\\\", \\\"Nike running shoes\\\", \\\"baby stroller\\\")\"\n    }\n  },\n  \"required\": [\n    \"searchTerm\"\n  ]\n}",
+                  "source": {
+                    "type": "source-location",
+                    "url": "https://assets.targetimg1.com/webui/top-of-funnel/_next/static/chunks/pages/_app-ad4471cefeb73123.js",
+                    "urlProvider": "network",
+                    "line": 0,
+                    "column": 710222
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "webmcp-form-coverage": {
+      "id": "webmcp-form-coverage",
+      "title": "WebMCP form coverage",
+      "description": "Consider adding [WebMCP](https://developer.chrome.com/docs/ai/webmcp) annotations to the forms listed below. This helps AI agents identify and interact with these forms more reliably.",
+      "score": 1,
+      "scoreDisplayMode": "informative",
+      "displayValue": "3 forms missing annotations",
+      "details": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "node",
+            "valueType": "node",
+            "label": "Form"
+          }
+        ],
+        "items": [
+          {
+            "node": {
+              "type": "node",
+              "lhId": "1-6-FORM",
+              "path": "1,HTML,1,BODY,0,DIV,2,DIV,1,DIV,0,NAV,0,DIV,0,DIV,6,DIV,0,FORM",
+              "selector": "div.styles_primaryHeader__JSgSy > div#headerPrimary > div.styles_searchWrapper__u2tT3 > form.styles_searchForm__pSAdX",
+              "boundingRect": {
+                "top": 0,
+                "bottom": 0,
+                "left": 0,
+                "right": 0,
+                "width": 0,
+                "height": 0
+              },
+              "snippet": "<form class=\"styles_searchForm__pSAdX \" action=\"/s\" method=\"get\">",
+              "nodeLabel": "search"
+            }
+          },
+          {
+            "node": {
+              "type": "node",
+              "lhId": "1-7-FORM",
+              "path": "1,HTML,1,BODY,0,DIV,2,DIV,1,DIV,0,NAV,0,DIV,1,DIV,0,DIV,0,DIV,0,BUTTON,0,FORM",
+              "selector": "div.styles_mobileSearchContainer__oZ7b5 > div.styles_mobileSearchWrapper___uDb8 > button > form.styles_searchForm__pSAdX",
+              "boundingRect": {
+                "top": 114,
+                "bottom": 158,
+                "left": 16,
+                "right": 396,
+                "width": 380,
+                "height": 44
+              },
+              "snippet": "<form class=\"styles_searchForm__pSAdX styles_singleIcon__vI0Ej \" action=\"/s\" method=\"GET\">",
+              "nodeLabel": "div.styles_mobileSearchContainer__oZ7b5 > div.styles_mobileSearchWrapper___uDb8 > button > form.styles_searchForm__pSAdX"
+            }
+          },
+          {
+            "node": {
+              "type": "node",
+              "lhId": "1-8-FORM",
+              "path": "1,HTML,1,BODY,0,DIV,2,DIV,3,DIV,0,DIV,1,FORM",
+              "selector": "div > div > div.styles_container__ZisCt > form",
+              "boundingRect": {
+                "top": 6568,
+                "bottom": 6636,
+                "left": 52,
+                "right": 360,
+                "width": 308,
+                "height": 68
+              },
+              "snippet": "<form>",
+              "nodeLabel": "Email address\nSign up"
+            }
+          }
+        ]
+      }
+    },
+    "webmcp-schema-validity": {
+      "id": "webmcp-schema-validity",
+      "title": "WebMCP schemas are valid",
+      "description": "Valid [WebMCP schemas](https://developer.chrome.com/docs/ai/webmcp) are required for AI agents to understand and interact with tools correctly. Please fix any errors or warnings reported by the browser.",
+      "score": 1,
+      "scoreDisplayMode": "binary"
+    },
+    "llms-txt": {
+      "id": "llms-txt",
+      "title": "llms.txt follows recommendations",
+      "description": "If your llms.txt file does not follow recommendations, large language models may not be able to understand how you want your website to be crawled or used for training. The [llms.txt](https://llmstxt.org/) file should be a Markdown file containing at least one H1 header. [Learn more about the llms.txt audit](https://developer.chrome.com/docs/lighthouse/agentic-browsing/llms-txt).",
+      "score": 1,
+      "scoreDisplayMode": "binary"
+    }
+  },
+  "configSettings": {
+    "output": [
+      "json"
+    ],
+    "maxWaitForFcp": 30000,
+    "maxWaitForLoad": 45000,
+    "pauseAfterFcpMs": 1000,
+    "pauseAfterLoadMs": 1000,
+    "networkQuietThresholdMs": 1000,
+    "cpuQuietThresholdMs": 1000,
+    "formFactor": "mobile",
+    "throttling": {
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "requestLatencyMs": 562.5,
+      "downloadThroughputKbps": 1474.5600000000002,
+      "uploadThroughputKbps": 675,
+      "cpuSlowdownMultiplier": 4
+    },
+    "throttlingMethod": "simulate",
+    "screenEmulation": {
+      "mobile": true,
+      "width": 412,
+      "height": 823,
+      "deviceScaleFactor": 1.75,
+      "disabled": false
+    },
+    "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "auditMode": false,
+    "gatherMode": false,
+    "clearStorageTypes": [
+      "file_systems",
+      "shader_cache",
+      "service_workers",
+      "cache_storage"
+    ],
+    "disableStorageReset": false,
+    "debugNavigation": false,
+    "channel": "cli",
+    "usePassiveGathering": false,
+    "disableFullPageScreenshot": false,
+    "skipAboutBlank": false,
+    "blankPage": "about:blank",
+    "ignoreStatusCode": false,
+    "locale": "en-US",
+    "blockedUrlPatterns": null,
+    "additionalTraceCategories": null,
+    "extraHeaders": null,
+    "precomputedLanternData": null,
+    "onlyAudits": null,
+    "onlyCategories": [
+      "agentic-browsing"
+    ],
+    "skipAudits": null
+  },
+  "categories": {
+    "agentic-browsing": {
+      "title": "Agentic Browsing",
+      "description": "These checks ensure high-quality, [browsable websites for AI agents](https://goo.gle/lighthouse-agentic-web) and validate the correctness of WebMCP integrations. This category is still under development and subject to change.",
+      "supportedModes": [
+        "navigation",
+        "snapshot"
+      ],
+      "categoryScoreDisplayMode": "fraction",
+      "auditRefs": [
+        {
+          "id": "agent-accessibility-tree",
+          "weight": 1,
+          "group": "agent-accessibility"
+        },
+        {
+          "id": "webmcp-form-coverage",
+          "weight": 0,
+          "group": "webmcp"
+        },
+        {
+          "id": "webmcp-registered-tools",
+          "weight": 0,
+          "group": "webmcp"
+        },
+        {
+          "id": "webmcp-schema-validity",
+          "weight": 1,
+          "group": "webmcp"
+        },
+        {
+          "id": "cumulative-layout-shift",
+          "weight": 1,
+          "acronym": "CLS"
+        },
+        {
+          "id": "llms-txt",
+          "weight": 1,
+          "group": "agent-accessibility"
+        }
+      ],
+      "id": "agentic-browsing",
+      "score": 1
+    }
+  },
+  "categoryGroups": {
+    "metrics": {
+      "title": "Metrics"
+    },
+    "insights": {
+      "title": "Insights",
+      "description": "These insights are also available in the Chrome DevTools Performance Panel - [record a trace](https://developer.chrome.com/docs/devtools/performance/reference) to view more detailed information."
+    },
+    "diagnostics": {
+      "title": "Diagnostics",
+      "description": "More information about the performance of your application. These numbers don't [directly affect](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/) the Performance score."
+    },
+    "a11y-best-practices": {
+      "title": "Best practices",
+      "description": "These items highlight common accessibility best practices."
+    },
+    "a11y-color-contrast": {
+      "title": "Contrast",
+      "description": "These are opportunities to improve the legibility of your content."
+    },
+    "a11y-names-labels": {
+      "title": "Names and labels",
+      "description": "These are opportunities to improve the semantics of the controls in your application. This may enhance the experience for users of assistive technology, like a screen reader."
+    },
+    "a11y-navigation": {
+      "title": "Navigation",
+      "description": "These are opportunities to improve keyboard navigation in your application."
+    },
+    "a11y-aria": {
+      "title": "ARIA",
+      "description": "These are opportunities to improve the usage of ARIA in your application which may enhance the experience for users of assistive technology, like a screen reader."
+    },
+    "a11y-language": {
+      "title": "Internationalization and localization",
+      "description": "These are opportunities to improve the interpretation of your content by users in different locales."
+    },
+    "a11y-audio-video": {
+      "title": "Audio and video",
+      "description": "These are opportunities to provide alternative content for audio and video. This may improve the experience for users with hearing or vision impairments."
+    },
+    "a11y-tables-lists": {
+      "title": "Tables and lists",
+      "description": "These are opportunities to improve the experience of reading tabular or list data using assistive technology, like a screen reader."
+    },
+    "seo-mobile": {
+      "title": "Mobile Friendly",
+      "description": "Make sure your pages are mobile friendly so users don’t have to pinch or zoom in order to read the content pages. [Learn how to make pages mobile-friendly](https://developers.google.com/search/mobile-sites/)."
+    },
+    "seo-content": {
+      "title": "Content Best Practices",
+      "description": "Format your HTML in a way that enables crawlers to better understand your app’s content."
+    },
+    "seo-crawl": {
+      "title": "Crawling and Indexing",
+      "description": "To appear in search results, crawlers need access to your app."
+    },
+    "best-practices-trust-safety": {
+      "title": "Trust and Safety"
+    },
+    "best-practices-ux": {
+      "title": "User Experience"
+    },
+    "best-practices-browser-compat": {
+      "title": "Browser Compatibility"
+    },
+    "best-practices-general": {
+      "title": "General"
+    },
+    "webmcp": {
+      "title": "WebMCP",
+      "description": "Audits validating WebMCP integration."
+    },
+    "agent-accessibility": {
+      "title": "Agent Accessibility",
+      "description": "These audits highlight best practices for improving the accessibility of the website for AI agents."
+    },
+    "hidden": {
+      "title": ""
+    }
+  },
+  "stackPacks": [
+    {
+      "id": "next.js",
+      "title": "Next.js",
+      "iconDataURL": "data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 207 124\"><path fill=\"%23000\" d=\"M48.942 32.632h38.96v3.082h-35.39v23.193H85.79v3.082H52.513v25.464h35.794v3.081H48.942V32.632Zm42.45 0h4.139l18.343 25.464 18.749-25.464L158.124.287l-41.896 60.485 21.59 29.762h-4.302l-19.642-27.086L94.15 90.534h-4.22l21.751-29.762-20.29-28.14Zm47.967 3.082v-3.082h44.397v3.082h-20.453v54.82h-3.571v-54.82h-20.373ZM.203 32.632h4.464l61.557 91.671-25.439-33.769L3.936 37.011l-.162 53.523H.203zm183.194 53.891c.738 0 1.276-.563 1.276-1.29 0-.727-.538-1.29-1.276-1.29-.73 0-1.277.563-1.277 1.29 0 .727.547 1.29 1.277 1.29Zm3.509-3.393c0 2.146 1.555 3.549 3.822 3.549 2.414 0 3.874-1.446 3.874-3.956v-8.837h-1.946v8.828c0 1.394-.704 2.138-1.946 2.138-1.112 0-1.867-.692-1.893-1.722h-1.911Zm10.24-.113c.14 2.233 2.007 3.662 4.787 3.662 2.97 0 4.83-1.498 4.83-3.887 0-1.878-1.06-2.917-3.632-3.514l-1.38-.338c-1.634-.38-2.294-.891-2.294-1.783 0-1.125 1.025-1.86 2.563-1.86 1.459 0 2.466.718 2.649 1.869h1.893c-.113-2.103-1.971-3.583-4.516-3.583-2.737 0-4.56 1.48-4.56 3.704 0 1.835 1.033 2.926 3.3 3.454l1.616.39c1.659.389 2.388.96 2.388 1.912 0 1.108-1.146 1.913-2.71 1.913-1.676 0-2.84-.753-3.005-1.939h-1.928Z\"/></svg>",
+      "descriptions": {
+        "unused-css-rules": "Consider setting up `PurgeCSS` in `Next.js` configuration to remove unused rules from stylesheets. [Learn more](https://purgecss.com/guides/next.html).",
+        "modern-image-formats": "Use the `next/image` component instead of `<img>` to automatically optimize image format. [Learn more](https://nextjs.org/docs/app/getting-started/images).",
+        "offscreen-images": "Use the `next/image` component instead of `<img>` to automatically lazy-load images. [Learn more](https://nextjs.org/docs/app/getting-started/images).",
+        "render-blocking-resources": "Use the `next/script` component to defer loading of non-critical third-party scripts. [Learn more](https://nextjs.org/docs/app/guides/scripts).",
+        "unused-javascript": "Use `Webpack Bundle Analyzer` to detect unused JavaScript code. [Learn more](https://github.com/vercel/next.js/tree/canary/packages/next-bundle-analyzer)",
+        "uses-long-cache-ttl": "Configure caching for immutable assets and `Server-side Rendered` (SSR) pages. [Learn more](https://nextjs.org/docs/13/pages/building-your-application/deploying/production-checklist#caching).",
+        "uses-optimized-images": "Use the `next/image` component instead of `<img>` to adjust image quality. [Learn more](https://nextjs.org/docs/app/getting-started/images).",
+        "uses-text-compression": "Enable compression on your Next.js server. [Learn more](https://nextjs.org/docs/api-reference/next.config.js/compression).",
+        "uses-responsive-images": "Use the `next/image` component to set the appropriate `sizes`. [Learn more](https://nextjs.org/docs/api-reference/next/image#sizes).",
+        "user-timings": "Consider using `Next.js Analytics` to measure your app's real-world performance. [Learn more](https://nextjs.org/docs/pages/guides/analytics).",
+        "prioritize-lcp-image": "Use the `next/image` component and set \"priority\" to true to preload LCP image. [Learn more](https://nextjs.org/docs/api-reference/next/image#priority).",
+        "unsized-images": "Use the `next/image` component to make sure images are always sized appropriately. [Learn more](https://nextjs.org/docs/api-reference/next/image#width)."
+      }
+    }
+  ],
+  "entities": [
+    {
+      "name": "target.com",
+      "origins": [
+        "https://www.target.com",
+        "https://redoak.target.com",
+        "https://api.target.com",
+        "https://sapphire-api.target.com",
+        "https://carts.target.com",
+        "https://redsky.target.com"
+      ],
+      "isFirstParty": true,
+      "isUnrecognized": true
+    },
+    {
+      "name": "targetimg1.com",
+      "origins": [
+        "https://assets.targetimg1.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "DoubleVerify",
+      "homepage": "https://www.doubleverify.com/",
+      "origins": [
+        "https://pub.doubleverify.com",
+        "https://tps.doubleverify.com"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "Google/Doubleclick Ads",
+      "homepage": "https://marketingplatform.google.com/about/enterprise/",
+      "origins": [
+        "https://securepubads.g.doubleclick.net",
+        "https://cm.g.doubleclick.net",
+        "https://95cbb9c7f23962626714fb642a950bfc.safeframe.googlesyndication.com",
+        "https://tpc.googlesyndication.com",
+        "https://pagead2.googlesyndication.com"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "px-cloud.net",
+      "origins": [
+        "https://client.px-cloud.net",
+        "https://ift.px-cloud.net",
+        "https://collector-pxgwpp4wus.px-cloud.net",
+        "https://dvp.px-cloud.net"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "Adobe Scene7",
+      "origins": [
+        "https://target.scene7.com"
+      ],
+      "category": "content"
+    },
+    {
+      "name": "Adobe Tag Manager",
+      "homepage": "https://www.adobe.com/experience-platform/",
+      "origins": [
+        "https://assets.adobedtm.com",
+        "https://dpm.demdex.net",
+        "https://target.demdex.net",
+        "https://cm.everesttech.net"
+      ],
+      "category": "tag-manager"
+    },
+    {
+      "name": "SpeedCurve RUM",
+      "homepage": "https://www.speedcurve.com/features/performance-monitoring/",
+      "origins": [
+        "https://cdn.speedcurve.com"
+      ],
+      "category": "analytics"
+    },
+    {
+      "name": "Attentive",
+      "homepage": "https://attentivemobile.com/",
+      "origins": [
+        "https://cdn.attn.tv",
+        "https://target-us.attn.tv",
+        "https://events.attentivemobile.com"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "px-cdn.net",
+      "origins": [
+        "https://captcha.px-cdn.net"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "dv.tech",
+      "origins": [
+        "https://vtrk.dv.tech",
+        "https://pub.dv.tech",
+        "https://cdn.dv.tech"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "Google Fonts",
+      "homepage": "https://fonts.google.com/",
+      "origins": [
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com"
+      ],
+      "category": "cdn"
+    },
+    {
+      "name": "FullStory",
+      "origins": [
+        "https://edge.fullstory.com",
+        "https://rs.fullstory.com"
+      ],
+      "category": "analytics"
+    },
+    {
+      "name": "crcldu.com",
+      "origins": [
+        "https://crcldu.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "zeronaught.com",
+      "origins": [
+        "https://ponos.zeronaught.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "px-client.net",
+      "origins": [
+        "https://collector-pxgwpp4wus.px-client.net"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "PerimeterX Bot Defender",
+      "origins": [
+        "https://fst-ec.perimeterx.net"
+      ],
+      "category": "utility"
+    },
+    {
+      "name": "medallia.com",
+      "origins": [
+        "https://resources.digital-cloud.medallia.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "adtrafficquality.google",
+      "origins": [
+        "https://ep1.adtrafficquality.google",
+        "https://ep2.adtrafficquality.google"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "Other Google APIs/SDKs",
+      "homepage": "https://developers.google.com/apis-explorer/#p/",
+      "origins": [
+        "https://www.google.com"
+      ],
+      "category": "utility"
+    }
+  ],
+  "fullPageScreenshot": {
+    "screenshot": {
+      "data": "data:image/webp;base64,UklGRkQ5AABXRUJQVlA4WAoAAAAgAAAA8wIAExoASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZWUDggVjcAAHCzBJ0BKvQCFBo/EYS9WiwnpqQgUagRgCIJaW7hd/XuY901NnHPf79J+hb0ibdLzAecP6Jv9NvuHoV+XJ7L/9zyavyZ/bO2P/XeIPmYBrtT+yWer+p70eAQ6/tCPbzBC1OPB/sAd+d4ZVAbxrtFP7hv1wGfBDxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjntiHxBUc9sQ+IKjnti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",
+      "width": 756,
+      "height": 6676
+    },
+    "nodes": {
+      "1-0-H2": {
+        "id": "",
+        "top": 3880,
+        "bottom": 3880,
+        "left": 8,
+        "right": 748,
+        "width": 740,
+        "height": 0
+      },
+      "1-1-IFRAME": {
+        "id": "px-captcha-modal",
+        "top": 0,
+        "bottom": 6676,
+        "left": 0,
+        "right": 756,
+        "width": 756,
+        "height": 6676
+      },
+      "1-2-BUTTON": {
+        "id": "zip-code-id-btn",
+        "top": 7,
+        "bottom": 43,
+        "left": 16,
+        "right": 140,
+        "width": 124,
+        "height": 36
+      },
+      "1-3-A": {
+        "id": "",
+        "top": -1,
+        "bottom": 0,
+        "left": -1,
+        "right": 0,
+        "width": 1,
+        "height": 1
+      },
+      "1-4-A": {
+        "id": "",
+        "top": -1,
+        "bottom": 0,
+        "left": -1,
+        "right": 0,
+        "width": 1,
+        "height": 1
+      },
+      "1-5-SPAN": {
+        "id": "",
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "height": 0
+      },
+      "1-6-FORM": {
+        "id": "",
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "height": 0
+      },
+      "1-7-FORM": {
+        "id": "",
+        "top": 114,
+        "bottom": 158,
+        "left": 16,
+        "right": 740,
+        "width": 724,
+        "height": 44
+      },
+      "1-8-FORM": {
+        "id": "",
+        "top": 6891,
+        "bottom": 6959,
+        "left": 224,
+        "right": 532,
+        "width": 308,
+        "height": 68
+      },
+      "1-9-LABEL": {
+        "id": "",
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "height": 0
+      },
+      "1-10-LABEL": {
+        "id": "",
+        "top": 106,
+        "bottom": 106,
+        "left": 748,
+        "right": 756,
+        "width": 8,
+        "height": 0
+      },
+      "1-11-LABEL": {
+        "id": "",
+        "top": 6913,
+        "bottom": 6936,
+        "left": 232,
+        "right": 334,
+        "width": 102,
+        "height": 23
+      },
+      "1-12-INPUT": {
+        "id": "search",
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "height": 0
+      },
+      "1-13-INPUT": {
+        "id": "",
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "height": 0
+      },
+      "1-14-INPUT": {
+        "id": "searchMobile",
+        "top": 114,
+        "bottom": 158,
+        "left": 16,
+        "right": 740,
+        "width": 724,
+        "height": 44
+      },
+      "1-15-INPUT": {
+        "id": "",
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "height": 0
+      },
+      "1-16-INPUT": {
+        "id": "email-address",
+        "top": 6903,
+        "bottom": 6947,
+        "left": 224,
+        "right": 416,
+        "width": 192,
+        "height": 44
+      }
+    }
+  },
+  "timing": {
+    "entries": [
+      {
+        "startTime": 792.45,
+        "name": "lh:config",
+        "duration": 180.45,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 793.02,
+        "name": "lh:config:resolveArtifactsToDefns",
+        "duration": 11.55,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 973.04,
+        "name": "lh:runner:gather",
+        "duration": 18330.72,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 1729.73,
+        "name": "lh:driver:connect",
+        "duration": 5.19,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 1735.02,
+        "name": "lh:driver:navigate",
+        "duration": 26.75,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 1761.93,
+        "name": "lh:gather:getBenchmarkIndex",
+        "duration": 1002.64,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2764.65,
+        "name": "lh:gather:getVersion",
+        "duration": 0.39,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2765.09,
+        "name": "lh:gather:getDevicePixelRatio",
+        "duration": 0.45,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2766.28,
+        "name": "lh:prepare:navigationMode",
+        "duration": 31.72,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2766.57,
+        "name": "lh:gather:getVersion",
+        "duration": 0.17,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2773.74,
+        "name": "lh:storage:clearDataForOrigin",
+        "duration": 17.93,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2791.77,
+        "name": "lh:storage:clearBrowserCaches",
+        "duration": 5.43,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2797.56,
+        "name": "lh:gather:prepareThrottlingAndNetwork",
+        "duration": 0.43,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2831.37,
+        "name": "lh:driver:navigate",
+        "duration": 6196.9,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16009.03,
+        "name": "lh:computed:NetworkRecords",
+        "duration": 3.59,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16012.9,
+        "name": "lh:gather:getArtifact:WebMCP",
+        "duration": 1.59,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16014.5,
+        "name": "lh:gather:getArtifact:WebMcpSchemaIssues",
+        "duration": 0.03,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16014.53,
+        "name": "lh:gather:getArtifact:LlmsTxt",
+        "duration": 87.14,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16101.69,
+        "name": "lh:gather:getArtifact:DevtoolsLog",
+        "duration": 0.02,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16101.71,
+        "name": "lh:gather:getArtifact:Trace",
+        "duration": 0.03,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16101.76,
+        "name": "lh:gather:getArtifact:Accessibility",
+        "duration": 566,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16667.78,
+        "name": "lh:gather:getArtifact:Inputs",
+        "duration": 2.89,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16670.77,
+        "name": "lh:gather:getArtifact:NetworkUserAgent",
+        "duration": 0.03,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16670.81,
+        "name": "lh:gather:getArtifact:Stacks",
+        "duration": 99.47,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16670.84,
+        "name": "lh:gather:collectStacks",
+        "duration": 99.43,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 16770.28,
+        "name": "lh:gather:getArtifact:FullPageScreenshot",
+        "duration": 2462.29,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19183.45,
+        "name": "lh:gather:getVersion",
+        "duration": 1.08,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19304.41,
+        "name": "lh:runner:audit",
+        "duration": 92.65,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19304.51,
+        "name": "lh:runner:auditing",
+        "duration": 92.38,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19305.41,
+        "name": "lh:audit:cumulative-layout-shift",
+        "duration": 88.06,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19305.57,
+        "name": "lh:computed:CumulativeLayoutShift",
+        "duration": 87.39,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19305.69,
+        "name": "lh:computed:ProcessedTrace",
+        "duration": 75.4,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19393.55,
+        "name": "lh:audit:agent-accessibility-tree",
+        "duration": 0.27,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19393.86,
+        "name": "lh:audit:webmcp-registered-tools",
+        "duration": 0.32,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19394.24,
+        "name": "lh:audit:webmcp-form-coverage",
+        "duration": 0.85,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19395.23,
+        "name": "lh:audit:webmcp-schema-validity",
+        "duration": 0.47,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19396,
+        "name": "lh:audit:llms-txt",
+        "duration": 0.87,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19396.89,
+        "name": "lh:runner:generate",
+        "duration": 0.17,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 19397.4,
+        "name": "lh:computed:EntityClassification",
+        "duration": 1.7,
+        "entryType": "measure"
+      }
+    ],
+    "total": 18423.370000000003
+  },
+  "i18n": {
+    "rendererFormattedStrings": {
+      "calculatorLink": "See calculator.",
+      "collapseView": "Collapse view",
+      "crcInitialNavigation": "Initial Navigation",
+      "crcLongestDurationLabel": "Maximum critical path latency:",
+      "dropdownCopyJSON": "Copy JSON",
+      "dropdownDarkTheme": "Toggle Dark Theme",
+      "dropdownPrintExpanded": "Print Expanded",
+      "dropdownPrintSummary": "Print Summary",
+      "dropdownSaveGist": "Save as Gist",
+      "dropdownSaveHTML": "Save as HTML",
+      "dropdownSaveJSON": "Save as JSON",
+      "dropdownViewUnthrottledTrace": "View Unthrottled Trace",
+      "dropdownViewer": "Open in Viewer",
+      "errorLabel": "Error!",
+      "errorMissingAuditInfo": "Report error: no audit information",
+      "expandView": "Expand view",
+      "firstPartyChipLabel": "1st party",
+      "footerIssue": "File an issue",
+      "hide": "Hide",
+      "labDataTitle": "Lab Data",
+      "lsPerformanceCategoryDescription": "[Lighthouse](https://developers.google.com/web/tools/lighthouse/) analysis of the current page on an emulated mobile network. Values are estimated and may vary.",
+      "manualAuditsGroupTitle": "Additional items to manually check",
+      "notApplicableAuditsGroupTitle": "Not applicable",
+      "openInANewTabTooltip": "Open in a new tab",
+      "opportunityResourceColumnLabel": "Opportunity",
+      "opportunitySavingsColumnLabel": "Estimated Savings",
+      "passedAuditsGroupTitle": "Passed audits",
+      "runtimeAnalysisWindow": "Initial page load",
+      "runtimeAnalysisWindowSnapshot": "Point-in-time snapshot",
+      "runtimeAnalysisWindowTimespan": "User interactions timespan",
+      "runtimeCustom": "Custom throttling",
+      "runtimeDesktopEmulation": "Emulated Desktop",
+      "runtimeMobileEmulation": "Emulated Moto G Power",
+      "runtimeNoEmulation": "No emulation",
+      "runtimeSettingsAxeVersion": "Axe version",
+      "runtimeSettingsBenchmark": "Unthrottled CPU/Memory Power",
+      "runtimeSettingsCPUThrottling": "CPU throttling",
+      "runtimeSettingsDevice": "Device",
+      "runtimeSettingsNetworkThrottling": "Network throttling",
+      "runtimeSettingsScreenEmulation": "Screen emulation",
+      "runtimeSettingsUANetwork": "User agent (network)",
+      "runtimeSingleLoad": "Single page session",
+      "runtimeSingleLoadTooltip": "This data is taken from a single page session, as opposed to field data summarizing many sessions.",
+      "runtimeSlow4g": "Slow 4G throttling",
+      "runtimeUnknown": "Unknown",
+      "show": "Show",
+      "showRelevantAudits": "Show audits relevant to:",
+      "snippetCollapseButtonLabel": "Collapse snippet",
+      "snippetExpandButtonLabel": "Expand snippet",
+      "thirdPartyResourcesLabel": "Show 3rd-party resources",
+      "throttlingProvided": "Provided by environment",
+      "toplevelWarningsMessage": "There were issues affecting this run of Lighthouse:",
+      "unattributable": "Unattributable",
+      "unscoredLabel": "Unscored",
+      "unscoredTitle": "This audit does not contribute to the overall category score.",
+      "varianceDisclaimer": "Values are estimated and may vary. The [performance score is calculated](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/) directly from these metrics.",
+      "viewTraceLabel": "View Trace",
+      "viewTreemapLabel": "View Treemap",
+      "warningAuditsGroupTitle": "Passed audits but with warnings",
+      "warningHeader": "Warnings: "
+    },
+    "icuMessagePaths": {
+      "core/lib/i18n/i18n.js | cumulativeLayoutShiftMetric": [
+        "audits[cumulative-layout-shift].title"
+      ],
+      "core/audits/metrics/cumulative-layout-shift.js | description": [
+        "audits[cumulative-layout-shift].description"
+      ],
+      "core/audits/agentic/agent-accessibility-tree.js | title": [
+        "audits[agent-accessibility-tree].title"
+      ],
+      "core/audits/agentic/agent-accessibility-tree.js | description": [
+        "audits[agent-accessibility-tree].description"
+      ],
+      "core/audits/agentic/agent-accessibility-tree.js | displayValuePassed": [
+        "audits[agent-accessibility-tree].displayValue"
+      ],
+      "core/audits/webmcp-registered-tools.js | title": [
+        "audits[webmcp-registered-tools].title"
+      ],
+      "core/audits/webmcp-registered-tools.js | description": [
+        "audits[webmcp-registered-tools].description"
+      ],
+      "core/audits/webmcp-registered-tools.js | titleImperativeTools": [
+        "audits[webmcp-registered-tools].details.items[0].title"
+      ],
+      "core/audits/webmcp-registered-tools.js | columnTool": [
+        "audits[webmcp-registered-tools].details.items[0].value.headings[0].label"
+      ],
+      "core/audits/webmcp-registered-tools.js | columnDescription": [
+        "audits[webmcp-registered-tools].details.items[0].value.headings[1].label"
+      ],
+      "core/audits/webmcp-registered-tools.js | columnImperativeLocation": [
+        "audits[webmcp-registered-tools].details.items[0].value.headings[2].label"
+      ],
+      "core/audits/webmcp-registered-tools.js | columnInputSchema": [
+        "audits[webmcp-registered-tools].details.items[0].value.headings[3].label"
+      ],
+      "core/audits/webmcp-form-coverage.js | title": [
+        "audits[webmcp-form-coverage].title"
+      ],
+      "core/audits/webmcp-form-coverage.js | description": [
+        "audits[webmcp-form-coverage].description"
+      ],
+      "core/audits/webmcp-form-coverage.js | displayValue": [
+        {
+          "values": {
+            "itemCount": 3
+          },
+          "path": "audits[webmcp-form-coverage].displayValue"
+        }
+      ],
+      "core/audits/webmcp-form-coverage.js | columnForm": [
+        "audits[webmcp-form-coverage].details.headings[0].label"
+      ],
+      "core/audits/webmcp-schema-validity.js | title": [
+        "audits[webmcp-schema-validity].title"
+      ],
+      "core/audits/webmcp-schema-validity.js | description": [
+        "audits[webmcp-schema-validity].description"
+      ],
+      "core/audits/agentic/llms-txt.js | title": [
+        "audits[llms-txt].title"
+      ],
+      "core/audits/agentic/llms-txt.js | description": [
+        "audits[llms-txt].description"
+      ],
+      "core/config/default-config.js | agenticBrowsingCategoryTitle": [
+        "categories[agentic-browsing].title"
+      ],
+      "core/config/default-config.js | agenticBrowsingCategoryDescription": [
+        "categories[agentic-browsing].description"
+      ],
+      "core/config/default-config.js | metricGroupTitle": [
+        "categoryGroups.metrics.title"
+      ],
+      "core/config/default-config.js | insightsGroupTitle": [
+        "categoryGroups.insights.title"
+      ],
+      "core/config/default-config.js | insightsGroupDescription": [
+        "categoryGroups.insights.description"
+      ],
+      "core/config/default-config.js | diagnosticsGroupTitle": [
+        "categoryGroups.diagnostics.title"
+      ],
+      "core/config/default-config.js | diagnosticsGroupDescription": [
+        "categoryGroups.diagnostics.description"
+      ],
+      "core/config/default-config.js | a11yBestPracticesGroupTitle": [
+        "categoryGroups[a11y-best-practices].title"
+      ],
+      "core/config/default-config.js | a11yBestPracticesGroupDescription": [
+        "categoryGroups[a11y-best-practices].description"
+      ],
+      "core/config/default-config.js | a11yColorContrastGroupTitle": [
+        "categoryGroups[a11y-color-contrast].title"
+      ],
+      "core/config/default-config.js | a11yColorContrastGroupDescription": [
+        "categoryGroups[a11y-color-contrast].description"
+      ],
+      "core/config/default-config.js | a11yNamesLabelsGroupTitle": [
+        "categoryGroups[a11y-names-labels].title"
+      ],
+      "core/config/default-config.js | a11yNamesLabelsGroupDescription": [
+        "categoryGroups[a11y-names-labels].description"
+      ],
+      "core/config/default-config.js | a11yNavigationGroupTitle": [
+        "categoryGroups[a11y-navigation].title"
+      ],
+      "core/config/default-config.js | a11yNavigationGroupDescription": [
+        "categoryGroups[a11y-navigation].description"
+      ],
+      "core/config/default-config.js | a11yAriaGroupTitle": [
+        "categoryGroups[a11y-aria].title"
+      ],
+      "core/config/default-config.js | a11yAriaGroupDescription": [
+        "categoryGroups[a11y-aria].description"
+      ],
+      "core/config/default-config.js | a11yLanguageGroupTitle": [
+        "categoryGroups[a11y-language].title"
+      ],
+      "core/config/default-config.js | a11yLanguageGroupDescription": [
+        "categoryGroups[a11y-language].description"
+      ],
+      "core/config/default-config.js | a11yAudioVideoGroupTitle": [
+        "categoryGroups[a11y-audio-video].title"
+      ],
+      "core/config/default-config.js | a11yAudioVideoGroupDescription": [
+        "categoryGroups[a11y-audio-video].description"
+      ],
+      "core/config/default-config.js | a11yTablesListsVideoGroupTitle": [
+        "categoryGroups[a11y-tables-lists].title"
+      ],
+      "core/config/default-config.js | a11yTablesListsVideoGroupDescription": [
+        "categoryGroups[a11y-tables-lists].description"
+      ],
+      "core/config/default-config.js | seoMobileGroupTitle": [
+        "categoryGroups[seo-mobile].title"
+      ],
+      "core/config/default-config.js | seoMobileGroupDescription": [
+        "categoryGroups[seo-mobile].description"
+      ],
+      "core/config/default-config.js | seoContentGroupTitle": [
+        "categoryGroups[seo-content].title"
+      ],
+      "core/config/default-config.js | seoContentGroupDescription": [
+        "categoryGroups[seo-content].description"
+      ],
+      "core/config/default-config.js | seoCrawlingGroupTitle": [
+        "categoryGroups[seo-crawl].title"
+      ],
+      "core/config/default-config.js | seoCrawlingGroupDescription": [
+        "categoryGroups[seo-crawl].description"
+      ],
+      "core/config/default-config.js | bestPracticesTrustSafetyGroupTitle": [
+        "categoryGroups[best-practices-trust-safety].title"
+      ],
+      "core/config/default-config.js | bestPracticesUXGroupTitle": [
+        "categoryGroups[best-practices-ux].title"
+      ],
+      "core/config/default-config.js | bestPracticesBrowserCompatGroupTitle": [
+        "categoryGroups[best-practices-browser-compat].title"
+      ],
+      "core/config/default-config.js | bestPracticesGeneralGroupTitle": [
+        "categoryGroups[best-practices-general].title"
+      ],
+      "core/config/default-config.js | webmcpGroupTitle": [
+        "categoryGroups.webmcp.title"
+      ],
+      "core/config/default-config.js | webmcpGroupDescription": [
+        "categoryGroups.webmcp.description"
+      ],
+      "core/config/default-config.js | agentAccessibilityGroupTitle": [
+        "categoryGroups[agent-accessibility].title"
+      ],
+      "core/config/default-config.js | agentAccessibilityGroupDescription": [
+        "categoryGroups[agent-accessibility].description"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | unused-css-rules": [
+        "stackPacks[0].descriptions[unused-css-rules]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | modern-image-formats": [
+        "stackPacks[0].descriptions[modern-image-formats]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | offscreen-images": [
+        "stackPacks[0].descriptions[offscreen-images]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | render-blocking-resources": [
+        "stackPacks[0].descriptions[render-blocking-resources]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | unused-javascript": [
+        "stackPacks[0].descriptions[unused-javascript]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | uses-long-cache-ttl": [
+        "stackPacks[0].descriptions[uses-long-cache-ttl]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | uses-optimized-images": [
+        "stackPacks[0].descriptions[uses-optimized-images]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | uses-text-compression": [
+        "stackPacks[0].descriptions[uses-text-compression]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | uses-responsive-images": [
+        "stackPacks[0].descriptions[uses-responsive-images]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | user-timings": [
+        "stackPacks[0].descriptions[user-timings]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | prioritize-lcp-image": [
+        "stackPacks[0].descriptions[prioritize-lcp-image]"
+      ],
+      "node_modules/lighthouse-stack-packs/packs/next.js.js | unsized-images": [
+        "stackPacks[0].descriptions[unsized-images]"
+      ]
+    }
+  }
+}

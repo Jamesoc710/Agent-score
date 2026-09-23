@@ -49,7 +49,8 @@ function AnswerCallout({ step }: { step: NormalizedStep }) {
         </p>
         <p className="mt-0.5 text-[11px] text-bad-ink">
           This is the agent&apos;s own report of a wall, not an independent observation that the
-          site blocked it. The harness records the report and scores the trial as blocked.
+          site blocked it. The harness records the report and scores the trial as a self-reported
+          block.
         </p>
       </div>
     );

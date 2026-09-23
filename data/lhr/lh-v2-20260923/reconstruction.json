@@ -1,0 +1,2071 @@
+{
+  "batch_label": "lh-v2-20260923",
+  "v1_artifact": "data/lighthouse-v1.json",
+  "v1_artifact_sha256": "016449e7f4a74163b95d04fd8d39f7c60884fed5bc38e14dae745a4f0d0b0986",
+  "rule": "lh-v2 median repeat extracted in v1 mode: lh_total = round(category score * 100); a flag is 1 only on score === 1, null read as 0",
+  "reasons_enum": [
+    "llms_status_changed",
+    "cls_moved",
+    "webmcp_applicability",
+    "unexplained"
+  ],
+  "summary": {
+    "sites": 28,
+    "measured": 28,
+    "match": 1,
+    "differ": 27,
+    "not_measured": [],
+    "values_compared": 140,
+    "values_reproduced": 93,
+    "flags_compared": 112,
+    "flags_reproduced": 76,
+    "sites_by_reason": {
+      "webmcp_applicability": 27,
+      "cls_moved": 10,
+      "llms_status_changed": 2,
+      "unexplained": 1
+    },
+    "unexplained": [
+      "voodoo"
+    ]
+  },
+  "sites": {
+    "stripe": {
+      "site_id": "stripe",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/stripe.1.json",
+      "v1": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "pass",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/plain; charset=utf-8",
+        "llms_get_bytes": 69923,
+        "llms_get_error": null
+      }
+    },
+    "shopify": {
+      "site_id": "shopify",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/shopify.1.json",
+      "v1": {
+        "lh_total": 59,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 67,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_layout_stability",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "cls_moved"
+          ]
+        },
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 59,
+          "v2": 67,
+          "reasons": [
+            "cls_moved"
+          ]
+        }
+      ],
+      "reasons": [
+        "cls_moved",
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 0.76,
+          "cls_score_max": 0.78
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "pass",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/plain; charset=utf-8",
+        "llms_get_bytes": 12520,
+        "llms_get_error": null
+      }
+    },
+    "github": {
+      "site_id": "github",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/github.1.json",
+      "v1": {
+        "lh_total": 99,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 99,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 0.96,
+          "cls_score_max": 0.98
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.96,
+        "lh_llms_txt_status": "pass",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/plain",
+        "llms_get_bytes": 28658,
+        "llms_get_error": null
+      }
+    },
+    "twilio": {
+      "site_id": "twilio",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/twilio.1.json",
+      "v1": {
+        "lh_total": 33,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 63,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_layout_stability",
+          "v1": 1,
+          "v2": 0,
+          "reasons": [
+            "cls_moved"
+          ]
+        },
+        {
+          "field": "lh_llms_txt",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "llms_status_changed"
+          ]
+        },
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 33,
+          "v2": 63,
+          "reasons": [
+            "cls_moved",
+            "llms_status_changed"
+          ]
+        }
+      ],
+      "reasons": [
+        "cls_moved",
+        "llms_status_changed",
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.88,
+        "lh_llms_txt_status": "pass",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/plain; charset=utf-8",
+        "llms_get_bytes": 2340239,
+        "llms_get_error": null
+      }
+    },
+    "notion": {
+      "site_id": "notion",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/notion.1.json",
+      "v1": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "pass",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/plain; charset=utf-8",
+        "llms_get_bytes": 6803,
+        "llms_get_error": null
+      }
+    },
+    "cloudflare": {
+      "site_id": "cloudflare",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/cloudflare.1.json",
+      "v1": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "pass",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/plain",
+        "llms_get_bytes": 17176,
+        "llms_get_error": null
+      }
+    },
+    "bestbuy": {
+      "site_id": "bestbuy",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/bestbuy.2.json",
+      "v1": {
+        "lh_total": 33,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 31,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_layout_stability",
+          "v1": 1,
+          "v2": 0,
+          "reasons": [
+            "cls_moved"
+          ]
+        },
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 33,
+          "v2": 31,
+          "reasons": [
+            "cls_moved"
+          ]
+        }
+      ],
+      "reasons": [
+        "cls_moved",
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.94,
+        "lh_llms_txt_status": "error",
+        "lh_llms_txt_reasons": [
+          "Fetch of llms.txt failed"
+        ],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html",
+        "llms_get_bytes": 287240,
+        "llms_get_error": null
+      }
+    },
+    "ikea": {
+      "site_id": "ikea",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/ikea.1.json",
+      "v1": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/plain; charset=utf-8",
+        "llms_get_bytes": 9,
+        "llms_get_error": null
+      }
+    },
+    "target": {
+      "site_id": "target",
+      "status": "match",
+      "lhr": "data/lhr/lh-v2-20260923/target.1.json",
+      "v1": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      "v2": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 1,
+        "lh_webmcp": 1
+      },
+      "differences": [],
+      "reasons": [],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "webmcp-schema-validity",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 4
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        },
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "webmcp-schema-validity",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 4,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "pass",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/plain",
+        "llms_get_bytes": 6158,
+        "llms_get_error": null
+      }
+    },
+    "spotify": {
+      "site_id": "spotify",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/spotify.1.json",
+      "v1": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 59,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_layout_stability",
+          "v1": 1,
+          "v2": 0,
+          "reasons": [
+            "cls_moved"
+          ]
+        },
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 100,
+          "v2": 59,
+          "reasons": [
+            "cls_moved"
+          ]
+        }
+      ],
+      "reasons": [
+        "cls_moved",
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.18,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=utf-8",
+        "llms_get_bytes": 3961,
+        "llms_get_error": null
+      }
+    },
+    "costco": {
+      "site_id": "costco",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/costco.1.json",
+      "v1": {
+        "lh_total": 49,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 75,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 49,
+          "v2": 75,
+          "reasons": [
+            "llms_status_changed"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability",
+        "llms_status_changed"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 0.46,
+          "cls_score_max": 0.48
+        }
+      ],
+      "observed_in_v1_set": false,
+      "evidence": {
+        "lh_cls_score": 0.49,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html;charset=UTF-8",
+        "llms_get_bytes": 159844,
+        "llms_get_error": null
+      }
+    },
+    "ca_dmv": {
+      "site_id": "ca_dmv",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/ca_dmv.1.json",
+      "v1": {
+        "lh_total": 67,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 67,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "fail",
+        "lh_llms_txt_reasons": [
+          "File is missing a required H1 header (e.g., \"# Title\").",
+          "File does not appear to contain any links."
+        ],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/html",
+        "llms_get_bytes": 20171,
+        "llms_get_error": null
+      }
+    },
+    "tx_dmv": {
+      "site_id": "tx_dmv",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/tx_dmv.1.json",
+      "v1": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=UTF-8",
+        "llms_get_bytes": 186,
+        "llms_get_error": null
+      }
+    },
+    "usps": {
+      "site_id": "usps",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/usps.1.json",
+      "v1": {
+        "lh_total": 40,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 37,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 40,
+          "v2": 37,
+          "reasons": [
+            "cls_moved"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability",
+        "cls_moved"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.79,
+          "cls_score_max": 0.8
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.74,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html",
+        "llms_get_bytes": 54796,
+        "llms_get_error": null
+      }
+    },
+    "irs": {
+      "site_id": "irs",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/irs.1.json",
+      "v1": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.99,
+          "cls_score_max": 0.99
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.99,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=UTF-8",
+        "llms_get_bytes": 85659,
+        "llms_get_error": null
+      }
+    },
+    "ssa": {
+      "site_id": "ssa",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/ssa.1.json",
+      "v1": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=UTF-8",
+        "llms_get_bytes": 25836,
+        "llms_get_error": null
+      }
+    },
+    "trimet": {
+      "site_id": "trimet",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/trimet.3.json",
+      "v1": {
+        "lh_total": 98,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 99,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 98,
+          "v2": 99,
+          "reasons": [
+            "cls_moved"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability",
+        "cls_moved"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.95,
+          "cls_score_max": 0.96
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.98,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=utf-8",
+        "llms_get_bytes": 8615,
+        "llms_get_error": null
+      }
+    },
+    "portland": {
+      "site_id": "portland",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/portland.1.json",
+      "v1": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=utf-8",
+        "llms_get_bytes": 190,
+        "llms_get_error": null
+      }
+    },
+    "oregon_state": {
+      "site_id": "oregon_state",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/oregon_state.1.json",
+      "v1": {
+        "lh_total": 48,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 48,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.95,
+          "cls_score_max": 0.96
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.96,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=UTF-8",
+        "llms_get_bytes": 202,
+        "llms_get_error": null
+      }
+    },
+    "powells": {
+      "site_id": "powells",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/powells.1.json",
+      "v1": {
+        "lh_total": 3,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 3,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.05,
+          "cls_score_max": 0.06
+        },
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 0.08,
+          "cls_score_max": 0.1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.06,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "application/json",
+        "llms_get_bytes": 157,
+        "llms_get_error": null
+      }
+    },
+    "voodoo": {
+      "site_id": "voodoo",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/voodoo.1.json",
+      "v1": {
+        "lh_total": 14,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 100,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_accessibility_tree",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "unexplained"
+          ]
+        },
+        {
+          "field": "lh_layout_stability",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "cls_moved"
+          ]
+        },
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 14,
+          "v2": 100,
+          "reasons": [
+            "cls_moved",
+            "unexplained"
+          ]
+        }
+      ],
+      "reasons": [
+        "unexplained",
+        "cls_moved",
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.27,
+          "cls_score_max": 0.29
+        },
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 0.41,
+          "cls_score_max": 0.43
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=UTF-8",
+        "llms_get_bytes": 53906,
+        "llms_get_error": null
+      }
+    },
+    "innout": {
+      "site_id": "innout",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/innout.1.json",
+      "v1": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 38,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 50,
+          "v2": 38,
+          "reasons": [
+            "cls_moved"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability",
+        "cls_moved"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.99,
+          "cls_score_max": 0.99
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.76,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html",
+        "llms_get_bytes": 1379,
+        "llms_get_error": null
+      }
+    },
+    "bear": {
+      "site_id": "bear",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/bear.2.json",
+      "v1": {
+        "lh_total": 12,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 12,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.23,
+          "cls_score_max": 0.24
+        },
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 0.35,
+          "cls_score_max": 0.37
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.23,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=iso-8859-1",
+        "llms_get_bytes": 271,
+        "llms_get_error": null
+      }
+    },
+    "apple": {
+      "site_id": "apple",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/apple.1.json",
+      "v1": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=utf-8",
+        "llms_get_bytes": 111090,
+        "llms_get_error": null
+      }
+    },
+    "craigslist": {
+      "site_id": "craigslist",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/craigslist.1.json",
+      "v1": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 1,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_layout_stability",
+          "v1": 1,
+          "v2": 0,
+          "reasons": [
+            "cls_moved"
+          ]
+        },
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 50,
+          "v2": 1,
+          "reasons": [
+            "cls_moved"
+          ]
+        }
+      ],
+      "reasons": [
+        "cls_moved",
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 0.01,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=UTF-8",
+        "llms_get_bytes": 4544,
+        "llms_get_error": null
+      }
+    },
+    "zalando": {
+      "site_id": "zalando",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/zalando.1.json",
+      "v1": {
+        "lh_total": 67,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 67,
+        "lh_accessibility_tree": 1,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift",
+          "llms-txt"
+        ],
+        "size": 3
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "fail",
+        "lh_llms_txt_reasons": [
+          "File is missing a required H1 header (e.g., \"# Title\").",
+          "File does not appear to contain any links."
+        ],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 200,
+        "llms_get_content_type": "text/html",
+        "llms_get_bytes": 48385,
+        "llms_get_error": null
+      }
+    },
+    "amazon": {
+      "site_id": "amazon",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/amazon.1.json",
+      "v1": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        }
+      ],
+      "reasons": [
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 1,
+          "cls_score_max": 1
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html;charset=UTF-8",
+        "llms_get_bytes": 2296,
+        "llms_get_error": null
+      }
+    },
+    "ticketmaster": {
+      "site_id": "ticketmaster",
+      "status": "differ",
+      "lhr": "data/lhr/lh-v2-20260923/ticketmaster.1.json",
+      "v1": {
+        "lh_total": 5,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 0,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 0
+      },
+      "v2": {
+        "lh_total": 50,
+        "lh_accessibility_tree": 0,
+        "lh_layout_stability": 1,
+        "lh_llms_txt": 0,
+        "lh_webmcp": 1
+      },
+      "differences": [
+        {
+          "field": "lh_layout_stability",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "cls_moved"
+          ]
+        },
+        {
+          "field": "lh_webmcp",
+          "v1": 0,
+          "v2": 1,
+          "reasons": [
+            "webmcp_applicability"
+          ]
+        },
+        {
+          "field": "lh_total",
+          "v1": 5,
+          "v2": 50,
+          "reasons": [
+            "cls_moved"
+          ]
+        }
+      ],
+      "reasons": [
+        "cls_moved",
+        "webmcp_applicability"
+      ],
+      "observed_denominator": {
+        "weighted_audits": [
+          "agent-accessibility-tree",
+          "cumulative-layout-shift"
+        ],
+        "size": 2
+      },
+      "v1_consistent_denominators": [
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift"
+          ],
+          "size": 2,
+          "cls_score_min": 0.09,
+          "cls_score_max": 0.1
+        },
+        {
+          "weighted_audits": [
+            "agent-accessibility-tree",
+            "cumulative-layout-shift",
+            "llms-txt"
+          ],
+          "size": 3,
+          "cls_score_min": 0.14,
+          "cls_score_max": 0.16
+        }
+      ],
+      "observed_in_v1_set": true,
+      "evidence": {
+        "lh_cls_score": 1,
+        "lh_llms_txt_status": "absent",
+        "lh_llms_txt_reasons": [],
+        "lh_webmcp_applied": 1,
+        "webmcp_registered_tools_mode": "informative",
+        "lighthouse_version": "13.3.0",
+        "chrome_version": "151.0.0.0",
+        "llms_get_status": 404,
+        "llms_get_content_type": "text/html; charset=utf-8",
+        "llms_get_bytes": 168720,
+        "llms_get_error": null
+      }
+    }
+  }
+}

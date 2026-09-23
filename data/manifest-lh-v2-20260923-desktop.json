@@ -1,0 +1,584 @@
+{
+  "schema_version": 1,
+  "batch_label": "lh-v2-20260923-desktop",
+  "label_kind": "dated",
+  "line": "L3-lighthouse",
+  "lane": "lighthouse",
+  "repo_git_sha": "4901b9c264888f4f0fdebab047be2f9e98abb5fa",
+  "repo_dirty": true,
+  "repo_dirty_paths": [
+    "?? data/env-lh-v2-20260923-13.4.1.txt",
+    "?? data/env-lh-v2-20260923-13.5.0.txt",
+    "?? data/env-lh-v2-20260923.txt",
+    "?? data/health-lh-v2-20260923-13.4.1.json",
+    "?? data/health-lh-v2-20260923-13.5.0.json",
+    "?? data/health-lh-v2-20260923.json",
+    "?? data/lhr/",
+    "?? data/lighthouse-lh-v2-20260923-13.4.1.audits.json",
+    "?? data/lighthouse-lh-v2-20260923-13.4.1.json",
+    "?? data/lighthouse-lh-v2-20260923-13.4.1.llms-txt.json",
+    "?? data/lighthouse-lh-v2-20260923-13.4.1.panel.json",
+    "?? data/lighthouse-lh-v2-20260923-13.5.0.audits.json",
+    "?? data/lighthouse-lh-v2-20260923-13.5.0.json",
+    "?? data/lighthouse-lh-v2-20260923-13.5.0.llms-txt.json",
+    "?? data/lighthouse-lh-v2-20260923-13.5.0.panel.json",
+    "?? data/lighthouse-lh-v2-20260923.audits.json",
+    "?? data/lighthouse-lh-v2-20260923.json",
+    "?? data/lighthouse-lh-v2-20260923.llms-txt.json",
+    "?? data/lighthouse-lh-v2-20260923.panel.json",
+    "?? data/manifest-lh-v2-20260923-13.4.1.json",
+    "?? data/manifest-lh-v2-20260923-13.5.0.json",
+    "?? data/manifest-lh-v2-20260923.json"
+  ],
+  "harness_id": null,
+  "harness_id_null_reason": "Lane 1 batch: no agent, harness or answer key is involved",
+  "harness_git_sha": null,
+  "harness_git_sha_null_reason": "Lane 1 batch: no agent, harness or answer key is involved",
+  "agent_ids": [],
+  "cohort_csv_path": "data/cohort.csv",
+  "cohort_csv_sha256": "17aa82db57034dd24a1e76f5d189ed235932b299c17105cc2bf397140c7f2cb6",
+  "cohort_csv_commit": "1245a476a22b179819faf292b4bfaba16d15204c",
+  "answer_key_tag": null,
+  "answer_key_tag_null_reason": "Lane 1 batch: no agent, harness or answer key is involved; Lane 1 reads start_url only",
+  "key_preflight": null,
+  "key_preflight_null_reason": "the answer-key preflight governs behavioral batches; not in P4's slice (S2-6 §13)",
+  "human_pass": null,
+  "human_pass_null_reason": "the human pass governs behavioral batches; not in P4's slice (S2-6 §13)",
+  "instrument_preflight": null,
+  "instrument_preflight_null_reason": "the instrument preflight governs Lane 2 harnesses; not in P4's slice (S2-6 §13)",
+  "registration_commit": null,
+  "registration_commit_null_reason": "no registration block governs a Lane 1 batch (S2-6 §3)",
+  "identity_probe_canary": null,
+  "identity_probe_canary_null_reason": "the canary runs on paid behavioral batch days only (D19)",
+  "health_card": {
+    "batch_label": "lh-v2-20260923-desktop",
+    "computed_at": "2026-09-23T09:24:36.019547Z",
+    "gates": {
+      "HC4": {
+        "id": "HC4",
+        "value": 28,
+        "threshold": 28,
+        "verdict": "pass",
+        "detail": {
+          "not_measured": [],
+          "failure_classes": {}
+        }
+      },
+      "HC12": {
+        "id": "HC12",
+        "value": 13234887,
+        "threshold": 26214400,
+        "verdict": "pass",
+        "detail": {
+          "lhr_files": 84,
+          "lhr_bytes": 20446307,
+          "lhr_bytes_gzip": 13234887,
+          "over_budget": false,
+          "manifest_problems": []
+        }
+      }
+    },
+    "verdict": "pass"
+  },
+  "started_at": "2026-09-23T09:00:10.489Z",
+  "resumed_at": [],
+  "finished_at": "2026-09-23T09:24:36.323Z",
+  "wall_seconds": 1466,
+  "machine": {
+    "os": "Darwin 25.6.0",
+    "arch": "arm64",
+    "cpu_model": "Apple M5 Pro",
+    "logical_cpus": 15,
+    "memory_bytes": 51539607552
+  },
+  "import_status": null,
+  "import_status_null_reason": "not imported; James imports with the printed command",
+  "artifacts": [
+    {
+      "path": "data/lighthouse-lh-v2-20260923-desktop.json",
+      "sha256": "efe7d7b0fdf68d662ec8464d0e7d86b4a612a6c91c2bf84b49539cd8b29b10f3"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-desktop.panel.json",
+      "sha256": "bf9707bb86cee28edb4a17a3aaf235c5ad45ca426b2def257fe33d49c2947983"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-desktop.audits.json",
+      "sha256": "a3bbd397c5f4b16dc1dfdbf472ad8fc8a64a05c5ba3cd5aa4acd279b461689a1"
+    },
+    {
+      "path": "data/lighthouse-lh-v2-20260923-desktop.llms-txt.json",
+      "sha256": "1b985caaac3ee4eaa90bdbf2fd93d3bf0010b3d2b04be0543d9347c718916c73"
+    },
+    {
+      "path": "data/env-lh-v2-20260923-desktop.txt",
+      "sha256": "ba9820aeb574156ad6674d39cc5b045c6dafca6b79c5727e840f24c86e85460c"
+    },
+    {
+      "path": "data/health-lh-v2-20260923-desktop.json",
+      "sha256": "1a2b38650463c6689e1cbab1ac353ecd51532086adadef5c1684f6b1d6b87475"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/amazon.1.json",
+      "sha256": "b57c7bd8b8b4f7b1e344abeeb5fe7d0209fed71e0e30f2f403fb2f47f33542b4"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/amazon.2.json",
+      "sha256": "0839bf006e9981e4506cd079c639d79900e64e1fa257faeb75af4c94e996a189"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/amazon.3.json",
+      "sha256": "ff5e11a7cd512d155292849e847811f07184ff37dcd52cc93740bff0a2c0ef62"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/apple.1.json",
+      "sha256": "4147962c69f68169ac4575bc1f578bb43fd73ea4a67522468d3d3afde545c5aa"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/apple.2.json",
+      "sha256": "8eb8068f2df425ab47045416e7df091dd174be5b1ddfb106568c6d16a69b62dd"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/apple.3.json",
+      "sha256": "015d922f9eb288ce734da6d8721bc4caac61a7f2f139d9aac1bfcabcb8cb1a6d"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/bear.1.json",
+      "sha256": "22af500b0dfdee23025de9f517a40c21105f1c33e004a57d6e970fd7d6331d67"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/bear.2.json",
+      "sha256": "a81b13e7fb04ecd3a32cc1867896ea887cb8a4d60d6b5d516111168a348da2c2"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/bear.3.json",
+      "sha256": "c6273d1f959240adabc1ec0f30d5480e410ea22ef0878b4c002b1876bf693e30"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/bestbuy.1.json",
+      "sha256": "a8cada1495042bd8ff21bd185f26beace4d1bdab2e7a32d91f2eaee89bb92043"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/bestbuy.2.json",
+      "sha256": "55fb4dae4f60df0bfa0a9cad58a91e52be62ae3feaccd9994f10adaca5f0d9b2"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/bestbuy.3.json",
+      "sha256": "31fc5ac7c102a1802a9ab47cf51bb853b02e07d1b1dda14b15db93f3f66d4168"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ca_dmv.1.json",
+      "sha256": "ec42dc1b15e3155239e38dfb476403839906c1bcc63aed9b7a8be0822a1d15a8"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ca_dmv.2.json",
+      "sha256": "53d77728139e3890994b39b240bbe14c31b213b079bcd0e7bc9187966976f901"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ca_dmv.3.json",
+      "sha256": "7ed85f529189e28344bd6020ba8c5cd67540e443229001cd5385516ad0590e22"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/cloudflare.1.json",
+      "sha256": "da5d839222968d6c587f3952ceb3acc08e6446c9fe7573fd5f47aea05447230f"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/cloudflare.2.json",
+      "sha256": "d092c408c954df46162d3e72f6b449127efdc2b840b9e5e1c2fd31d5518f814c"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/cloudflare.3.json",
+      "sha256": "cf10e151212a786880a0c624f847935026f82462e16a42df8bb28cbdfbf2419d"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/costco.1.json",
+      "sha256": "698a922da72cfe88a705f6c9eb96bd6c40ff3aeaa61a8b4405af399c480cb6c1"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/costco.2.json",
+      "sha256": "9572eaff0cad0513060de1a06eabcf141147acea25a9b559b12b099484f6e5f2"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/costco.3.json",
+      "sha256": "606a77d516313c13ad8d0468801c49f02d0f35a22c69c910fe8b263f8c12a047"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/craigslist.1.json",
+      "sha256": "c57053bc5a497a6084bea616355f178292719358190f4367eaa8444223108020"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/craigslist.2.json",
+      "sha256": "76beffcfc943655ea69514818c7bdeecb1c5720536c0cfbeb01ad4fb74c2c10f"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/craigslist.3.json",
+      "sha256": "695cbba9f7e76d5d14d4b10b574fa12890235b21dc2e708ace1fdde3be6da012"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/github.1.json",
+      "sha256": "b587183fe0251cc7d86ec1b99eab18f47a119d4fb0ed99c2667c5f11ba26f244"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/github.2.json",
+      "sha256": "1906cdd6198935bb0ee77b1d88528ee8f4813dd096cec718739d0f7ccfaaa27b"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/github.3.json",
+      "sha256": "53a6f6d31d0b8f4639d2e43cf68a4c4946afac9d75848b6647422bddfdaaf03f"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ikea.1.json",
+      "sha256": "06dfa4d2b165c05e731eea2efd63211657170f2d1a549f94ce414a82511d8c24"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ikea.2.json",
+      "sha256": "fe975d761beb12bc3e003e1e233f003f71a82ada27681054727571efa4b240aa"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ikea.3.json",
+      "sha256": "b77fc6af79da2c882b0c47552f36325d9a03f71257a79d0466befda7a60a5055"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/innout.1.json",
+      "sha256": "54233da3e14c4c3c28838916634d1ad95f3d70e1438f1bb20fdb4f4eb6e2e076"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/innout.2.json",
+      "sha256": "d0f3c6960d012661c36e97273b853448192ecb089fc351717f29138dd9b02696"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/innout.3.json",
+      "sha256": "9cb75bf87fa3514b133b6fe141edbd0d40a36148c876cc1862c6854f37a953af"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/irs.1.json",
+      "sha256": "93e3d8844b86168cc2eafee2dd48ca4d6abea8f6cb5ef98c3433fbb75c476e23"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/irs.2.json",
+      "sha256": "7142000d6e8f1755a2bf6e916a7f3b09271ac016df4026f382f61bf3e96dcc3d"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/irs.3.json",
+      "sha256": "617aff0f37dcba6a7e0efdf321b5ac433fa92a6b3fd2596c85572651c14f2589"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/notion.1.json",
+      "sha256": "8d82f65c78dc046ba9998a19af8fac5c4dec844a37804b42d57e27a5fbf4de3e"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/notion.2.json",
+      "sha256": "86a61978d304bb674796c71ab2adb411f66cbe1e88acea06f120b92a693e1272"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/notion.3.json",
+      "sha256": "05c4af9105eb1db2ad23c3d1aae0d7858a774dab0b1614f2e68cb9189b3675c3"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/oregon_state.1.json",
+      "sha256": "000f03c8d475ee61fad5a8b58e4db71440e574b372f18fe6de10a68b0b6ae6b7"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/oregon_state.2.json",
+      "sha256": "36dd57d68e2a140b940a5d6fdff3cb2d893082e1d242b9c0ecf4ab2deb15a4e2"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/oregon_state.3.json",
+      "sha256": "2c2104bb3d47e71560bd523e94f875e53446af26bc242e3b6f1e22c784af4e1b"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/portland.1.json",
+      "sha256": "4dd5a308c358e379b711dfc7cd0bf4f4ca346d6e216e8c5efb0f586516ec2b05"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/portland.2.json",
+      "sha256": "5eef96a0c49a758b803c115641a68244c4ed6dac68ab9b07afddf95368328cb8"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/portland.3.json",
+      "sha256": "6056179008379e2526884ac6121b24d63d1c9446a14445d77eb659fc6bab1929"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/powells.1.json",
+      "sha256": "d45a38cb5c8861ccc23a4c469f2bd252d46c4aa556d63ad27900546ec7bc6573"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/powells.2.json",
+      "sha256": "1f06b8a8c657747f0e353c343705465dab7885c8f7de248bfcc252a7feae2c6d"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/powells.3.json",
+      "sha256": "43d911fe09ba9fbcb81fe1d417395ad81a5a0cab3470921f0ac596554eeb6c60"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/shopify.1.json",
+      "sha256": "854c0478d8eadebfade806dd5008aa674b1fb381ba1d6ff41c77d00cc140ced5"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/shopify.2.json",
+      "sha256": "c8b2611013943bf16b05186f536aa442f997341828427d4199dc76af9aea3d0e"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/shopify.3.json",
+      "sha256": "b009f94803d613995de40a50ee3e2c4be94259db1d3f612bcb9250e23add4da9"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/spotify.1.json",
+      "sha256": "8cbcce409382b82eeed17ee0d41e51a914112a1bd1043653f953b882d038acdc"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/spotify.2.json",
+      "sha256": "426209a721d128f0955c24a407bfdd35b4b73b16459961f03013b4b7b6ebc257"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/spotify.3.json",
+      "sha256": "30986323c695ae26d9eb579fa315bc63849a1957545b103426345a2338b3f9d3"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ssa.1.json",
+      "sha256": "39504aec222eb294899d0f0f27283e6e381e6267df463217a1507784e7c49455"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ssa.2.json",
+      "sha256": "0250002ff91f13bd14c888f50b1ada89c7ffd861e21d95e046cc829476e6b2ce"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ssa.3.json",
+      "sha256": "59a38a8ad3f738c50d46e2cfea770f479e9d675f2dcd82669c00527d4a6973e6"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/stripe.1.json",
+      "sha256": "ac23320811b763e7da3ee505a23d691902853ed0e1db54c42839720e6c9a46f8"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/stripe.2.json",
+      "sha256": "75c56345e6472f58cd9755349daac344eb96a66fe8b36b124f4d6a8a00bfc2ce"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/stripe.3.json",
+      "sha256": "93eff360d95d3eff46a74a6c02c7081a57b5e7a09f7158572483b313036a034a"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/target.1.json",
+      "sha256": "6fe121eff24e3158441ea834b7cf5af013958517c040ec3c5cebaa574a04ddf7"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/target.2.json",
+      "sha256": "c43bb174a292569f4fb8535ad0bac5e72342d5d736d88a10721af23c048d130f"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/target.3.json",
+      "sha256": "4edf9e8b0874406ea4fe87a88fa4f4db9b9f1385f3ff1e95a5f4009a87a24924"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ticketmaster.1.json",
+      "sha256": "de04c36602528dd99d121430ee5926c2f3758bfdb296a4a67fd0c80153ccab38"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ticketmaster.2.json",
+      "sha256": "b5df3fb82c9159ca4cbae13270c27d663a5bf2c29947e3c1703a3c487aa27e08"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/ticketmaster.3.json",
+      "sha256": "ebea9b157323b5d343f510b07ef82f88b016659e400863e2f7c93c605d076417"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/trimet.1.json",
+      "sha256": "2171ce672fa01deca110ed0405ccdac4eba091e961c13172f62e7a2bdb4e701e"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/trimet.2.json",
+      "sha256": "85c6b396654183049f7228edc9135e8a4d189fc7e23ae0726e8c33676b4cfcde"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/trimet.3.json",
+      "sha256": "35e0ed0de8959a2f305f49d2700e179ec1e899b4599923a0a1c2709090b63fef"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/twilio.1.json",
+      "sha256": "900b452afe6cee2a7fa36b9feced003c4a174a27a88c766503a0ccd566c6d2c0"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/twilio.2.json",
+      "sha256": "d6e434feb36d0440dd0df6ce13cc9c1dc18d52864ffa2c3576d2665c7f226461"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/twilio.3.json",
+      "sha256": "897c815b38751f175a399e17aa03cee3c01d958b3002ff7f0b2b9223624ea9c5"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/tx_dmv.1.json",
+      "sha256": "a002d840a04d004e9b83dfbc2ceeffde1184d8f4615ff65ce27fcd4a6e661335"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/tx_dmv.2.json",
+      "sha256": "4b3d0761e0e7d0bd533bd3921fc7eab48e77eedf613403e2a863375d1740a3c3"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/tx_dmv.3.json",
+      "sha256": "bf3d718284591223ccb12e4744b64bdd99b9e3a33971573ba7a17235bdf3b3a1"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/usps.1.json",
+      "sha256": "7ab3cf73dc4378bcf9635ff9e0a676f9fb5b5750d5e478e2522eb994479e8683"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/usps.2.json",
+      "sha256": "79c8372eae8a166c7d58b4c6d2f1d0402882710a2bcd4179aa0170e531d7057f"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/usps.3.json",
+      "sha256": "dd9528b6be5cff11aa8bfbd422fe0f085f82114d99fb2284329631b4e0c9dca0"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/voodoo.1.json",
+      "sha256": "552d309f3e913ac126a9b8a3af10b8dc93af4ddd53a8e043e14a226cd53ff610"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/voodoo.2.json",
+      "sha256": "d8c03549844f244efe324407650290a80048204cbe44ab2c8131fd3f2f5fb14b"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/voodoo.3.json",
+      "sha256": "ce007ca02b11010763c87295bf9af54d0eb5bd82767de6dabd80fc784bb4d06a"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/zalando.1.json",
+      "sha256": "92811229a71ea83c1a14410ce7c2675652e317e583baf81c10efb51a8eccb77f"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/zalando.2.json",
+      "sha256": "49d5dca77357ad208e5e0df6c57240a60b7875142fd42e8632323ededf40fafa"
+    },
+    {
+      "path": "data/lhr/lh-v2-20260923-desktop/zalando.3.json",
+      "sha256": "3fe247a1f53ef1b46a3480cb5adeebe85900c3109e37dc1ba244850d7e0482f1"
+    }
+  ],
+  "playwright_version": "1.62.0",
+  "chromium_version": "151.0.7922.34",
+  "chromium_build": "chromium-1234",
+  "node_version": "v26.4.0",
+  "npm_version": "11.17.0",
+  "lighthouse_version": "13.3.0",
+  "lighthouse_install": {
+    "project_dir": ".",
+    "lockfile": "package-lock.json",
+    "lockfile_sha256": "b31ad72b30f147056cf51090bc39e05334a130ae44d2422b7f326ff46d219888"
+  },
+  "lighthouse_versions_reported": [
+    "13.3.0"
+  ],
+  "lighthouse_preset": "desktop",
+  "lighthouse_args": [
+    "<start_url>",
+    "--output=json",
+    "--output-path=data/lhr/<batch>/<site_id>.<r>.json",
+    "--quiet",
+    "--only-categories=agentic-browsing",
+    "--chrome-flags=--headless --no-sandbox --disable-gpu",
+    "--preset=desktop"
+  ],
+  "lighthouse_chrome_version": "151.0.7922.34",
+  "lighthouse_chrome_path": "/Users/jamesoc/Library/Caches/ms-playwright/chromium-1234/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+  "lighthouse_host_user_agents": [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36"
+  ],
+  "python_version": "Python 3.13.14",
+  "python_packages_sha256": "a116e394594e6b6d7b9c91986aa089a6cacdecaed133eae757d7f034135face9",
+  "env_file": {
+    "path": "data/env-lh-v2-20260923-desktop.txt",
+    "sha256": "ba9820aeb574156ad6674d39cc5b045c6dafca6b79c5727e840f24c86e85460c"
+  },
+  "launch_args": "--headless --no-sandbox --disable-gpu",
+  "headless": true,
+  "viewport": null,
+  "viewport_null_reason": "set by Lighthouse's emulation; recorded per run as screen_emulation in the audits extract",
+  "user_agent_configured": null,
+  "user_agent_configured_null_reason": "Lighthouse's own emulatedUserAgent; recorded per run as network_user_agent",
+  "user_agent_sent": null,
+  "user_agent_sent_null_reason": "recorded per run in the audits extract, not per batch",
+  "sec_ch_ua_sent": null,
+  "sec_ch_ua_sent_null_reason": "Lane 1 does not capture request headers",
+  "navigator_webdriver": null,
+  "navigator_webdriver_null_reason": "Lane 1 does not probe the page's navigator",
+  "platform": null,
+  "platform_null_reason": "Lane 1 does not probe the page's navigator",
+  "identity_id": null,
+  "identity_id_null_reason": "Lane 1 declares no registered identity; it presents Lighthouse's defaults",
+  "vantage": {
+    "kind": "residential",
+    "asn": "AS7922",
+    "as_org": "AS7922 Comcast Cable Communications, LLC",
+    "country": "US",
+    "source": "ipinfo.io",
+    "public_ip_hmac_sha256": "5ffc16b236dc67dd0f9723884c5ff04e9aa451748c9ffc8f6686d91ee93320e0",
+    "public_ip_hmac_key_id": "dee71f74",
+    "redaction": "2026-09-23, before publication: public_ip_sha256 replaced by an HMAC under a local key, because an unsalted hash of an IPv4 address is reversible. Same address, same run; nothing else in this manifest changed."
+  },
+  "concurrency": 1,
+  "model_config": {},
+  "trials_per_site": 3,
+  "sites_requested": [
+    "stripe",
+    "shopify",
+    "github",
+    "twilio",
+    "notion",
+    "cloudflare",
+    "bestbuy",
+    "ikea",
+    "target",
+    "spotify",
+    "costco",
+    "ca_dmv",
+    "tx_dmv",
+    "usps",
+    "irs",
+    "ssa",
+    "trimet",
+    "portland",
+    "oregon_state",
+    "powells",
+    "voodoo",
+    "innout",
+    "bear",
+    "apple",
+    "craigslist",
+    "zalando",
+    "amazon",
+    "ticketmaster"
+  ],
+  "sites_completed": [
+    "stripe",
+    "shopify",
+    "github",
+    "twilio",
+    "notion",
+    "cloudflare",
+    "bestbuy",
+    "ikea",
+    "target",
+    "spotify",
+    "costco",
+    "ca_dmv",
+    "tx_dmv",
+    "usps",
+    "irs",
+    "ssa",
+    "trimet",
+    "portland",
+    "oregon_state",
+    "powells",
+    "voodoo",
+    "innout",
+    "bear",
+    "apple",
+    "craigslist",
+    "zalando",
+    "amazon",
+    "ticketmaster"
+  ],
+  "sites_not_measured": [],
+  "lane_exit_code": 0
+}

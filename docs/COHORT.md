@@ -2,7 +2,7 @@
 
 Readable companion to `data/cohort.csv` (canonical). Scoring/matching logic and cohort design rationale are in [METHODOLOGY.md](./METHODOLOGY.md). Every `answer_substring` was pre-registered by hand during the manual cohort pass, before any agent run.
 
-The **URL** field on each entry is the answer page (where the fact lives, used for the manual pass and extraction baselines); the agent starts from `start_url` in the CSV. Domino's and NYT were dropped during the pass (gated/promo pricing). URLs marked `[confirm ...]` need the exact product/event page used in the pass.
+The **URL** field on each entry is the answer page (where the fact lives, used for the manual pass and extraction baselines); the agent starts from `start_url` in the CSV. Domino's and NYT were dropped during the pass (gated/promo pricing). Every answer page was pinned to the exact product or event page before the v1 run; no `[confirm ...]` placeholder remains.
 
 
 ## Top anchors (modern SaaS / dev tools)
