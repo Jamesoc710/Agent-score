@@ -13,7 +13,7 @@ export const REPO_URL = "https://github.com/Jamesoc710/Agent-score";
  * inbound mail at. James's choice (design S2-4 section 12 q7), so it stays null until he makes
  * it. While null nothing renders a contact line, and `PRE_MERGE=1 npm run test:unit` fails.
  */
-export const CONTACT_ADDRESS: string | null = null;
+export const CONTACT_ADDRESS: string | null = "jsoc@uoregon.edu";
 
 /**
  * The release tag the dataset's DOI is minted from (`dataset-v1`, cut the day after the
