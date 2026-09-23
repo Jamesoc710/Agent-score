@@ -21,7 +21,7 @@ export const CONTACT_ADDRESS: string | null = "jsoc@uoregon.edu";
  * identifier asserted before it exists, the same error as a false measurement. Artifact links
  * point at `main` until then.
  */
-export const RELEASE_TAG: string | null = null;
+export const RELEASE_TAG: string | null = "dataset-v1";
 
 /**
  * The dataset's reuse licence (data/LICENSE.md): CC BY 4.0 for the measurements AgentRank

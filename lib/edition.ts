@@ -26,7 +26,7 @@ export const EDITION_SCHEMA_VERSION = 1;
 export const EDITION_NUMBER = 1;
 export const EDITION_TITLE = "State of the Agentic Web, No. 1";
 /** Null until Zenodo mints one from the release tag. No placeholder identifier ever renders. */
-export const EDITION_DOI: string | null = null;
+export const EDITION_DOI: string | null = "10.5281/zenodo.22924988";
 
 const TS_STATS = "lib/stats.ts";
 const TS_STUDY = "lib/study.ts";
