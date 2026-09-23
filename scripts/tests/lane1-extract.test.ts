@@ -24,10 +24,37 @@ const fixture = (name: string) =>
 const twilio = fixture("lhr-twilio-13.3.0.json");
 const example = fixture("lhr-example-13.3.0.json");
 
-// TODO(P4): add lhr-twilio-13.5.0.json, generated from the 13.5.0 companion batch
-// (data/lhr/lh-v2-<yyyymmdd>-13.5.0/twilio.<median repeat>.json, fullPageScreenshot removed), and
-// pin the seven-audit shape: ard-schema's status as measured that day, lighthouse_version
-// "13.5.0", and a category with seven auditRefs (S2-7 §3, amended R2-01).
+// From data/lhr/lh-v2-20260923-13.5.0/twilio.2.json, the batch's median repeat, fullPageScreenshot removed.
+const twilio135 = fixture("lhr-twilio-13.5.0.json");
+
+describe("the twilio.com fixture (13.5.0, Chromium 151, 2026-09-23)", () => {
+  const row = extractLighthouseRow(twilio135, { clsRule: "v1" });
+
+  it("reads a category of seven auditRefs, ard-schema included", () => {
+    expect(row.lighthouse_version).toBe("13.5.0");
+    expect(row.chrome_version).toBe("151.0.0.0");
+    expect(Object.keys(row.audits)).toHaveLength(7);
+    expect(row.lh_ard_schema_status).toBe("absent");
+  });
+
+  it("carries the mean, Chrome's fraction and the flags under v1's rule", () => {
+    expect(row.lh_total).toBe(63);
+    expect(row.lh_passed).toBe(2);
+    expect(row.lh_passable).toBe(3);
+    expect(row.lh_accessibility_tree).toBe(0);
+    expect(row.lh_layout_stability).toBe(0);
+    expect(row.lh_cls_score).toBe(0.9);
+    expect(row.lh_cls_lighthouse_pass).toBe(1);
+    expect(row.lh_llms_txt).toBe(1);
+    expect(row.lh_llms_txt_status).toBe("pass");
+  });
+
+  it("scores the WebMCP audit 1 with no tools registered, so v1's flag reads the browser", () => {
+    expect(row.lh_webmcp_applied).toBe(1);
+    expect(row.lh_webmcp_tool_count).toBe(0);
+    expect(row.lh_webmcp).toBe(1);
+  });
+});
 
 describe("the twilio.com fixture (13.3.0, system Chrome 152, 2026-09-08)", () => {
   const row = extractLighthouseRow(twilio, { clsRule: "v1" });

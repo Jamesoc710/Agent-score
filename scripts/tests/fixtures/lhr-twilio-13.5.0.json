@@ -1,0 +1,1241 @@
+{
+  "lighthouseVersion": "13.5.0",
+  "requestedUrl": "https://www.twilio.com/",
+  "mainDocumentUrl": "https://www.twilio.com/en-us",
+  "finalDisplayedUrl": "https://www.twilio.com/en-us",
+  "finalUrl": "https://www.twilio.com/en-us",
+  "fetchTime": "2026-09-23T08:38:17.187Z",
+  "gatherMode": "navigation",
+  "runWarnings": [
+    "The page loaded too slowly to finish within the time limit. Results may be incomplete.",
+    "The page may not be loading as expected because your test URL (https://www.twilio.com/) was redirected to https://www.twilio.com/en-us. Try testing the second URL directly."
+  ],
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+  "environment": {
+    "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+    "hostUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+    "benchmarkIndex": 4540,
+    "credits": {
+      "axe-core": "4.13.0"
+    }
+  },
+  "audits": {
+    "cumulative-layout-shift": {
+      "id": "cumulative-layout-shift",
+      "title": "Cumulative Layout Shift",
+      "description": "Cumulative Layout Shift measures the movement of visible elements within the viewport. [Learn more about the Cumulative Layout Shift metric](https://web.dev/articles/cls).",
+      "score": 0.9,
+      "scoreDisplayMode": "numeric",
+      "numericValue": 0.09846190964231047,
+      "numericUnit": "unitless",
+      "displayValue": "0.098",
+      "scoringOptions": {
+        "p10": 0.1,
+        "median": 0.25
+      },
+      "details": {
+        "type": "debugdata",
+        "items": [
+          {
+            "cumulativeLayoutShiftMainFrame": 0.09846190964231047,
+            "newEngineResult": {
+              "cumulativeLayoutShift": 0.09846190964231047,
+              "cumulativeLayoutShiftMainFrame": 0.09846190964231047
+            },
+            "newEngineResultDiffered": false
+          }
+        ]
+      }
+    },
+    "agent-accessibility-tree": {
+      "id": "agent-accessibility-tree",
+      "title": "Accessibility tree is not well-formed",
+      "description": "A well-formed [accessibility tree](https://developer.chrome.com/docs/lighthouse/agentic-browsing/accessibility-for-agents) helps AI agents to navigate and interact with the page.",
+      "score": 0,
+      "scoreDisplayMode": "binary",
+      "details": {
+        "type": "list",
+        "items": [
+          {
+            "type": "list-section",
+            "title": "Failed Audits",
+            "value": {
+              "type": "table",
+              "headings": [
+                {
+                  "key": "description",
+                  "valueType": "text",
+                  "label": "Description"
+                },
+                {
+                  "key": "node",
+                  "valueType": "node",
+                  "label": "Failing Element"
+                }
+              ],
+              "items": [
+                {
+                  "description": "ARIA attributes must conform to valid values",
+                  "node": {
+                    "type": "node",
+                    "lhId": "1-0-BUTTON",
+                    "path": "1,HTML,1,BODY,7,MAIN,12,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,DIV,0,BUTTON",
+                    "selector": "div.layout-column > div.accordion-v2 > div.accordion-v2__item > button.accordion-v2__button",
+                    "boundingRect": {
+                      "top": 13583,
+                      "bottom": 13647,
+                      "left": 56,
+                      "right": 356,
+                      "width": 300,
+                      "height": 64
+                    },
+                    "snippet": "<button class=\"accordion-v2__button accordion-v2__header\" type=\"button\" aria-controls=\"-panel\" data-cmp-hook-accordion=\"button\" tabindex=\"-1\">",
+                    "nodeLabel": "Sources"
+                  }
+                },
+                {
+                  "description": "Buttons must have discernible text",
+                  "node": {
+                    "type": "node",
+                    "lhId": "1-1-BUTTON",
+                    "path": "1,HTML,1,BODY,7,MAIN,8,DIV,0,DIV,0,DIV,0,DIV,2,DIV,0,DIV,0,BUTTON",
+                    "selector": "div.layout-column > div.code-snippet > div.code-snippet-tabs > button#code-tab--556672517",
+                    "boundingRect": {
+                      "top": 9718,
+                      "bottom": 9776,
+                      "left": 36,
+                      "right": 85,
+                      "width": 49,
+                      "height": 58
+                    },
+                    "snippet": "<button type=\"button\" role=\"tab\" id=\"code-tab--556672517\" class=\"code-snippet-button paragraph-medium\" tabindex=\"0\" aria-controls=\"code-tabpanel--556672517\" aria-selected=\"true\" data-cmp-hook-tabs=\"tab\">",
+                    "nodeLabel": "div.layout-column > div.code-snippet > div.code-snippet-tabs > button#code-tab--556672517"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "webmcp-registered-tools": {
+      "id": "webmcp-registered-tools",
+      "title": "WebMCP tools registered",
+      "description": "Lists the [WebMCP tools](https://developer.chrome.com/docs/ai/webmcp) registered at the time of analysis.",
+      "score": 1,
+      "scoreDisplayMode": "informative"
+    },
+    "webmcp-form-coverage": {
+      "id": "webmcp-form-coverage",
+      "title": "WebMCP form coverage",
+      "description": "Consider adding [WebMCP](https://developer.chrome.com/docs/ai/webmcp) annotations to the forms listed below. This helps AI agents identify and interact with these forms more reliably.",
+      "score": 1,
+      "scoreDisplayMode": "informative",
+      "displayValue": "3 forms missing annotations",
+      "details": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "node",
+            "valueType": "node",
+            "label": "Form"
+          }
+        ],
+        "items": [
+          {
+            "node": {
+              "type": "node",
+              "lhId": "1-21-FORM",
+              "path": "1,HTML,1,BODY,6,HEADER,0,DIV,0,SECTION,1,DIV,0,DIV,2,DIV,0,DIV,1,DIV,0,DIV,0,DIV,0,FORM",
+              "selector": "div.navigation-v2__search-viewport > div#search-box > div.ais-SearchBox > form.ais-SearchBox-form",
+              "boundingRect": {
+                "top": 0,
+                "bottom": 0,
+                "left": 0,
+                "right": 0,
+                "width": 0,
+                "height": 0
+              },
+              "snippet": "<form action=\"\" role=\"search\" class=\"ais-SearchBox-form\" novalidate=\"\">",
+              "nodeLabel": "Search"
+            }
+          },
+          {
+            "node": {
+              "type": "node",
+              "lhId": "1-22-FORM",
+              "path": "1,HTML,1,BODY,6,HEADER,0,DIV,0,SECTION,1,DIV,0,DIV,3,DIV,1,DIV,0,DIV,0,DIV,0,FORM",
+              "selector": "div.navigation-v2__search-container > div#search-box-mobile > div.ais-SearchBox > form.ais-SearchBox-form",
+              "boundingRect": {
+                "top": 0,
+                "bottom": 0,
+                "left": 0,
+                "right": 0,
+                "width": 0,
+                "height": 0
+              },
+              "snippet": "<form action=\"\" role=\"search\" class=\"ais-SearchBox-form\" novalidate=\"\">",
+              "nodeLabel": "Search"
+            }
+          },
+          {
+            "node": {
+              "type": "node",
+              "lhId": "1-23-FORM",
+              "path": "1,HTML,2,Q-ROOT,1,DIV,a,#document-fragment,0,DIV,1,DIV,0,DIV,7,DIV,0,DIV,1,DIV,0,DIV,0,DIV,1,FORM",
+              "selector": "div.q-cMmsZY > div.q-cMmsZY > div.q-HgOzd > form.q-jwONey",
+              "boundingRect": {
+                "top": 0,
+                "bottom": 0,
+                "left": 0,
+                "right": 0,
+                "width": 0,
+                "height": 0
+              },
+              "snippet": "<form data-component-name=\"ChatInputForm.ComposerForm\" class=\"q-jwONey q-jRdRoc q-jUyYOs q-hCsiYz q-beAswm q-ixvSSg q-frJqtw q-kZNnXC q-\u2026\">",
+              "nodeLabel": "Message Kendall"
+            }
+          }
+        ]
+      }
+    },
+    "webmcp-schema-validity": {
+      "id": "webmcp-schema-validity",
+      "title": "WebMCP schemas are valid",
+      "description": "Valid [WebMCP schemas](https://developer.chrome.com/docs/ai/webmcp) are required for AI agents to understand and interact with tools correctly. Please fix any errors or warnings reported by the browser.",
+      "score": null,
+      "scoreDisplayMode": "notApplicable"
+    },
+    "llms-txt": {
+      "id": "llms-txt",
+      "title": "llms.txt follows recommendations",
+      "description": "If your llms.txt file does not follow recommendations, large language models may not be able to understand how you want your website to be crawled or used for training. The [llms.txt](https://llmstxt.org/) file should be a Markdown file containing at least one H1 header. [Learn more about the llms.txt audit](https://developer.chrome.com/docs/lighthouse/agentic-browsing/llms-txt).",
+      "score": 1,
+      "scoreDisplayMode": "binary"
+    },
+    "ard-schema": {
+      "id": "ard-schema",
+      "title": "`ai-catalog.json` schema is valid",
+      "description": "Valid `ai-catalog.json` manifests are required for autonomous AI agents and registries to discover and verify your resources. [Learn more about the ARD specification](https://agenticresourcediscovery.org/spec/).",
+      "score": null,
+      "scoreDisplayMode": "notApplicable"
+    }
+  },
+  "configSettings": {
+    "output": [
+      "json"
+    ],
+    "maxWaitForFcp": 30000,
+    "maxWaitForLoad": 45000,
+    "pauseAfterFcpMs": 1000,
+    "pauseAfterLoadMs": 1000,
+    "networkQuietThresholdMs": 1000,
+    "cpuQuietThresholdMs": 1000,
+    "formFactor": "mobile",
+    "throttling": {
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "requestLatencyMs": 562.5,
+      "downloadThroughputKbps": 1474.5600000000002,
+      "uploadThroughputKbps": 675,
+      "cpuSlowdownMultiplier": 4
+    },
+    "throttlingMethod": "simulate",
+    "screenEmulation": {
+      "mobile": true,
+      "width": 412,
+      "height": 823,
+      "deviceScaleFactor": 1.75,
+      "disabled": false
+    },
+    "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "auditMode": false,
+    "gatherMode": false,
+    "clearStorageTypes": [
+      "file_systems",
+      "shader_cache",
+      "service_workers",
+      "cache_storage"
+    ],
+    "disableStorageReset": false,
+    "debugNavigation": false,
+    "channel": "cli",
+    "usePassiveGathering": false,
+    "disableFullPageScreenshot": false,
+    "skipAboutBlank": false,
+    "blankPage": "about:blank",
+    "ignoreStatusCode": false,
+    "locale": "en-US",
+    "blockedUrlPatterns": null,
+    "additionalTraceCategories": null,
+    "extraHeaders": null,
+    "precomputedLanternData": null,
+    "onlyAudits": null,
+    "onlyCategories": [
+      "agentic-browsing"
+    ],
+    "skipAudits": null
+  },
+  "categories": {
+    "agentic-browsing": {
+      "title": "Agentic Browsing",
+      "description": "These checks ensure high-quality, [browsable websites for AI agents](https://goo.gle/lighthouse-agentic-web) and validate the correctness of WebMCP integrations. This category is still under development and subject to change.",
+      "supportedModes": [
+        "navigation",
+        "snapshot"
+      ],
+      "categoryScoreDisplayMode": "fraction",
+      "auditRefs": [
+        {
+          "id": "agent-accessibility-tree",
+          "weight": 1,
+          "group": "agent-accessibility"
+        },
+        {
+          "id": "webmcp-form-coverage",
+          "weight": 0,
+          "group": "webmcp"
+        },
+        {
+          "id": "webmcp-registered-tools",
+          "weight": 0,
+          "group": "webmcp"
+        },
+        {
+          "id": "webmcp-schema-validity",
+          "weight": 0,
+          "group": "webmcp"
+        },
+        {
+          "id": "cumulative-layout-shift",
+          "weight": 1,
+          "acronym": "CLS"
+        },
+        {
+          "id": "llms-txt",
+          "weight": 1,
+          "group": "agent-discoverability"
+        },
+        {
+          "id": "ard-schema",
+          "weight": 0,
+          "group": "agent-discoverability"
+        }
+      ],
+      "id": "agentic-browsing",
+      "score": 0.63
+    }
+  },
+  "categoryGroups": {
+    "metrics": {
+      "title": "Metrics"
+    },
+    "insights": {
+      "title": "Insights",
+      "description": "These insights are also available in the Chrome DevTools Performance Panel - [record a trace](https://developer.chrome.com/docs/devtools/performance/reference) to view more detailed information."
+    },
+    "diagnostics": {
+      "title": "Diagnostics",
+      "description": "More information about the performance of your application. These numbers don't [directly affect](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/) the Performance score."
+    },
+    "a11y-best-practices": {
+      "title": "Best practices",
+      "description": "These items highlight common accessibility best practices."
+    },
+    "a11y-color-contrast": {
+      "title": "Contrast",
+      "description": "These are opportunities to improve the legibility of your content."
+    },
+    "a11y-names-labels": {
+      "title": "Names and labels",
+      "description": "These are opportunities to improve the semantics of the controls in your application. This may enhance the experience for users of assistive technology, like a screen reader."
+    },
+    "a11y-navigation": {
+      "title": "Navigation",
+      "description": "These are opportunities to improve keyboard navigation in your application."
+    },
+    "a11y-aria": {
+      "title": "ARIA",
+      "description": "These are opportunities to improve the usage of ARIA in your application which may enhance the experience for users of assistive technology, like a screen reader."
+    },
+    "a11y-language": {
+      "title": "Internationalization and localization",
+      "description": "These are opportunities to improve the interpretation of your content by users in different locales."
+    },
+    "a11y-audio-video": {
+      "title": "Audio and video",
+      "description": "These are opportunities to provide alternative content for audio and video. This may improve the experience for users with hearing or vision impairments."
+    },
+    "a11y-tables-lists": {
+      "title": "Tables and lists",
+      "description": "These are opportunities to improve the experience of reading tabular or list data using assistive technology, like a screen reader."
+    },
+    "seo-mobile": {
+      "title": "Mobile Friendly",
+      "description": "Make sure your pages are mobile friendly so users don\u2019t have to pinch or zoom in order to read the content pages. [Learn how to make pages mobile-friendly](https://developers.google.com/search/mobile-sites/)."
+    },
+    "seo-content": {
+      "title": "Content Best Practices",
+      "description": "Format your HTML in a way that enables crawlers to better understand your app\u2019s content."
+    },
+    "seo-crawl": {
+      "title": "Crawling and Indexing",
+      "description": "To appear in search results, crawlers need access to your app."
+    },
+    "best-practices-trust-safety": {
+      "title": "Trust and Safety"
+    },
+    "best-practices-ux": {
+      "title": "User Experience"
+    },
+    "best-practices-browser-compat": {
+      "title": "Browser Compatibility"
+    },
+    "best-practices-general": {
+      "title": "General"
+    },
+    "webmcp": {
+      "title": "WebMCP",
+      "description": "Audits validating WebMCP integration."
+    },
+    "agent-accessibility": {
+      "title": "Agent Accessibility",
+      "description": "These audits highlight best practices for improving the accessibility of the website for AI agents."
+    },
+    "agent-discoverability": {
+      "title": "Agent Discoverability",
+      "description": "These audits validate that websites expose discoverable resources, documentation, and catalogs for AI agents."
+    },
+    "hidden": {
+      "title": ""
+    }
+  },
+  "stackPacks": [],
+  "entities": [
+    {
+      "name": "twilio.com",
+      "origins": [
+        "https://www.twilio.com"
+      ],
+      "isFirstParty": true,
+      "isUnrecognized": true
+    },
+    {
+      "name": "hlx.page",
+      "origins": [
+        "https://rum.hlx.page"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "TrustArc",
+      "homepage": "https://www.trustarc.com/",
+      "origins": [
+        "https://consent.trustarc.com"
+      ],
+      "category": "utility"
+    },
+    {
+      "name": "Adobe Tag Manager",
+      "homepage": "https://www.adobe.com/experience-platform/",
+      "origins": [
+        "https://assets.adobedtm.com",
+        "https://dpm.demdex.net",
+        "https://twilio.demdex.net",
+        "https://cm.everesttech.net"
+      ],
+      "category": "tag-manager"
+    },
+    {
+      "name": "Google Tag Manager",
+      "homepage": "https://marketingplatform.google.com/about/tag-manager/",
+      "origins": [
+        "https://www.googletagmanager.com"
+      ],
+      "category": "tag-manager"
+    },
+    {
+      "name": "VWO",
+      "homepage": "https://vwo.com",
+      "origins": [
+        "https://dev.visualwebsiteoptimizer.com"
+      ],
+      "category": "analytics"
+    },
+    {
+      "name": "Wistia",
+      "homepage": "https://wistia.com/",
+      "origins": [
+        "https://fast.wistia.com",
+        "https://fast.wistia.net",
+        "https://embed-ssl.wistia.com",
+        "https://pipedream.wistia.com",
+        "https://distillery.wistia.com",
+        "https://embed-cloudfront.wistia.com"
+      ],
+      "category": "video"
+    },
+    {
+      "name": "Adobe Experience Cloud",
+      "homepage": "",
+      "origins": [
+        "https://twilio.tt.omtrdc.net"
+      ],
+      "category": "analytics"
+    },
+    {
+      "name": "6sc.co",
+      "origins": [
+        "https://j.6sc.co",
+        "https://c.6sc.co",
+        "https://ipv6.6sc.co",
+        "https://b.6sc.co"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "powerrobotflower.com",
+      "origins": [
+        "https://euob.powerrobotflower.com",
+        "https://obseu.powerrobotflower.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "JSDelivr CDN",
+      "homepage": "https://www.jsdelivr.com/",
+      "origins": [
+        "https://cdn.jsdelivr.net"
+      ],
+      "category": "cdn"
+    },
+    {
+      "name": "LinkedIn Ads",
+      "origins": [
+        "https://snap.licdn.com",
+        "https://px.ads.linkedin.com",
+        "https://www.linkedin.com",
+        "https://px4.ads.linkedin.com"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "Marketo",
+      "homepage": "https://www.marketo.com",
+      "origins": [
+        "https://munchkin.marketo.net",
+        "https://294-tkb-300.mktoresp.com"
+      ],
+      "category": "analytics"
+    },
+    {
+      "name": "Facebook",
+      "homepage": "https://www.facebook.com",
+      "origins": [
+        "https://connect.facebook.net",
+        "https://www.facebook.com"
+      ],
+      "category": "social"
+    },
+    {
+      "name": "reddit",
+      "origins": [
+        "https://www.redditstatic.com",
+        "https://pixel-config.reddit.com",
+        "https://alb.reddit.com"
+      ],
+      "category": "social"
+    },
+    {
+      "name": "jscloud.net",
+      "origins": [
+        "https://jscloud.net"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "StackAdapt",
+      "origins": [
+        "https://tags.srv.stackadapt.com"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "qualified.com",
+      "origins": [
+        "https://js.qualified.com",
+        "https://app.qualified.com",
+        "https://assets.qualified.com",
+        "https://messenger-assets.qualified.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "SalesLoft",
+      "homepage": "https://salesloft.com/",
+      "origins": [
+        "https://scout-cdn.salesloft.com",
+        "https://scout.salesloft.com"
+      ],
+      "category": "marketing"
+    },
+    {
+      "name": "Silktide",
+      "origins": [
+        "https://analytics.silktide.com",
+        "https://a.us.silktide.com"
+      ],
+      "category": "hosting"
+    },
+    {
+      "name": "openai.com",
+      "origins": [
+        "https://bzrcdn.openai.com",
+        "https://bzr.openai.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "Has Offers",
+      "origins": [
+        "https://accretivemedia.go2cloud.org"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "Segment",
+      "homepage": "https://segment.com/",
+      "origins": [
+        "https://cdn.segment.com",
+        "https://api.segment.io"
+      ],
+      "category": "analytics"
+    },
+    {
+      "name": "Google/Doubleclick Ads",
+      "homepage": "https://marketingplatform.google.com/about/enterprise/",
+      "origins": [
+        "https://googleads.g.doubleclick.net",
+        "https://ad.doubleclick.net",
+        "https://11875831.fls.doubleclick.net",
+        "https://stats.g.doubleclick.net",
+        "https://www.googleadservices.com",
+        "https://adservice.google.com"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "Other Google APIs/SDKs",
+      "homepage": "https://developers.google.com/apis-explorer/#p/",
+      "origins": [
+        "https://www.google.com"
+      ],
+      "category": "utility"
+    },
+    {
+      "name": "Google Analytics",
+      "homepage": "https://marketingplatform.google.com/about/analytics/",
+      "origins": [
+        "https://analytics.google.com"
+      ],
+      "category": "analytics"
+    },
+    {
+      "name": "AppNexus",
+      "homepage": "https://www.appnexus.com/",
+      "origins": [
+        "https://secure.adnxs.com"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "Sentry",
+      "homepage": "https://sentry.io/",
+      "origins": [
+        "https://browser.sentry-cdn.com",
+        "https://o209747.ingest.us.sentry.io"
+      ],
+      "category": "utility"
+    },
+    {
+      "name": "6sense.com",
+      "origins": [
+        "https://epsilon.6sense.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "Bing Ads",
+      "homepage": "https://bingads.microsoft.com",
+      "origins": [
+        "https://bat.bing.com"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "Yahoo! JAPAN Ads",
+      "homepage": "https://marketing.yahoo.co.jp/service/yahooads/",
+      "origins": [
+        "https://s.yimg.jp"
+      ],
+      "category": "ad"
+    },
+    {
+      "name": "Cloudflare",
+      "homepage": "https://www.cloudflare.com/website-optimization/",
+      "origins": [
+        "https://static.cloudflareinsights.com"
+      ],
+      "category": "utility"
+    },
+    {
+      "name": "bing.net",
+      "origins": [
+        "https://bat.bing.net"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "yahoo.co.jp",
+      "origins": [
+        "https://apm.yahoo.co.jp"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "zi-scripts.com",
+      "origins": [
+        "https://js.zi-scripts.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "zoominfo.com",
+      "origins": [
+        "https://ws.zoominfo.com"
+      ],
+      "isUnrecognized": true
+    },
+    {
+      "name": "slim02.jp",
+      "origins": [
+        "https://dm.slim02.jp"
+      ],
+      "isUnrecognized": true
+    }
+  ],
+  "timing": {
+    "entries": [
+      {
+        "startTime": 720.73,
+        "name": "lh:config",
+        "duration": 144.66,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 721.39,
+        "name": "lh:config:resolveArtifactsToDefns",
+        "duration": 10.57,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 865.45,
+        "name": "lh:runner:gather",
+        "duration": 55942.95,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 1559.39,
+        "name": "lh:driver:connect",
+        "duration": 2.53,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 1562.03,
+        "name": "lh:driver:navigate",
+        "duration": 22.87,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 1585.03,
+        "name": "lh:gather:getBenchmarkIndex",
+        "duration": 1001.05,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2586.16,
+        "name": "lh:gather:getVersion",
+        "duration": 0.41,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2586.61,
+        "name": "lh:gather:getDevicePixelRatio",
+        "duration": 0.44,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2587.83,
+        "name": "lh:prepare:navigationMode",
+        "duration": 30.12,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2588.13,
+        "name": "lh:gather:getVersion",
+        "duration": 0.19,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2594.39,
+        "name": "lh:storage:clearDataForOrigin",
+        "duration": 17.96,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2612.41,
+        "name": "lh:storage:clearBrowserCaches",
+        "duration": 4.84,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2617.58,
+        "name": "lh:gather:prepareThrottlingAndNetwork",
+        "duration": 0.36,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 2645.04,
+        "name": "lh:driver:navigate",
+        "duration": 45003.22,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 49556.04,
+        "name": "lh:computed:NetworkRecords",
+        "duration": 2.98,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 49559.2,
+        "name": "lh:gather:getArtifact:WebMCP",
+        "duration": 3.44,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 49562.65,
+        "name": "lh:gather:getArtifact:WebMcpSchemaIssues",
+        "duration": 0.02,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 49562.68,
+        "name": "lh:gather:getArtifact:LlmsTxt",
+        "duration": 726.98,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 50289.68,
+        "name": "lh:gather:getArtifact:DevtoolsLog",
+        "duration": 0.06,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 50289.75,
+        "name": "lh:gather:getArtifact:Trace",
+        "duration": 0.01,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 50289.77,
+        "name": "lh:gather:getArtifact:Accessibility",
+        "duration": 599.28,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 50889.07,
+        "name": "lh:gather:getArtifact:Inputs",
+        "duration": 5.5,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 50894.67,
+        "name": "lh:gather:getArtifact:NetworkUserAgent",
+        "duration": 0.04,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 50894.71,
+        "name": "lh:gather:getArtifact:RobotsTxt",
+        "duration": 241.14,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 51135.9,
+        "name": "lh:gather:getArtifact:AgentResourceDiscovery",
+        "duration": 198.86,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 51334.79,
+        "name": "lh:gather:getArtifact:Stacks",
+        "duration": 12.5,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 51334.89,
+        "name": "lh:gather:collectStacks",
+        "duration": 12.39,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 51347.3,
+        "name": "lh:gather:getArtifact:FullPageScreenshot",
+        "duration": 5416.11,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56753.22,
+        "name": "lh:gather:getVersion",
+        "duration": 1.18,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56808.65,
+        "name": "lh:runner:audit",
+        "duration": 160.53,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56808.74,
+        "name": "lh:runner:auditing",
+        "duration": 160.31,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56809.26,
+        "name": "lh:audit:cumulative-layout-shift",
+        "duration": 156.05,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56809.37,
+        "name": "lh:computed:CumulativeLayoutShift",
+        "duration": 155.47,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56809.41,
+        "name": "lh:computed:ProcessedTrace",
+        "duration": 143.35,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56965.38,
+        "name": "lh:audit:agent-accessibility-tree",
+        "duration": 0.31,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56965.73,
+        "name": "lh:audit:webmcp-registered-tools",
+        "duration": 0.16,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56965.94,
+        "name": "lh:audit:webmcp-form-coverage",
+        "duration": 0.74,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56966.8,
+        "name": "lh:audit:webmcp-schema-validity",
+        "duration": 0.33,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56967.24,
+        "name": "lh:audit:llms-txt",
+        "duration": 1.42,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56968.76,
+        "name": "lh:audit:ard-schema",
+        "duration": 0.29,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56969.05,
+        "name": "lh:runner:generate",
+        "duration": 0.12,
+        "entryType": "measure"
+      },
+      {
+        "startTime": 56969.29,
+        "name": "lh:computed:EntityClassification",
+        "duration": 1.44,
+        "entryType": "measure"
+      }
+    ],
+    "total": 56103.479999999996
+  },
+  "i18n": {
+    "rendererFormattedStrings": {
+      "calculatorLink": "See calculator.",
+      "collapseView": "Collapse view",
+      "crcInitialNavigation": "Initial Navigation",
+      "crcLongestDurationLabel": "Maximum critical path latency:",
+      "dropdownCopyJSON": "Copy JSON",
+      "dropdownDarkTheme": "Toggle Dark Theme",
+      "dropdownPrintExpanded": "Print Expanded",
+      "dropdownPrintSummary": "Print Summary",
+      "dropdownSaveGist": "Save as Gist",
+      "dropdownSaveHTML": "Save as HTML",
+      "dropdownSaveJSON": "Save as JSON",
+      "dropdownViewUnthrottledTrace": "View Unthrottled Trace",
+      "dropdownViewer": "Open in Viewer",
+      "errorLabel": "Error!",
+      "errorMissingAuditInfo": "Report error: no audit information",
+      "expandView": "Expand view",
+      "firstPartyChipLabel": "1st party",
+      "footerIssue": "File an issue",
+      "hide": "Hide",
+      "labDataTitle": "Lab Data",
+      "lsPerformanceCategoryDescription": "[Lighthouse](https://developers.google.com/web/tools/lighthouse/) analysis of the current page on an emulated mobile network. Values are estimated and may vary.",
+      "manualAuditsGroupTitle": "Additional items to manually check",
+      "notApplicableAuditsGroupTitle": "Not applicable",
+      "openInANewTabTooltip": "Open in a new tab",
+      "opportunityResourceColumnLabel": "Opportunity",
+      "opportunitySavingsColumnLabel": "Estimated Savings",
+      "passedAuditsGroupTitle": "Passed audits",
+      "runtimeAnalysisWindow": "Initial page load",
+      "runtimeAnalysisWindowSnapshot": "Point-in-time snapshot",
+      "runtimeAnalysisWindowTimespan": "User interactions timespan",
+      "runtimeCustom": "Custom throttling",
+      "runtimeDesktopEmulation": "Emulated Desktop",
+      "runtimeMobileEmulation": "Emulated Moto G Power",
+      "runtimeNoEmulation": "No emulation",
+      "runtimeSettingsAxeVersion": "Axe version",
+      "runtimeSettingsBenchmark": "Unthrottled CPU/Memory Power",
+      "runtimeSettingsCPUThrottling": "CPU throttling",
+      "runtimeSettingsDevice": "Device",
+      "runtimeSettingsNetworkThrottling": "Network throttling",
+      "runtimeSettingsScreenEmulation": "Screen emulation",
+      "runtimeSettingsUANetwork": "User agent (network)",
+      "runtimeSingleLoad": "Single page session",
+      "runtimeSingleLoadTooltip": "This data is taken from a single page session, as opposed to field data summarizing many sessions.",
+      "runtimeSlow4g": "Slow 4G throttling",
+      "runtimeUnknown": "Unknown",
+      "show": "Show",
+      "showRelevantAudits": "Show audits relevant to:",
+      "snippetCollapseButtonLabel": "Collapse snippet",
+      "snippetExpandButtonLabel": "Expand snippet",
+      "thirdPartyResourcesLabel": "Show 3rd-party resources",
+      "throttlingProvided": "Provided by environment",
+      "toplevelWarningsMessage": "There were issues affecting this run of Lighthouse:",
+      "unattributable": "Unattributable",
+      "unscoredLabel": "Unscored",
+      "unscoredTitle": "This audit does not contribute to the overall category score.",
+      "varianceDisclaimer": "Values are estimated and may vary. The [performance score is calculated](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/) directly from these metrics.",
+      "viewTraceLabel": "View Trace",
+      "viewTreemapLabel": "View Treemap",
+      "warningAuditsGroupTitle": "Passed audits but with warnings",
+      "warningHeader": "Warnings: "
+    },
+    "icuMessagePaths": {
+      "core/gather/driver/navigation.js | warningTimeout": [
+        "runWarnings[0]"
+      ],
+      "core/gather/driver/navigation.js | warningRedirected": [
+        {
+          "values": {
+            "requested": "https://www.twilio.com/",
+            "final": "https://www.twilio.com/en-us"
+          },
+          "path": "runWarnings[1]"
+        }
+      ],
+      "core/lib/i18n/i18n.js | cumulativeLayoutShiftMetric": [
+        "audits[cumulative-layout-shift].title"
+      ],
+      "core/audits/metrics/cumulative-layout-shift.js | description": [
+        "audits[cumulative-layout-shift].description"
+      ],
+      "core/audits/agentic/agent-accessibility-tree.js | failureTitle": [
+        "audits[agent-accessibility-tree].title"
+      ],
+      "core/audits/agentic/agent-accessibility-tree.js | description": [
+        "audits[agent-accessibility-tree].description"
+      ],
+      "core/audits/agentic/agent-accessibility-tree.js | failedSectionTitle": [
+        "audits[agent-accessibility-tree].details.items[0].title"
+      ],
+      "core/lib/i18n/i18n.js | columnDescription": [
+        "audits[agent-accessibility-tree].details.items[0].value.headings[0].label"
+      ],
+      "core/audits/agentic/agent-accessibility-tree.js | columnElement": [
+        "audits[agent-accessibility-tree].details.items[0].value.headings[1].label"
+      ],
+      "core/audits/webmcp-registered-tools.js | title": [
+        "audits[webmcp-registered-tools].title"
+      ],
+      "core/audits/webmcp-registered-tools.js | description": [
+        "audits[webmcp-registered-tools].description"
+      ],
+      "core/audits/webmcp-form-coverage.js | title": [
+        "audits[webmcp-form-coverage].title"
+      ],
+      "core/audits/webmcp-form-coverage.js | description": [
+        "audits[webmcp-form-coverage].description"
+      ],
+      "core/audits/webmcp-form-coverage.js | displayValue": [
+        {
+          "values": {
+            "itemCount": 3
+          },
+          "path": "audits[webmcp-form-coverage].displayValue"
+        }
+      ],
+      "core/audits/webmcp-form-coverage.js | columnForm": [
+        "audits[webmcp-form-coverage].details.headings[0].label"
+      ],
+      "core/audits/webmcp-schema-validity.js | title": [
+        "audits[webmcp-schema-validity].title"
+      ],
+      "core/audits/webmcp-schema-validity.js | description": [
+        "audits[webmcp-schema-validity].description"
+      ],
+      "core/audits/agentic/llms-txt.js | title": [
+        "audits[llms-txt].title"
+      ],
+      "core/audits/agentic/llms-txt.js | description": [
+        "audits[llms-txt].description"
+      ],
+      "core/audits/agentic/ard-schema.js | title": [
+        "audits[ard-schema].title"
+      ],
+      "core/audits/agentic/ard-schema.js | description": [
+        "audits[ard-schema].description"
+      ],
+      "core/config/default-config.js | agenticBrowsingCategoryTitle": [
+        "categories[agentic-browsing].title"
+      ],
+      "core/config/default-config.js | agenticBrowsingCategoryDescription": [
+        "categories[agentic-browsing].description"
+      ],
+      "core/config/default-config.js | metricGroupTitle": [
+        "categoryGroups.metrics.title"
+      ],
+      "core/config/default-config.js | insightsGroupTitle": [
+        "categoryGroups.insights.title"
+      ],
+      "core/config/default-config.js | insightsGroupDescription": [
+        "categoryGroups.insights.description"
+      ],
+      "core/config/default-config.js | diagnosticsGroupTitle": [
+        "categoryGroups.diagnostics.title"
+      ],
+      "core/config/default-config.js | diagnosticsGroupDescription": [
+        "categoryGroups.diagnostics.description"
+      ],
+      "core/config/default-config.js | a11yBestPracticesGroupTitle": [
+        "categoryGroups[a11y-best-practices].title"
+      ],
+      "core/config/default-config.js | a11yBestPracticesGroupDescription": [
+        "categoryGroups[a11y-best-practices].description"
+      ],
+      "core/config/default-config.js | a11yColorContrastGroupTitle": [
+        "categoryGroups[a11y-color-contrast].title"
+      ],
+      "core/config/default-config.js | a11yColorContrastGroupDescription": [
+        "categoryGroups[a11y-color-contrast].description"
+      ],
+      "core/config/default-config.js | a11yNamesLabelsGroupTitle": [
+        "categoryGroups[a11y-names-labels].title"
+      ],
+      "core/config/default-config.js | a11yNamesLabelsGroupDescription": [
+        "categoryGroups[a11y-names-labels].description"
+      ],
+      "core/config/default-config.js | a11yNavigationGroupTitle": [
+        "categoryGroups[a11y-navigation].title"
+      ],
+      "core/config/default-config.js | a11yNavigationGroupDescription": [
+        "categoryGroups[a11y-navigation].description"
+      ],
+      "core/config/default-config.js | a11yAriaGroupTitle": [
+        "categoryGroups[a11y-aria].title"
+      ],
+      "core/config/default-config.js | a11yAriaGroupDescription": [
+        "categoryGroups[a11y-aria].description"
+      ],
+      "core/config/default-config.js | a11yLanguageGroupTitle": [
+        "categoryGroups[a11y-language].title"
+      ],
+      "core/config/default-config.js | a11yLanguageGroupDescription": [
+        "categoryGroups[a11y-language].description"
+      ],
+      "core/config/default-config.js | a11yAudioVideoGroupTitle": [
+        "categoryGroups[a11y-audio-video].title"
+      ],
+      "core/config/default-config.js | a11yAudioVideoGroupDescription": [
+        "categoryGroups[a11y-audio-video].description"
+      ],
+      "core/config/default-config.js | a11yTablesListsVideoGroupTitle": [
+        "categoryGroups[a11y-tables-lists].title"
+      ],
+      "core/config/default-config.js | a11yTablesListsVideoGroupDescription": [
+        "categoryGroups[a11y-tables-lists].description"
+      ],
+      "core/config/default-config.js | seoMobileGroupTitle": [
+        "categoryGroups[seo-mobile].title"
+      ],
+      "core/config/default-config.js | seoMobileGroupDescription": [
+        "categoryGroups[seo-mobile].description"
+      ],
+      "core/config/default-config.js | seoContentGroupTitle": [
+        "categoryGroups[seo-content].title"
+      ],
+      "core/config/default-config.js | seoContentGroupDescription": [
+        "categoryGroups[seo-content].description"
+      ],
+      "core/config/default-config.js | seoCrawlingGroupTitle": [
+        "categoryGroups[seo-crawl].title"
+      ],
+      "core/config/default-config.js | seoCrawlingGroupDescription": [
+        "categoryGroups[seo-crawl].description"
+      ],
+      "core/config/default-config.js | bestPracticesTrustSafetyGroupTitle": [
+        "categoryGroups[best-practices-trust-safety].title"
+      ],
+      "core/config/default-config.js | bestPracticesUXGroupTitle": [
+        "categoryGroups[best-practices-ux].title"
+      ],
+      "core/config/default-config.js | bestPracticesBrowserCompatGroupTitle": [
+        "categoryGroups[best-practices-browser-compat].title"
+      ],
+      "core/config/default-config.js | bestPracticesGeneralGroupTitle": [
+        "categoryGroups[best-practices-general].title"
+      ],
+      "core/config/default-config.js | webmcpGroupTitle": [
+        "categoryGroups.webmcp.title"
+      ],
+      "core/config/default-config.js | webmcpGroupDescription": [
+        "categoryGroups.webmcp.description"
+      ],
+      "core/config/default-config.js | agentAccessibilityGroupTitle": [
+        "categoryGroups[agent-accessibility].title"
+      ],
+      "core/config/default-config.js | agentAccessibilityGroupDescription": [
+        "categoryGroups[agent-accessibility].description"
+      ],
+      "core/config/default-config.js | agentDiscoverabilityGroupTitle": [
+        "categoryGroups[agent-discoverability].title"
+      ],
+      "core/config/default-config.js | agentDiscoverabilityGroupDescription": [
+        "categoryGroups[agent-discoverability].description"
+      ]
+    }
+  }
+}

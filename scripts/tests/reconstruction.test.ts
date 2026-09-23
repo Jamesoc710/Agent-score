@@ -18,7 +18,11 @@ const V1_SHA256 = "016449e7f4a74163b95d04fd8d39f7c60884fed5bc38e14dae745a4f0d0b0
 
 // Sites whose reconstruction differs for a reason outside the fixed enum, named after review.
 // Keyed by batch label; empty until a dated 13.3.0 batch exists and its differences are read.
-const NAMED_UNEXPLAINED: Record<string, string[]> = {};
+// voodoo: `agent-accessibility-tree` failed in v1 and passes on all three 2026-09-23 repeats. v1 kept no LHR,
+// so a site change, the new www-to-apex redirect and a Chrome difference cannot be told apart.
+const NAMED_UNEXPLAINED: Record<string, string[]> = {
+  "lh-v2-20260923": ["voodoo"],
+};
 
 const v1 = JSON.parse(readFileSync(V1_PATH, "utf8")) as Record<string, LighthouseResult>;
 const fixture = (name: string) =>
