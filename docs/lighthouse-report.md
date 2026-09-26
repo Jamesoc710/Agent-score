@@ -591,8 +591,8 @@ started with.
 - The dataset and its citation: <https://agent-score-weld.vercel.app/data>, machine-readable at
   <https://agent-score-weld.vercel.app/data/v1.json>
 
-**Repository**: <https://github.com/Jamesoc710/Agent-score>. Dataset release: tag `dataset-v1`;
-the Zenodo DOI is minted from that release and recorded on `/data` when it exists.
+**Repository**: <https://github.com/Jamesoc710/Agent-score>. Dataset release: tag `dataset-v1`,
+archived on Zenodo as [doi:10.5281/zenodo.22924988](https://doi.org/10.5281/zenodo.22924988).
 
 | what | where |
 |---|---|
