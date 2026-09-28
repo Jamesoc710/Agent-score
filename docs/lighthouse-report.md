@@ -19,8 +19,9 @@ authored counterexample, and a null with a bound on it.**
   99 to 74; zalando.com, which answers the well-known path with a 200 HTML page, fell from 67 to
   50. The 26 sites that publish nothing were untouched.
 - **We read a conformance test as an adoption test** ([§3b](#3b-conformance-versus-adoption-our-error)).
-  The first version of this document said the `llms-txt` audit's H1 requirement was a bug and
-  that Twilio "ships llms.txt". The audit is right and our reading was wrong.
+  The first version of this document said six sites "ship llms.txt" and that Twilio, which served
+  a file that failed the format's H1 rule, was "exactly one anchor without the file". The audit is
+  right and our reading was wrong.
 - **Two authored pages with identical Lighthouse output, one of which the agent cannot use**
   ([§3c](#3c-the-goodhart-pair)). Both at category mean 100, byte-identical screenshots; one
   solved 10 of 10 trials in one step, the other 0 of 10.
@@ -299,9 +300,9 @@ site that publishes none?
 
 ## 3b. Conformance versus adoption: our error
 
-The first version of this document said that six sites "ship llms.txt", that Twilio was "the one
-anchor without the file", and that the audit's H1 requirement was a bug. All three were wrong in
-the same way: we read a conformance test as an adoption test.
+The first version of this document (`c22cbba`, 2026-08-30) said that six sites "ship llms.txt"
+and that there was "exactly one anchor without the file" (Twilio). Both were wrong in the same
+way: we read a conformance test as an adoption test.
 
 The audit's test at 13.3.0 was the regex `/^#\s+.+/m` on the body, plus a Markdown link and a
 minimum length; 13.4.1 and 13.5.0 relax the heading test to allow leading whitespace and add an
